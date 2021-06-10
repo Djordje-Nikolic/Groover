@@ -66,6 +66,7 @@ namespace Groover.BL.Services
 
             var user = await _context.Users
                 .Where(user => user.Id == userId)
+                .Include(user => user.UserGroups)
                 .FirstOrDefaultAsync();
 
             if (user == null)
@@ -85,6 +86,7 @@ namespace Groover.BL.Services
 
             var user = await _context.Users
                 .Where(user => user.UserName == username)
+                .Include(user => user.UserGroups)
                 .FirstOrDefaultAsync();
 
             if (user == null)
@@ -108,6 +110,8 @@ namespace Groover.BL.Services
 
             var user = await _context.Users
                 .Where(user => user.UserName == model.Username)
+                .Include(user => user.UserGroups)
+                    .ThenInclude(ug => ug.Group)
                 .FirstOrDefaultAsync();
             if (user == null)
                 throw new NotFoundException($"User with username {model.Username} not found.", "not_found.");
@@ -157,7 +161,11 @@ namespace Groover.BL.Services
 
         public async Task<LoggedInDTO> RefreshToken(string token, string ipAddress)
         {
-            var user = _context.Users.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token && t.IsActive));
+            var user = await _context.Users
+                .Where(u => u.RefreshTokens.Any(t => t.Token == token && t.IsActive))
+                .Include(user => user.RefreshTokens)
+                .Include(user => user.UserGroups)
+                .SingleOrDefaultAsync();
 
             if (user == null)
                 throw new UnauthorizedException("No user owns this token.");
@@ -191,6 +199,7 @@ namespace Groover.BL.Services
 
             var user = await _context.Users
                 .Where(user => user.Id == userId)
+                .Include(user => user.RefreshTokens)
                 .FirstOrDefaultAsync();
 
             if (user == null)

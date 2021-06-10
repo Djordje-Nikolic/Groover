@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Groover.DB.MySqlDb.Entities
 {
-    public class GrooverRole : IdentityRole<int>
+    public class Role : IdentityRole<int>
     {
     }
 }

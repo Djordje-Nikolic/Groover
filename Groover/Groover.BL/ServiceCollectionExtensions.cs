@@ -22,7 +22,7 @@ namespace Groover.BL
             services.AddDbContextPool<GrooverDbContext>((serviceProvider, options) =>
                         options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-            services.AddIdentity<User, GrooverRole>()
+            services.AddIdentity<User, Role>()
                     .AddEntityFrameworkStores<GrooverDbContext>()
                     .AddDefaultTokenProviders()
                     .AddTokenProvider<EmailConfirmationTokenProvider<User>>(Constants.EmailConfirmationTokenProvider)

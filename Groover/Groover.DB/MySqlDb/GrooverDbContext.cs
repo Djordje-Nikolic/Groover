@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Groover.DB.MySqlDb
 {
-    public class GrooverDbContext : IdentityDbContext<User, GrooverRole, int>
+    public class GrooverDbContext : IdentityDbContext<User, Role, int>
     {
         public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<GroupUser> GroupUsers { get; set; }
