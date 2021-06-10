@@ -125,7 +125,7 @@ namespace Groover.API.Controllers
 
         #region Global Admin Endpoints
 
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("getAll")]
         public async Task<IActionResult> GetAll()
         {
@@ -139,7 +139,7 @@ namespace Groover.API.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -153,7 +153,7 @@ namespace Groover.API.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}/refreshTokens")]
         public async Task<IActionResult> GetRefreshTokens(int id)
         {
@@ -167,7 +167,7 @@ namespace Groover.API.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("deleteInactiveRefreshTokens")]
         public async Task<IActionResult> DeleteInactiveRefreshTokens([FromBody] DateTime? beforeDate)
         {

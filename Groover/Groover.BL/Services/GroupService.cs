@@ -99,7 +99,10 @@ namespace Groover.BL.Services
             if (groupId <= 0)
                 throw new BadRequestException("Invalid group id.", "bad_id");
 
-            var group = await _context.Groups.FirstOrDefaultAsync(gr => gr.Id == groupId);
+            var group = await _context.Groups
+                .Where(gr => gr.Id == groupId)
+                .Include(gr => gr.GroupUsers)
+                .FirstOrDefaultAsync();
             if (group == null)
                 throw new NotFoundException();
 
