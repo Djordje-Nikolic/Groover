@@ -36,6 +36,11 @@ namespace Groover.API.Utils
 				this.logger.LogWarning(brEx.ToString());
 				await HandleExceptionAsync(context, brEx);
 			}
+			catch (UnauthorizedException unEx)
+            {
+				this.logger.LogWarning(unEx.ToString());
+				await HandleExceptionAsync(context, unEx);
+            }
 			catch (Exception ex)
 			{
 				this.logger.LogError("Error has occured. " + ex.ToString());
@@ -63,6 +68,13 @@ namespace Groover.API.Utils
 				grooverCode = badRequestException.ErrorCode;
 				code = HttpStatusCode.BadRequest;
 			}
+			else if (ex is UnauthorizedException)
+            {
+				var unauthorizedException = (UnauthorizedException)ex;
+				clientMessage = unauthorizedException.ClientMessage;
+				grooverCode = unauthorizedException.ErrorCode;
+				code = HttpStatusCode.Unauthorized;
+            }
 			else if (ex is GrooverException)
 			{
 				var grooverException = (GrooverException)ex;

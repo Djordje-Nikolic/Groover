@@ -28,8 +28,8 @@ namespace Groover.BL.Models.Exceptions
 		{
 		}
 
-		public BadRequestException(string message, string clientMessage)
-			: base(message, clientMessage)
+		public BadRequestException(string message, string errorCode)
+			: base(message, errorCode)
 		{
 		}
 

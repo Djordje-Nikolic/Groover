@@ -28,8 +28,8 @@ namespace Groover.BL.Models.Exceptions
 		{
 		}
 
-		public UnauthorizedException(string message, string clientMessage)
-			: base(message, clientMessage)
+		public UnauthorizedException(string message, string errorCode)
+			: base(message, errorCode)
 		{
 		}
 

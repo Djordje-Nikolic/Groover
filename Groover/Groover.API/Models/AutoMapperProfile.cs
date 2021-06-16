@@ -19,9 +19,11 @@ namespace Groover.API.Models
             CreateMap<UserDTO, UserResponse>();
 
             CreateMap<GroupUserDTO, GroupUserResponse>()
-                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
+                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()))
+                .AfterMap((dto, resp) => { resp.User.UserGroups = null; });
             CreateMap<GroupUserDTO, UserGroupResponse>()
-                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
+                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()))
+                .AfterMap((dto, resp) => { resp.Group.GroupUsers = null; });
 
             CreateMap<GroupDTO, GroupResponse>();
             CreateMap<CreateGroupRequest, GroupDTO>();

@@ -21,6 +21,7 @@ using Groover.BL.Handlers;
 using Groover.BL.Models;
 using Groover.BL.Services.Interfaces;
 using Groover.BL.Services;
+using Groover.BL.Helpers;
 
 namespace Groover.API
 {
@@ -41,8 +42,14 @@ namespace Groover.API
 
             string identityConnectionString = Configuration.GetConnectionString("grooverMySql");
             services.AddIdentityDatabase(identityConnectionString);
+            AutoMigrator.ApplyMigrations(identityConnectionString);
+
             AddJwt(services);
+
             AddEmailService(services);
+
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IGroupService, GroupService>();
 
             services.AddSwaggerGen(c =>
             {

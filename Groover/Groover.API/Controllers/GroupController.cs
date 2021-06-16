@@ -116,9 +116,16 @@ namespace Groover.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("acceptInvite")]
-        public async Task<IActionResult> AcceptInvite([FromBody] AcceptInvitationRequest request)
+        [HttpGet("acceptInvite")]
+        public async Task<IActionResult> AcceptInvite(string token, int userId, int groupId)
         {
+            AcceptInvitationRequest request = new AcceptInvitationRequest()
+            {
+                Token = token,
+                UserId = userId,
+                GroupId = groupId
+            };
+
             _logger.LogInformation($"Attempting to accept an invitation for user {request.UserId} to group {request.GroupId}.");
 
             await _groupService.AcceptInviteAsync(request.Token, request.GroupId, request.UserId);
@@ -159,7 +166,7 @@ namespace Groover.API.Controllers
         {
             _logger.LogInformation($"Attempting to remove user {userId} from group {groupId}.");
 
-            UserDTO userToRemove = await _userService.GetUserAsync(userId);
+            UserDTO userToRemove = new() { Id = userId };
             var resultIsUser = await _authorizationService.AuthorizeAsync(User, userToRemove, new IsUserRequirement());
 
             if (!await IsGroupAdminAsync(groupId) && !resultIsUser.Succeeded)
@@ -194,7 +201,7 @@ namespace Groover.API.Controllers
 
         private async Task<bool> IsGroupAdminAsync(int groupId)
         {
-            GroupDTO group = await _groupService.GetGroupAsync(groupId);
+            GroupDTO group = new GroupDTO() { Id = groupId };
             var resultIsAdmin = await _authorizationService.AuthorizeAsync(User, group, new GroupRoleRequirement(GroupClaimTypeConstants.Admin));
 
             return resultIsAdmin.Succeeded;
@@ -202,7 +209,7 @@ namespace Groover.API.Controllers
 
         private async Task<bool> IsGroupMemberAsync(int groupId)
         {
-            GroupDTO group = await _groupService.GetGroupAsync(groupId);
+            GroupDTO group = new GroupDTO() { Id = groupId };
             var resultIsMember = await _authorizationService.AuthorizeAsync(User, group, new GroupRoleRequirement(GroupClaimTypeConstants.Member));
 
             return resultIsMember.Succeeded;

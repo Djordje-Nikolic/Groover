@@ -27,12 +27,16 @@ namespace Groover.DB.MySqlDb
             builder.Entity<GroupUser>()
                 .HasKey(bc => new { bc.GroupId, bc.UserId });
 
+            builder.Entity<User>()
+                .HasMany(u => u.RefreshTokens)
+                .WithOne(r => r.User)
+                .HasForeignKey(r => r.UserId)
+                .IsRequired();
+
             builder.Entity<Group>()
                 .HasIndex(g => g.Name)
                 .IsUnique();
 
-            builder.Entity<RefreshToken>()
-                .HasIndex(t => t.Token);
         }
     }
 }

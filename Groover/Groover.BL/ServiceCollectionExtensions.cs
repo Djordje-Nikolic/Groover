@@ -20,7 +20,9 @@ namespace Groover.BL
         {
 
             services.AddDbContextPool<GrooverDbContext>((serviceProvider, options) =>
-                        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+                        options.UseMySql(connectionString, 
+                        ServerVersion.AutoDetect(connectionString), 
+                        options => options.MigrationsAssembly("Groover.DB")));
 
             services.AddIdentity<User, Role>()
                     .AddEntityFrameworkStores<GrooverDbContext>()
@@ -35,7 +37,7 @@ namespace Groover.BL
                opt.TokenLifespan = TimeSpan.FromDays(3));
 
             services.Configure<EmailConfirmationTokenProviderOptions>(opt =>
-               opt.TokenLifespan = TimeSpan.FromDays(3));
+               opt.TokenLifespan = TimeSpan.FromDays(7));
 
             services.AddScoped<ITokenProviderAccessor<User>, TokenProviderAccessor<User>>();
 
