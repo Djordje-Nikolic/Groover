@@ -28,8 +28,8 @@ namespace Groover.BL.Models.Exceptions
 		{
 		}
 
-		public NotFoundException(string message, string clientMessage)
-			: base(message, clientMessage)
+		public NotFoundException(string message, string errorCode)
+			: base(message, errorCode)
 		{
 		}
 

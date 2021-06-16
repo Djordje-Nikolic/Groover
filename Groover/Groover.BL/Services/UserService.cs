@@ -123,7 +123,7 @@ namespace Groover.BL.Services
             }
 
             _logger.LogInformation($"User credentials approved. username: {model.Username}");
-            string tokenString = GenerateJwtToken(user);
+            string tokenString = await GenerateJwtToken(user);
             RefreshToken refreshToken = GenerateRefreshToken(ipAddress);
 
             user.RefreshTokens.Add(refreshToken);
@@ -140,14 +140,13 @@ namespace Groover.BL.Services
             return loginResp;
         }
 
-        public async Task RevokeToken(string token, string ipAddress)
+        public async Task RevokeRefreshTokenAsync(string token, string ipAddress)
         {
-            var user = _context.Users.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token && t.IsActive));
+            DateTime dtNow = DateTime.UtcNow;
 
-            if (user == null)
-                throw new UnauthorizedException("No user owns this token.");
-
-            var refreshToken = user.RefreshTokens.Single(t => t.Token == token && t.IsActive);
+            var refreshToken = _context.RefreshTokens.SingleOrDefault(t => t.Token == token &&
+                                                                           t.Revoked == null &&
+                                                                           t.Expires > dtNow);
 
             if (refreshToken == null)
                 throw new NotFoundException("Token not found.", "not_found");
@@ -155,14 +154,18 @@ namespace Groover.BL.Services
             // revoke token and save
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIp = ipAddress;
-            _context.Update(user);
+            _context.Update(refreshToken);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<LoggedInDTO> RefreshToken(string token, string ipAddress)
+        public async Task<LoggedInDTO> RefreshTokenAsync(string token, string ipAddress)
         {
+            DateTime dtNow = DateTime.UtcNow;
+
             var user = await _context.Users
-                .Where(u => u.RefreshTokens.Any(t => t.Token == token && t.IsActive))
+                .Where(u => u.RefreshTokens.Any(t => t.Token == token &&
+                                                     t.Revoked == null &&
+                                                     t.Expires > dtNow))
                 .Include(user => user.RefreshTokens)
                 .Include(user => user.UserGroups)
                 .SingleOrDefaultAsync();
@@ -170,7 +173,9 @@ namespace Groover.BL.Services
             if (user == null)
                 throw new UnauthorizedException("No user owns this token.");
 
-            var refreshToken = user.RefreshTokens.Single(t => t.Token == token && t.IsActive);
+            var refreshToken = user.RefreshTokens.Single(t => t.Token == token &&
+                                                              t.Revoked == null &&
+                                                              t.Expires > dtNow);
 
             if (refreshToken == null)
                 throw new UnauthorizedException("Token expired or revoked.", "inactive_token");
@@ -186,7 +191,7 @@ namespace Groover.BL.Services
 
             LoggedInDTO loginResp = new LoggedInDTO();
             loginResp.User = _mapper.Map<UserDTO>(user);
-            loginResp.Token = GenerateJwtToken(user);
+            loginResp.Token = await GenerateJwtToken(user);
             loginResp.RefreshToken = newRefreshToken.Token;
 
             return loginResp;
@@ -215,11 +220,14 @@ namespace Groover.BL.Services
 
         public async Task<int> DeleteInactiveRefreshTokensAsync(DateTime? beforeDate)
         {
+            DateTime dtNow = DateTime.UtcNow;
+
             if (beforeDate == null)
                 throw new BadRequestException("Before date is missing or invalid.", "bad_datetime");
 
             var refreshTokens = await _context.RefreshTokens
-                .Where(t => t.IsActive == false && t.Created < beforeDate.Value)
+                .Where(t => (t.Expires <= dtNow || t.Revoked != null) && 
+                             t.Created < beforeDate.Value)
                 .ToListAsync();
 
             int count = refreshTokens.Count;
@@ -228,6 +236,64 @@ namespace Groover.BL.Services
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"Successfully deleted {count} inactive refresh tokens.");
+
+            return count;
+        }
+
+        public async Task<int> RevokeRefreshTokensAsync(DateTime? beforeDate, string ip)
+        {
+            DateTime dtNow = DateTime.UtcNow;
+
+            if (beforeDate == null)
+                throw new BadRequestException("Before date is missing or invalid.", "bad_datetime");
+
+            var refreshTokens = await _context.RefreshTokens
+                .Where(t => t.Revoked == null &&
+                            t.Expires > dtNow && t.Created < beforeDate.Value)
+                .ToListAsync();
+
+            int count = refreshTokens.Count;
+            DateTime revokeTime = DateTime.Now;
+
+            refreshTokens.ForEach(token => 
+            {
+                token.Revoked = revokeTime;
+                token.RevokedByIp = ip;
+            });
+
+            _context.RefreshTokens.UpdateRange(refreshTokens);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Successfully revoked {count} refresh tokens.");
+
+            return count;
+        }
+
+        public async Task<int> RevokeRefreshTokensAsync(int userId, string ip)
+        {
+            DateTime dtNow = DateTime.UtcNow;
+
+            if (userId <= 0)
+                throw new BadRequestException("Invalid user id.", "bad_id");
+
+            var refreshTokens = await _context.RefreshTokens
+                .Where(t => t.Revoked == null &&
+                            t.Expires > dtNow && t.UserId == userId)
+                .ToListAsync();
+
+            int count = refreshTokens.Count;
+            DateTime revokeTime = DateTime.Now;
+
+            refreshTokens.ForEach(token =>
+            {
+                token.Revoked = revokeTime;
+                token.RevokedByIp = ip;
+            });
+
+            _context.RefreshTokens.UpdateRange(refreshTokens);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Successfully revoked {count} refresh tokens.");
 
             return count;
         }
@@ -282,15 +348,19 @@ namespace Groover.BL.Services
                 throw new BadRequestException("Confirmation failed.", "failed_confirmation");
         }
 
-        private Claim[] GetClaims(User user)
+        private async Task<Claim[]> GetClaims(User user)
         {
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-				//new Claim("Roles", "") // TODO: preuzeti listu role-a za datog user-a
-			};
+            };
+
+            foreach (var role in await _userManager.GetRolesAsync(user))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             foreach (var userGroup in user.UserGroups)
             {
@@ -311,9 +381,9 @@ namespace Groover.BL.Services
             return claims.ToArray();
         }
 
-        private string GenerateJwtToken(User user)
+        private async Task<string> GenerateJwtToken(User user)
         {
-            var claims = GetClaims(user);
+            var claims = await GetClaims(user);
             var credentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:SecretKey").Value)),
                                                      SecurityAlgorithms.HmacSha256);
 

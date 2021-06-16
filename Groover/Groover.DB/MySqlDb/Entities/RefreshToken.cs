@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Groover.DB.MySqlDb.Entities
 {
-    [Owned]
+    [Index(nameof(Token), IsUnique = true)]
     public class RefreshToken
     {
         [Key]

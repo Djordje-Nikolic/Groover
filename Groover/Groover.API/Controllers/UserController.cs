@@ -76,9 +76,15 @@ namespace Groover.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("confirmEmail")]
-        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest confirmEmailRequest)
+        [HttpGet("confirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
+            ConfirmEmailRequest confirmEmailRequest = new ConfirmEmailRequest()
+            {
+                Token = token,
+                Email = email
+            };
+
             _logger.LogInformation($"Email confirmation attempt for email: {confirmEmailRequest.Email}");
 
             var confirmModel = this._autoMapper.Map<ConfirmEmailDTO>(confirmEmailRequest);
@@ -95,7 +101,7 @@ namespace Groover.API.Controllers
 
             _logger.LogInformation($"Attempting to refresh the JWT token using the refresh token: {refreshToken}.");
 
-            var response = await _userService.RefreshToken(refreshToken, IpAddress());
+            var response = await _userService.RefreshTokenAsync(refreshToken, IpAddress());
 
             SetRefreshTokenCookie(response.RefreshToken);
 
@@ -116,7 +122,7 @@ namespace Groover.API.Controllers
             if (string.IsNullOrEmpty(refreshToken))
                 return BadRequest(new { message = "Token is required" });
 
-            await _userService.RevokeToken(refreshToken, IpAddress());
+            await _userService.RevokeRefreshTokenAsync(refreshToken, IpAddress());
 
             _logger.LogInformation($"Successfully revoked the refresh token.");
 
@@ -180,6 +186,31 @@ namespace Groover.API.Controllers
             return Ok(new { deletedCount = count });
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("revokeAllTokens")]
+        public async Task<IActionResult> RevokeAllTokens([FromBody] DateTime? beforeDate)
+        {
+            _logger.LogInformation($"Attempting to revoke all refresh tokens before time: {beforeDate?.ToString()}");
+
+            var count = await _userService.RevokeRefreshTokensAsync(beforeDate, IpAddress());
+
+            _logger.LogInformation($"Successfully revoked all refresh tokens before time: {beforeDate?.ToString()}. Count: {count}");
+
+            return Ok(new { revokedCount = count });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("revokeUserTokens")]
+        public async Task<IActionResult> RevokeUserTokens(int userId)
+        {
+            _logger.LogInformation($"Attempting to revoke all refresh tokens for user: {userId}");
+
+            var count = await _userService.RevokeRefreshTokensAsync(userId, IpAddress());
+
+            _logger.LogInformation($"Successfully revoked all refresh tokens for user: {userId}. Count: {count}");
+
+            return Ok(new { revokedCount = count });
+        }
         #endregion
 
         private void SetRefreshTokenCookie(string token)

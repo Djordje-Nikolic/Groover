@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,8 +15,8 @@ namespace Groover.BL.Handlers
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IsUserRequirement requirement, UserDTO userDTO)
         {
-            if (context.User.HasClaim(c => c.Type == JwtRegisteredClaimNames.UniqueName &&
-                               c.Value == userDTO.Username))
+            if (context.User.HasClaim(c => c.Type == ClaimTypes.NameIdentifier &&
+                               c.Value == userDTO.Id.ToString()))
             {
                 context.Succeed(requirement);
             }

@@ -92,6 +92,9 @@ namespace Groover.BL.Services
             {
                 try
                 {
+                    //possibly remove this
+                    client.CheckCertificateRevocation = false;
+
                     await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.Port, true);
                     client.AuthenticationMechanisms.Remove("XOAUTH2");
                     await client.AuthenticateAsync(_emailConfig.UserName, _emailConfig.Password);

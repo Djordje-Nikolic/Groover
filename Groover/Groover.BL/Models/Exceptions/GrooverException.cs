@@ -48,10 +48,11 @@ namespace Groover.BL.Models.Exceptions
 		{
 		}
 
-		public GrooverException(string message, string clientMessage)
+		public GrooverException(string message, string errorCode)
 			: base(message)
 		{
-			this.clientMessage = clientMessage;
+			this.clientMessage = message;
+			this.errorCode = errorCode;
 		}
 
 		public GrooverException(string message, string clientMessage, Exception innerException)

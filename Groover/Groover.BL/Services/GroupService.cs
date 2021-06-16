@@ -51,7 +51,7 @@ namespace Groover.BL.Services
         public async Task<GroupDTO> CreateGroupAsync(GroupDTO groupDTO, int userId)
         {
             if (groupDTO == null)
-                throw new BadRequestException("Group data undefined.", "undefined");
+                throw new BadRequestException("Group data undefined.","undefined");
             if (userId <= 0)
                 throw new BadRequestException("Invalid user id.", "bad_id");
 
@@ -65,6 +65,9 @@ namespace Groover.BL.Services
             if (user == null)
                 throw new NotFoundException($"No user by id {userId}.", "not_found");
 
+            if (await _context.Groups.AnyAsync(g => g.Name == groupDTO.Name) == true)
+                throw new BadRequestException("Group with that name already exists.", "duplicate_name");
+
             Group group = _mapper.Map<Group>(groupDTO);
             GroupUser groupUser = new GroupUser();
             groupUser.Group = group;
@@ -74,6 +77,12 @@ namespace Groover.BL.Services
             _context.Groups.Add(group);
             _context.GroupUsers.Add(groupUser);
             await _context.SaveChangesAsync();
+
+            group = await _context.Groups.Where(g => g.Id == group.Id)
+                .Include(g => g.GroupUsers)
+                .ThenInclude(gu => gu.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
             var createdDTO = _mapper.Map<GroupDTO>(group);
             return createdDTO;
@@ -102,9 +111,11 @@ namespace Groover.BL.Services
             var group = await _context.Groups
                 .Where(gr => gr.Id == groupId)
                 .Include(gr => gr.GroupUsers)
+                .ThenInclude(gu => gu.User)
+                .AsNoTracking()
                 .FirstOrDefaultAsync();
             if (group == null)
-                throw new NotFoundException();
+                throw new NotFoundException($"No group by id {groupId}.", "not_found");
 
             var groupDTO = _mapper.Map<GroupDTO>(group);
             return groupDTO;
@@ -115,8 +126,12 @@ namespace Groover.BL.Services
             if (groupIds.Any(id => id <= 0))
                 throw new BadRequestException("One of the ids is invalid.", "bad_id");
 
-            var groups = await _context.Groups.Where(gr => groupIds.Contains(gr.Id))
-                                              .ToListAsync();
+            var groups = await _context.Groups
+                .Where(gr => groupIds.Contains(gr.Id))
+                .Include(gr => gr.GroupUsers)
+                .ThenInclude(gu => gu.User)
+                .AsNoTracking()
+                .ToListAsync();
 
             var groupDTOs = _mapper.Map<ICollection<GroupDTO>>(groups);
             return groupDTOs;
@@ -129,7 +144,7 @@ namespace Groover.BL.Services
             if (userId <= 0)
                 throw new BadRequestException("User id is invalid.", "bad_id");
 
-            GroupUser groupUser = await _context.GroupUsers.FindAsync(new { groupId, userId });
+            GroupUser groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
             if (groupUser != null)
                 throw new BadRequestException("User is already a member of the group.", "already_member");
 
@@ -182,7 +197,7 @@ namespace Groover.BL.Services
             if (!isTokenValid)
                 throw new UnauthorizedException("Invitation token is invalid.", "token_invalid");
 
-            GroupUser groupUser = await _context.GroupUsers.FindAsync(new { groupId, userId });
+            GroupUser groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
             if (groupUser != null)
                 throw new BadRequestException("User is already a member of the group.", "already_member");
 
@@ -201,11 +216,33 @@ namespace Groover.BL.Services
             if (userId <= 0)
                 throw new BadRequestException("User id is invalid.", "bad_id");
 
-            GroupUser groupUser = await _context.GroupUsers.FindAsync(new { groupId, userId });
-            if (groupUser == null)
+            Group group = await _context.Groups
+                .Where(gr => gr.Id == groupId)
+                .Include(gr => gr.GroupUsers)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+            if (group == null)
+                throw new NotFoundException("Group doesn't exist.", "not_found_group");
+
+            List<GroupUser> groupUsers = group.GroupUsers.ToList(); 
+            GroupUser userToBeRemoved = groupUsers.FirstOrDefault(gu => gu.UserId == userId);
+            if (userToBeRemoved == null)
                 throw new NotFoundException("User is not a member of the group.", "not_found");
 
-            _context.GroupUsers.Remove(groupUser);
+            if (groupUsers.Count == 2)
+            {
+                groupUsers.Remove(userToBeRemoved);
+
+                var lastUser = groupUsers.Last();
+                lastUser.GroupRole = GroupRole.Admin;
+                _context.GroupUsers.Update(lastUser);
+            }
+            else if (groupUsers.Count == 1)
+            {
+                _context.Groups.Remove(group);
+            }
+
+            _context.GroupUsers.Remove(userToBeRemoved);
             await _context.SaveChangesAsync();
         }
 
@@ -224,12 +261,22 @@ namespace Groover.BL.Services
             if (group == null)
                 throw new NotFoundException($"No group by id {groupDTO.Id}.", "not_found");
 
+            if (await _context.Groups.AnyAsync(g => g.Name == groupDTO.Name && 
+                                                    g.Id != groupDTO.Id) == true)
+                throw new BadRequestException("Group with that name already exists.", "duplicate_name");
+
             Group groupNew = _mapper.Map<Group>(groupDTO);
             group.Name = groupNew.Name;
             group.Description = groupNew.Description;
 
             _context.Groups.Update(group);
             await _context.SaveChangesAsync();
+
+            group = await _context.Groups.Where(g => g.Id == group.Id)
+                .Include(g => g.GroupUsers)
+                .ThenInclude(gu => gu.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
             var updatedDTO = _mapper.Map<GroupDTO>(group);
             return updatedDTO;
@@ -249,7 +296,7 @@ namespace Groover.BL.Services
 
             GroupRole groupRoleNew = (GroupRole)roleParseResult;
 
-            GroupUser groupUser = await _context.GroupUsers.FindAsync(new { groupId, userId });
+            GroupUser groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
             if (groupUser == null)
                 throw new NotFoundException("User is not a member of the group.", "not_found");
 

@@ -26,6 +26,7 @@ namespace Groover.API
                 .ConfigureLogging(builder =>
                 {
                     builder.ClearProviders();
+                    builder.AddConsole();
                     builder.SetMinimumLevel(LogLevel.Information);
                 })
                 .UseNLog();
