@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Groover.AvaloniaUI.ViewModels;
 using Groover.AvaloniaUI.Views;
+using Splat;
 
 namespace Groover.AvaloniaUI
 {
@@ -19,7 +20,7 @@ namespace Groover.AvaloniaUI
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(),
+                    DataContext = Locator.Current.GetRequiredService<MainWindowViewModel>()
                 };
             }
 

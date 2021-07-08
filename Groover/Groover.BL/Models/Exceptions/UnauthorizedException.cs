@@ -43,6 +43,11 @@ namespace Groover.BL.Models.Exceptions
 		{
 		}
 
+		public UnauthorizedException(string message, string clientMessage, string errorCode, string errorValue)
+			: base(message, clientMessage, errorCode, errorValue)
+		{
+		}
+
 		public UnauthorizedException(string message, string clientMessage, string errorCode, Exception innerException)
 			: base(message, clientMessage, errorCode, innerException)
 		{

@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+        xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+        xmlns:dvms="clr-namespace:Groover.AvaloniaUI.ViewModels.Dialogs"
+        xmlns:dvs="using:Groover.AvaloniaUI.Views.Dialogs"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Groover.AvaloniaUI.Views.Dialogs.ChangeRoleDialogView"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Title="{Binding TitleText}"
+        SizeToContent="WidthAndHeight">
+  <Window.Styles>
+    <Style Selector="Window[SystemDecorations=None]">
+      <Setter Property="Padding" Value="1"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="TransparencyLevelHint" Value="AcrylicBlur"/>
+    </Style>
+  </Window.Styles>
+  <styles:Card CornerRadius="20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <StackPanel HorizontalAlignment="Center"
+            MinWidth="200"
+            MaxWidth="350"
+            VerticalAlignment="Stretch"
+            Orientation="Vertical">
+      <TextBlock Name="titleTextBox" HorizontalAlignment="Left" Classes="Headline6" Margin="0,0,0,20" Text="{Binding TitleText}" TextWrapping="Wrap" TextAlignment="Center">Placeholder title</TextBlock>
+      <Panel Name="bodyContainer" Width="{Binding #titleTextBox.Width, Mode=OneWay}" >
+        <ListBox Name="roleListBox" Items="{Binding PossibleRoles}" 
+                 SelectedItem="{Binding ChosenRole}"
+                 SelectionMode="Single"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Disabled">
+          <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+              <Setter Property="Margin" Value="0"/>
+              <Setter Property="Padding" Value="0,2,0,2"/>
+            </Style>
+          </ListBox.Styles>
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding}" Classes="Accent Subtitle2" HorizontalAlignment="Center"></TextBlock>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Panel>
+      <StackPanel Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <Button assist:ButtonAssist.CornerRadius="5" Command="{Binding YesCommand}" Classes="Flat" Margin="0,0,5,0">
+          <TextBlock Classes="ButtonText" Text="{Binding YesButtonText}">ACCEPT</TextBlock>
+        </Button>
+        <Button assist:ButtonAssist.CornerRadius="5" Command="{Binding NoCommand}" Classes="Flat">
+          <TextBlock Classes="ButtonText" Text="{Binding NoButtonText}">DECLINE</TextBlock>
+        </Button>
+      </StackPanel>
+    </StackPanel>
+  </styles:Card>
+</Window>

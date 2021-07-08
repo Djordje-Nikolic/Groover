@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:viewModels="clr-namespace:Groover.AvaloniaUI.ViewModels"
+             xmlns:views="using:Groover.AvaloniaUI.Views"
+             mc:Ignorable="d" d:DesignWidth="600"
+             x:Class="Groover.AvaloniaUI.Views.WelcomeWindow"
+             WindowStartupLocation="CenterOwner"
+             SystemDecorations="None"
+             Title="Login Or Register"
+             SizeToContent="WidthAndHeight">
+  <Window.Styles>
+    <Style Selector="Window[SystemDecorations=None]">
+      <Setter Property="Padding" Value="1"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="TransparencyLevelHint" Value="AcrylicBlur"/>
+    </Style>
+  </Window.Styles>
+  <styles:Card CornerRadius="20" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+      <StackPanel HorizontalAlignment="Center"
+                  VerticalAlignment="Stretch"
+                  Orientation="Vertical">
+        <views:LoginView Name="LoginControl"
+                             DataContext="{Binding LoginViewModel}"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Stretch"
+                             IsEnabled="{Binding !#RegisterControl.IsEnabled}"
+                             IsVisible="{Binding !#RegisterControl.IsEnabled}">
+        </views:LoginView>
+        <views:RegisterView Name="RegisterControl"
+                            DataContext="{Binding RegisterViewModel}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Stretch"
+                            IsEnabled="{Binding !#LoginControl.IsEnabled}"
+                            IsVisible="{Binding !#LoginControl.IsEnabled}">
+        </views:RegisterView>
+        <Button Margin="0,10,0,5"
+                Classes="Outline"
+                Click="onActivateLogin">
+          <TextBlock Foreground="White">
+            I already have an account
+          </TextBlock>
+        </Button>
+        <Button Margin="0,5,0,0"
+                Classes="Outline"
+                Click="onActivateRegister">
+          <TextBlock Foreground="White">
+            I don't have an account
+          </TextBlock>
+        </Button>
+        <Button Margin="0,20,0,0"
+        Classes="Outline Accent" 
+        Command="{Binding OverrideCloseCommand}">
+          <TextBlock Foreground="White">
+            Close Groover
+          </TextBlock>
+        </Button>
+      </StackPanel>
+  </styles:Card>
+</Window>

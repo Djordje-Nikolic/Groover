@@ -91,7 +91,7 @@ namespace Groover.BL.Services
 
             if (user == null)
             {
-                throw new NotFoundException($"User with username {user.UserName} not found.", "not_found");
+                throw new NotFoundException($"User with username {username} not found.", "not_found");
             }
 
             _logger.LogInformation($"Successfully found the user with username {user.UserName}.");
@@ -102,25 +102,40 @@ namespace Groover.BL.Services
         public async Task<LoggedInDTO> LogInAsync(LogInDTO model, string ipAddress)
         {
             if (string.IsNullOrWhiteSpace(model.Username))
-                throw new BadRequestException("Invalid LogIn credentials. Username must not be null.");
+                throw new BadRequestException("Invalid LogIn credentials. Username must not be null or empty.", "bad_username");
             if (string.IsNullOrWhiteSpace(model.Password))
-                throw new BadRequestException("Invalid LogIn credentials. Password must not be null.");
+                throw new BadRequestException("Invalid LogIn credentials. Password must not be null or empty.", "bad_password");
             if (string.IsNullOrWhiteSpace(ipAddress))
-                throw new BadRequestException("Couldn't determine ip address.");
+                throw new BadRequestException("Couldn't determine ip address.", "ip_not_found");
 
             var user = await _context.Users
                 .Where(user => user.UserName == model.Username)
-                .Include(user => user.UserGroups)
-                    .ThenInclude(ug => ug.Group)
                 .FirstOrDefaultAsync();
             if (user == null)
-                throw new NotFoundException($"User with username {model.Username} not found.", "not_found.");
+                throw new NotFoundException($"User with username {model.Username} not found.", "not_found");
 
-            var result = await _signInManager.PasswordSignInAsync(user, model.Password, true, false);
+            if (user.EmailConfirmed == false)
+                throw new UnauthorizedException($"User with username {model.Username} tried to login with an inactivated account.", "email_not_confirmed");
+
+            var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: true);
             if (!result.Succeeded)
             {
-                throw new BadRequestException("Wrong credentials.", "Wrong credentials.");
+                if (result.IsLockedOut)
+                    throw new BadRequestException("User is locked out.", "UserLockedOut");
+                if (result.IsNotAllowed)
+                    throw new BadRequestException("User is not allowed to sign in.", "UserNotAllowed");
+
+                throw new BadRequestException($"Wrong credentials for user {model.Username}.", "Wrong credentials.", "invalid_credentials", user.AccessFailedCount.ToString());
             }
+
+            user = await _context.Users
+                .Where(user => user.UserName == model.Username)
+                .Include(user => user.RefreshTokens)
+                .Include(user => user.UserGroups)
+                    .ThenInclude(ug => ug.Group)
+                    .ThenInclude(g => g.GroupUsers)
+                    .ThenInclude(gu => gu.User)
+                .FirstOrDefaultAsync();
 
             _logger.LogInformation($"User credentials approved. username: {model.Username}");
             string tokenString = await GenerateJwtToken(user);
@@ -171,7 +186,7 @@ namespace Groover.BL.Services
                 .SingleOrDefaultAsync();
 
             if (user == null)
-                throw new UnauthorizedException("No user owns this token.");
+                throw new UnauthorizedException("No user owns this token.", "not_found");
 
             var refreshToken = user.RefreshTokens.Single(t => t.Token == token &&
                                                               t.Revoked == null &&

@@ -1,0 +1,50 @@
+Groover User Service Error Codes:
+
+Id 	ErrorCode   					Explanation
+
+1	bad_id      					Cannot be 0 or lower.
+2	not_found   					item not found
+3	bad_username  					Cannot be null or whitespace
+4	bad_password  					Cannot be null or whitespace
+5	ip_not_found  					Couldnt determine ip address
+6	invalid_credentials 			Couldnt login
+7	inactive_token  				Token experied or revoked
+8	bad_datetime  					Invalid format
+9	failed_validation   			Bad data
+10	failed_confirmation 			Couldnt confirm email
+11 	internal						Unknown error
+12  email_not_confirmed				Email hasnt been confirmed for this user.
+
+IdentityErrors:
+
+11 DefaultError						An unknown failure has occurred.
+12 ConcurrencyFailure				Optimistic concurrency failure, object has been modified.
+13 PasswordMismatch					Incorrect password.
+14 InvalidToken						Invalid token.
+15 RecoveryCodeRedemptionFailed		Recovery code redemption failed.
+16 LoginAlreadyAssociated			A user with this login already exists.
+17 InvalidUserName					User name '{0}' is invalid, can only contain letters or digits.
+18 InvalidEmail						Email '{0}' is invalid.
+19 DuplicateUserName				User name '{0}' is already taken.
+20 DuplicateEmail					Email '{0}' is already taken.
+21 InvalidRoleName					Role name '{0}' is invalid.
+22 DuplicateRoleName				Role name '{0}' is already taken.
+23 UserAlreadyHasPassword			User already has a password set.
+24 UserLockoutNotEnabled			Lockout is not enabled for this user.
+25 UserAlreadyInRole				User already in role '{0}'
+26 UserNotInRole					User is not in role '{0}'.
+27 PasswordTooShort					Passwords must be at least {0} characters.
+28 PasswordRequiresUniqueChars		Passwords must use at least {0} different characters.
+29 PasswordRequiresNonAlphanumeric	Passwords must have at least one non alphanumeric character.
+30 PasswordRequiresLower			Passwords must have at least one lowercase ('a'-'z').
+31 PasswordRequiresUpper			Passwords must have at least one uppercase ('A'-'Z').
+32 PasswordRequiredDigit			Passwords must have at least one digit ('0'-'9').
+33 RoleNotFound						Role {0} does not exist.
+34 UserLockedOut					User is locked out.
+35 UserNameNotFound					User {0} does not exist.
+36 UserNotAllowed					User {0} is not allowed to sign in.
+
+API Calls and their possible errors:
+
+
+IZBACI IZ USER CLASA ACCESSFAILEDCOUNT I UBACI GA U ERROR CODE (npr. invalid_credentials_{remainingAttempts})
