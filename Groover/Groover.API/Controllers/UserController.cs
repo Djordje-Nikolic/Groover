@@ -2,6 +2,7 @@
 using Groover.API.Models.Requests;
 using Groover.API.Models.Responses;
 using Groover.BL.Models.DTOs;
+using Groover.BL.Models.Exceptions;
 using Groover.BL.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

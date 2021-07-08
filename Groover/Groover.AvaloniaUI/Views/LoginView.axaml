@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="300" 
+             x:Class="Groover.AvaloniaUI.Views.LoginView">
+   <styles:Card Width="300" Padding="0,0,0,5">
+    <StackPanel Orientation="Vertical"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+      <StackPanel.Styles>
+        <Style Selector="TextBox">
+          <Setter Property="Width" Value="240" />
+          <Setter Property="Margin" Value="0,0,0,5" />
+        </Style>
+              <Style Selector="Button">
+          <Setter Property="Width" Value="240" />
+        </Style>
+      </StackPanel.Styles>
+      <TextBlock Text="{Binding SuccessMessage}" Margin="0,0,0,7" Foreground="Cyan" HorizontalAlignment="Center" IsVisible="{Binding LoggedInSuccessfully}" IsEnabled="{Binding LoggedInSuccessfully}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" TextAlignment="Center" TextWrapping="Wrap" />
+      <ListBox Items="{Binding ErrorMessages}" IsVisible="{Binding !LoggedInSuccessfully}" IsEnabled="{Binding !LoggedInSuccessfully}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox.Styles>
+          <Style Selector="ListBoxItem">
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="0,2,0,2"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsHitTestVisible" Value="False" />
+          </Style>
+        </ListBox.Styles>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+             <TextBlock Text="{Binding}" Margin="0" Padding="0" Foreground="Red" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <ProgressBar Name="isLoggingIn" Margin="0,0,0,7" Classes="Circle" Width="40" MinWidth="40" Height="40" MinHeight="40" HorizontalAlignment="Center" IsIndeterminate="True" />
+      <TextBox UseFloatingWatermark="True"
+         Classes="Outline Dense Body2"
+         assist:TextFieldAssist.Label="Username"
+         Text="{Binding Username}"/>
+      <TextBox UseFloatingWatermark="True"
+         Classes="Outline Dense revealPasswordButton Body2"
+         assist:TextFieldAssist.Label="Password"
+         PasswordChar="*"
+         Text="{Binding Password}"/>
+      <Button Margin="0,15,0,5" IsDefault="True" Classes="Outline" Command="{Binding Login}" VerticalAlignment="Bottom">
+        <TextBlock Foreground="White">Login</TextBlock>
+      </Button>
+    </StackPanel>
+  </styles:Card>
+</UserControl>

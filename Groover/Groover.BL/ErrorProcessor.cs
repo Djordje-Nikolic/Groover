@@ -27,7 +27,7 @@ namespace Groover.BL
 			}
 
 			logger.LogWarning("Registration failed.");
-			throw new BadRequestException("Registration errors: " + devErrors, clientErrors, "registration_failed");
+			throw new BadRequestException("Registration errors: " + devErrors, clientErrors);
 		}
 
 		public static void Process(IEnumerable<string> invalidFields, ILogger logger)
@@ -44,7 +44,7 @@ namespace Groover.BL
 			}
 
 			logger.LogWarning("Validation failed.");
-			throw new BadRequestException("Invalid fields: " + errors, errors, "validation_failed");
+			throw new BadRequestException("Invalid fields: " + errors, errors, "failed_validation");
 		}
 
 		public static void Process(List<ValidationResult> validationResults, ILogger logger)
@@ -64,7 +64,7 @@ namespace Groover.BL
 			}
 
 			logger.LogWarning("Validation failed.");
-			throw new BadRequestException("Invalid fields: " + errors, errors, "validation_failed");
+			throw new BadRequestException("Invalid fields: " + errors, errors, "failed_validation");
 		}
 	}
 }

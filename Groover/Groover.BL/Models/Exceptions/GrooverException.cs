@@ -12,6 +12,7 @@ namespace Groover.BL.Models.Exceptions
     {
 		protected string clientMessage;
 		protected string errorCode;
+		protected string errorValue;
 
 		/// <summary>
 		/// Poruka koja se vraca kroz API klijentu.
@@ -28,6 +29,12 @@ namespace Groover.BL.Models.Exceptions
 			get { return this.errorCode; }
 			private set { this.errorCode = value; }
 		}
+
+		public string ErrorValue
+        {
+			get { return this.errorValue; }
+			private set { this.errorValue = value; }
+        }
 
 		public GrooverException()
 		{
@@ -66,6 +73,14 @@ namespace Groover.BL.Models.Exceptions
 		{
 			this.clientMessage = clientMessage;
 			this.errorCode = errorCode;
+		}
+
+		public GrooverException(string message, string clientMessage, string errorCode, string errorValue)
+			: base(message)
+		{
+			this.clientMessage = clientMessage;
+			this.errorCode = errorCode;
+			this.errorValue = errorValue;
 		}
 
 		public GrooverException(string message, string clientMessage, string errorCode, Exception innerException)

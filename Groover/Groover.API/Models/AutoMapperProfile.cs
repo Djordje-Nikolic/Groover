@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Groover.API.Models.Requests;
 using Groover.API.Models.Responses;
+using Groover.API.Utils;
 using Groover.BL.Models.DTOs;
 using System;
 using System.Collections.Generic;
@@ -19,11 +20,14 @@ namespace Groover.API.Models
             CreateMap<UserDTO, UserResponse>();
 
             CreateMap<GroupUserDTO, GroupUserResponse>()
-                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()))
-                .AfterMap((dto, resp) => { resp.User.UserGroups = null; });
+                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
             CreateMap<GroupUserDTO, UserGroupResponse>()
-                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()))
-                .AfterMap((dto, resp) => { resp.Group.GroupUsers = null; });
+                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
+
+            CreateMap<UserDTO, UserLiteResponse>();
+            CreateMap<GroupDTO, GroupLiteResponse>();
+            CreateMap<GroupUserDTO, GroupUserLiteResponse>()
+                .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
 
             CreateMap<GroupDTO, GroupResponse>();
             CreateMap<CreateGroupRequest, GroupDTO>();

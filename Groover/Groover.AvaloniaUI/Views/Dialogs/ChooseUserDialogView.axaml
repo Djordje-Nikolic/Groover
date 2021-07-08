@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+        xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+        xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:dvms="clr-namespace:Groover.AvaloniaUI.ViewModels.Dialogs"
+        xmlns:dvs="using:Groover.AvaloniaUI.Views.Dialogs"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
+        x:Class="Groover.AvaloniaUI.Views.Dialogs.ChooseUserDialogView"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Title="{Binding TitleText}"
+        SizeToContent="WidthAndHeight">
+<Window.Styles>
+  <Style Selector="Window[SystemDecorations=None]">
+    <Setter Property="Padding" Value="1"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="TransparencyLevelHint" Value="AcrylicBlur"/>
+  </Style>
+</Window.Styles>
+<styles:Card CornerRadius="20" Width="270" MinHeight="170" MaxHeight="250" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+  <StackPanel HorizontalAlignment="Stretch"
+          Width="230"
+          VerticalAlignment="Stretch"
+          Orientation="Vertical">
+    <TextBlock Name="titleTextBox" HorizontalAlignment="Left" Classes="Headline6" Margin="0,0,0,10" Text="{Binding TitleText}" TextWrapping="Wrap" TextAlignment="Center">Placeholder title</TextBlock>
+    <TextBlock Text="{Binding DisplayError}" 
+               Classes="Caption" 
+               Foreground="Red" 
+               HorizontalAlignment="Left" 
+               VerticalAlignment="Bottom"></TextBlock>
+    <StackPanel Orientation="Horizontal" Width="240" HorizontalAlignment="Center" Name="bodyContainer" >
+      <TextBox UseFloatingWatermark="False"
+               Watermark="Username"
+               Classes="Outline Dense Body2"
+               Width="180"
+               assist:TextFieldAssist.Label="Username"
+               Text="{Binding CurrentUsername}"
+               Name="usernameTextBox"/>
+      <Button Name="checkButton" Padding="0" Margin="10,10,0,0" Height="50" Width="50" 
+              VerticalAlignment="Top"
+              Classes="Outline"
+              IsDefault="True"
+              Command="{Binding CheckCommand}"
+              CommandParameter="{Binding CurrentUsername}"
+              assist:ButtonAssist.CornerRadius="50">
+        <Panel Height="50" Width="50">
+          <icons:MaterialIcon Kind="AccountSearchOutline" Width="23" Height="23" Margin="2,0,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+          <ProgressBar Name="checkProgressBar" Margin="0,0,0,0" Classes="Circle" Width="50" MinWidth="50" Height="50" MinHeight="50" HorizontalAlignment="Center" IsIndeterminate="True" />
+        </Panel>    
+      </Button>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <Button assist:ButtonAssist.CornerRadius="5" Command="{Binding YesCommand}" Classes="Flat" Margin="0,0,5,0">
+        <TextBlock Classes="ButtonText" Text="{Binding YesButtonText}">ACCEPT</TextBlock>
+      </Button>
+      <Button assist:ButtonAssist.CornerRadius="5" Command="{Binding NoCommand}" Classes="Flat">
+        <TextBlock Classes="ButtonText" Text="{Binding NoButtonText}">DECLINE</TextBlock>
+      </Button>
+    </StackPanel>
+  </StackPanel>
+</styles:Card>
+</Window>

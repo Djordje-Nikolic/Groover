@@ -53,12 +53,14 @@ namespace Groover.API.Utils
 			HttpStatusCode code = HttpStatusCode.InternalServerError; // 500 if unexpected
 			string clientMessage = null;
 			string grooverCode = null;
+			string errorVal = null;
 
 			if (ex is NotFoundException)
 			{
 				var notFoundException = (NotFoundException)ex;
 				clientMessage = notFoundException.ClientMessage;
 				grooverCode = notFoundException.ErrorCode;
+				errorVal = notFoundException.ErrorValue;
 				code = HttpStatusCode.NotFound;
 			}
 			else if (ex is BadRequestException)
@@ -66,6 +68,7 @@ namespace Groover.API.Utils
 				var badRequestException = (BadRequestException)ex;
 				clientMessage = badRequestException.ClientMessage;
 				grooverCode = badRequestException.ErrorCode;
+				errorVal = badRequestException.ErrorValue;
 				code = HttpStatusCode.BadRequest;
 			}
 			else if (ex is UnauthorizedException)
@@ -73,6 +76,7 @@ namespace Groover.API.Utils
 				var unauthorizedException = (UnauthorizedException)ex;
 				clientMessage = unauthorizedException.ClientMessage;
 				grooverCode = unauthorizedException.ErrorCode;
+				errorVal = unauthorizedException.ErrorValue;
 				code = HttpStatusCode.Unauthorized;
             }
 			else if (ex is GrooverException)
@@ -80,10 +84,15 @@ namespace Groover.API.Utils
 				var grooverException = (GrooverException)ex;
 				clientMessage = grooverException.ClientMessage;
 				grooverCode = grooverException.ErrorCode;
+				errorVal = grooverException.ErrorValue;
 				//Code ostaje InternalServerError
 			}
+			else if (ex is Exception)
+            {
+				clientMessage = "Unknown error has happened.";
+            }
 
-			var result = JsonConvert.SerializeObject(new { error = clientMessage, errorCode = grooverCode });
+			var result = JsonConvert.SerializeObject(new { error = clientMessage, errorCode = grooverCode, errorValue = errorVal });
 			context.Response.ContentType = "application/json";
 			context.Response.StatusCode = (int)code;
 			return context.Response.WriteAsync(result);

@@ -7,7 +7,7 @@ namespace Groover.API.Models.Responses
 {
     public class UserGroupResponse
     {
-        public GroupResponse Group { get; set; }
+        public GroupLiteResponse Group { get; set; }
         public string GroupRole { get; set; }
     }
 }
