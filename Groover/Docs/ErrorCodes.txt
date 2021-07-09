@@ -1,13 +1,13 @@
 Groover User Service Error Codes:
 
-Id 	ErrorCode   					Explanation
+Id 	ErrorCode   					Explanation									ErrorValue
 
 1	bad_id      					Cannot be 0 or lower.
 2	not_found   					item not found
 3	bad_username  					Cannot be null or whitespace
 4	bad_password  					Cannot be null or whitespace
 5	ip_not_found  					Couldnt determine ip address
-6	invalid_credentials 			Couldnt login
+6	invalid_credentials 			Couldnt login								FailedLoginCount
 7	inactive_token  				Token experied or revoked
 8	bad_datetime  					Invalid format
 9	failed_validation   			Bad data
@@ -46,5 +46,11 @@ IdentityErrors:
 
 API Calls and their possible errors:
 
+Groover Group Service Error List:
 
-IZBACI IZ USER CLASA ACCESSFAILEDCOUNT I UBACI GA U ERROR CODE (npr. invalid_credentials_{remainingAttempts})
+1 bad_id
+2 bad_role
+3 not_found
+4 not_found_group
+5 last_admin
+6 already_member

@@ -21,5 +21,6 @@ namespace Groover.AvaloniaUI.Services.Interfaces
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseHeadersRead);
 
         public void SetAccessToken(string token, string type = "Bearer");
+        public void RemoveAccessToken();
     }
 }

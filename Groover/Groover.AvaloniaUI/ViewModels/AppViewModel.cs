@@ -44,6 +44,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public ReactiveCommand<User, Unit> KickUserCommand { get; }
         public ReactiveCommand<Group, Unit> InviteUserCommand { get; }
         public ReactiveCommand<Group, Unit> LeaveGroupCommand { get; }
+        public ReactiveCommand<Group, Unit> DeleteGroupCommand { get; }
 
         public AppViewModel(LoginResponse logResp, IUserService userService, IGroupService groupService)
         {
@@ -52,6 +53,7 @@ namespace Groover.AvaloniaUI.ViewModels
             KickUserCommand = ReactiveCommand.CreateFromTask<User>(KickUser);
             InviteUserCommand = ReactiveCommand.CreateFromTask<Group>(InviteUser);
             LeaveGroupCommand = ReactiveCommand.CreateFromTask<Group>(LeaveGroup);
+            DeleteGroupCommand = ReactiveCommand.CreateFromTask<Group>(DeleteGroup);
 
             _userService = userService;
             _groupService = groupService;
@@ -91,7 +93,40 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (chosenNewRole != null)
             {
-                //Send request through service
+                var response = await _groupService.UpdateUserRoleAsync(ActiveGroup.Id, user.Id, chosenNewRole.Value);
+
+                if (response.IsSuccessful)
+                {
+                    //Display confirmation message
+                    //Wait for notification to update or update right away?
+                }
+                else
+                {
+                    string errorMessage;
+                    switch (response.ErrorResponse.ErrorCode)
+                    {
+                        case "bad_id":
+                            errorMessage = "One of the ID's is in an invalid format.";
+                            break;
+                        case "bad_role":
+                            errorMessage = "New role unrecognized.";
+                            break;
+                        case "not_found_group":
+                            errorMessage = "Chosen group does not exist.";
+                            break;
+                        case "not_found":
+                            errorMessage = "User is not a member of the group.";
+                            break;
+                        case "last_admin":
+                            errorMessage = "User is the last admin of the group, and can't be demoted.";
+                            break;
+                        default:
+                            errorMessage = "Unknown error occured.";
+                            break;
+                    }
+
+                    //Display error message
+                }
             }
         }
 
@@ -105,7 +140,34 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (kickAccepted)
             {
-                //Send request through service
+                var response = await _groupService.RemoveUserAsync(ActiveGroup.Id, user.Id);
+
+                if (response.IsSuccessful)
+                {
+                    //Display confirmation message
+                    //Wait for notification to update or update right away?
+                }
+                else
+                {
+                    string errorMessage;
+                    switch (response.ErrorResponse.ErrorCode)
+                    {
+                        case "bad_id":
+                            errorMessage = "One of the ID's is in an invalid format.";
+                            break;
+                        case "not_found_group":
+                            errorMessage = "Chosen group does not exist.";
+                            break;
+                        case "not_found":
+                            errorMessage = "User is not a member of the group.";
+                            break;
+                        default:
+                            errorMessage = "Unknown error occured.";
+                            break;
+                    }
+
+                    //Display error message
+                }
             }
         }
 
@@ -120,7 +182,37 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (chosenUserId != null)
             {
-                //Send request through service
+                var response = await _groupService.InviteUserAsync(ActiveGroup.Id, chosenUserId.Value);
+
+                if (response.IsSuccessful)
+                {
+                    //Display confirmation message
+                    //Wait for notification to update or update right away?
+                }
+                else
+                {
+                    string errorMessage;
+                    switch (response.ErrorResponse.ErrorCode)
+                    {
+                        case "bad_id":
+                            errorMessage = "One of the ID's is in an invalid format.";
+                            break;
+                        case "not_found_group":
+                            errorMessage = "Chosen group does not exist.";
+                            break;
+                        case "not_found":
+                            errorMessage = "User is not a member of the group.";
+                            break;
+                        case "already_member":
+                            errorMessage = "User is already a member of the group.";
+                            break;
+                        default:
+                            errorMessage = "Unknown error occured.";
+                            break;
+                    }
+
+                    //Display error message
+                }
             }
         }
 
@@ -134,7 +226,72 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (leaveAccepted)
             {
-                //Send request through service
+                var response = await _groupService.RemoveUserAsync(group.Id, LoginResponse.User.Id);
+
+                if (response.IsSuccessful)
+                {
+                    //Display confirmation message
+                    //Wait for notification to update or update right away?
+                }
+                else
+                {
+                    string errorMessage;
+                    switch (response.ErrorResponse.ErrorCode)
+                    {
+                        case "bad_id":
+                            errorMessage = "One of the ID's is in an invalid format.";
+                            break;
+                        case "not_found_group":
+                            errorMessage = "Chosen group does not exist.";
+                            break;
+                        case "not_found":
+                            errorMessage = "User is not the member of the group.";
+                            break;
+                        default:
+                            errorMessage = "Unknown error occured.";
+                            break;
+                    }
+
+                    //Display error message
+                }
+            }
+        }
+
+        private async Task DeleteGroup(Group group)
+        {
+            if (ShowYesNoDialog == null)
+                return;
+
+            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to delete '{group.Name}'? This will delete all data related to this group.", "Delete group?");
+            var deleteAccepted = await ShowYesNoDialog.Handle(yesNoVm);
+
+            if (deleteAccepted)
+            {
+                var response = await _groupService.DeleteGroupAsync(group.Id);
+
+                if (response.IsSuccessful)
+                {
+                    //Display confirmation message
+                    //Wait for notification to update or update right away?
+                }
+                else
+                {
+                    string errorMessage;
+                    switch (response.ErrorResponse.ErrorCode)
+                    {
+                        case "bad_id":
+                            errorMessage = "Group ID is in an invalid format.";
+                            break;
+                        case "not_found":
+                            errorMessage = "Chosen group does not exist.";
+                            break;
+                        default:
+                            errorMessage = "Unknown error occured.";
+                            break;
+                    }
+
+                    //Display error message
+                }
             }
         }
     }
