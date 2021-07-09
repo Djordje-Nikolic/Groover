@@ -61,6 +61,11 @@ namespace Groover.AvaloniaUI.Services
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(type, token);
         }
 
+        public void RemoveAccessToken()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+
         private Uri MakeUri(Controller controller, string endpointMethod)
         {
             string uri = $"{controller}/{endpointMethod}";

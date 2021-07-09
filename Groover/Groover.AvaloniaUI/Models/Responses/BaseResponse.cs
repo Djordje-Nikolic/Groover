@@ -9,6 +9,7 @@ namespace Groover.AvaloniaUI.Models.Responses
 {
     public class BaseResponse
     {
+        public string? Message { get; set; }
         public bool IsSuccessful { get; set; }
         public List<string> ErrorCodes { get; set; }
         public ErrorResponse ErrorResponse { get; set; }

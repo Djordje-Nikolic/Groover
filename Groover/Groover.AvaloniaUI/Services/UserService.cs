@@ -42,5 +42,10 @@ namespace Groover.AvaloniaUI.Services
             queryParams.Add("username", username);
             return await this.SendRequestAsync<UserResponse>(queryParams, HttpMethod.Get, _controller, "getByUsername");
         }
+
+        public async Task LogoutAsync()
+        {
+            _apiService.RemoveAccessToken();
+        }
     }
 }

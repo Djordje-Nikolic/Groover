@@ -150,7 +150,7 @@ namespace Groover.BL.Services
 
             Group group = await _context.Groups.FindAsync(groupId);
             if (group == null)
-                throw new NotFoundException($"No group by id {groupId}.", "not_found");
+                throw new NotFoundException($"No group by id {groupId}.", "not_found_group");
 
             User user = await _context.Users.FindAsync(userId);
             if (user == null)
@@ -296,9 +296,26 @@ namespace Groover.BL.Services
 
             GroupRole groupRoleNew = (GroupRole)roleParseResult;
 
-            GroupUser groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
+            Group group = await _context.Groups
+                                .Where(g => g.Id == groupId)
+                                .Include(g => g.GroupUsers)
+                                .FirstOrDefaultAsync();
+            if (group == null)
+                throw new NotFoundException("Couldn't find the group.", "not_found_group");
+
+            ICollection<GroupUser> groupUsers = group.GroupUsers;
+            GroupUser groupUser = groupUsers.FirstOrDefault(gu => gu.UserId == userId);
             if (groupUser == null)
                 throw new NotFoundException("User is not a member of the group.", "not_found");
+
+            //Check if user is last admin, and is trying to demote himself
+            if (groupUser.GroupRole == GroupRole.Admin &&
+                groupRoleNew != GroupRole.Admin)
+            {
+                var numberOfAdmins = groupUsers.Count(gu => gu.GroupRole == GroupRole.Admin);
+                if (numberOfAdmins == 1)
+                    throw new BadRequestException("User is last admin, cannot demote.", "last_admin");
+            }
 
             groupUser.GroupRole = groupRoleNew;
             _context.GroupUsers.Update(groupUser);
