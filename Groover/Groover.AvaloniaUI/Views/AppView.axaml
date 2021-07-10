@@ -17,46 +17,56 @@
     <utils:AreEqualIntegersConverter x:Key="areEqualIntegersConverter" />
   </UserControl.Resources>
   <Grid ColumnDefinitions="64, *, 164" RowDefinitions="40, *, Auto" ShowGridLines="true" HorizontalAlignment="Stretch">
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Disabled"
-                Grid.Column="0" Grid.RowSpan="3">
-      <ItemsRepeater Items="{Binding UserGroups}" 
-                     Layout="{DynamicResource VerticalStackLayout}" 
-                     HorizontalAlignment="Stretch"
-                     VerticalAlignment="Stretch" 
-                     Margin="7,12,7,12"
-                     >
-        <ItemsRepeater.ItemTemplate>
-          <DataTemplate>
-            <Button Width="50" Height="50"
-                    ToolTip.Tip="{Binding Group.Name}"
-                    Command="{Binding ElementName=Root, Path=DataContext.SwitchGroupDisplay}"
-                    CommandParameter="{Binding Group.Id}"
-          assist:ButtonAssist.CornerRadius="50">
-              <Button.ContextMenu>
-                <ContextMenu>
-                  <MenuItem Header="Invite user" 
-                            Command="{Binding DataContext.InviteUserCommand, ElementName=Root}"
-                            CommandParameter="{Binding Group}"
-                            IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
-                  <MenuItem Header="Leave group"
-                            Command="{Binding DataContext.LeaveGroupCommand, ElementName=Root}"
-                            CommandParameter="{Binding Group}"></MenuItem>
-                  <MenuItem Header="Delete group"
-                            Command="{Binding DataContext.DeleteGroupCommand, ElementName=Root}"
-                            CommandParameter="{Binding Group}"
-                            IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
-                </ContextMenu>
-              </Button.ContextMenu>
-              <TextBlock Text="{Binding Group.Id}"
-                         HorizontalAlignment="Center"
-                         TextAlignment="Center"
-                         TextWrapping="Wrap"/>
-            </Button>
-          </DataTemplate>
-        </ItemsRepeater.ItemTemplate>
-      </ItemsRepeater>
-    </ScrollViewer>
+    <StackPanel Orientation="Vertical" Grid.Column="0" Grid.RowSpan="3"
+                HorizontalAlignment="Center" Margin="7,12,7,12">
+      <Button  Width="50" Height="50"
+                    ToolTip.Tip="Home"
+                    Command="{Binding ElementName=Root, Path=DataContext.SwitchToHomeCommand}"
+                    assist:ButtonAssist.CornerRadius="50">
+        <TextBlock Text="Home"
+                   HorizontalAlignment="Center"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"/>
+      </Button>
+      <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                    Margin="0,12,0,0">
+        <ItemsRepeater Items="{Binding UserGroups}"
+                       Layout="{DynamicResource VerticalStackLayout}"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch">
+          <ItemsRepeater.ItemTemplate>
+            <DataTemplate>
+              <Button Width="50" Height="50"
+                      ToolTip.Tip="{Binding Group.Name}"
+                      Command="{Binding ElementName=Root, Path=DataContext.SwitchGroupDisplay}"
+                      CommandParameter="{Binding Group.Id}"
+                      assist:ButtonAssist.CornerRadius="50">
+                <Button.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="Invite user"
+                              Command="{Binding DataContext.InviteUserCommand, ElementName=Root}"
+                              CommandParameter="{Binding Group}"
+                              IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
+                    <MenuItem Header="Leave group"
+                              Command="{Binding DataContext.LeaveGroupCommand, ElementName=Root}"
+                              CommandParameter="{Binding Group}"></MenuItem>
+                    <MenuItem Header="Delete group"
+                              Command="{Binding DataContext.DeleteGroupCommand, ElementName=Root}"
+                              CommandParameter="{Binding Group}"
+                              IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
+                  </ContextMenu>
+                </Button.ContextMenu>
+                <TextBlock Text="{Binding Group.Id}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"/>
+              </Button>
+            </DataTemplate>
+          </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
+      </ScrollViewer>
+    </StackPanel>  
     <ScrollViewer Grid.Column="2" Grid.Row="1" Grid.RowSpan="2"
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Disabled">
