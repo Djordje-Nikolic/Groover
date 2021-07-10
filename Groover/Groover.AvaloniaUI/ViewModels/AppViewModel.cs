@@ -39,6 +39,7 @@ namespace Groover.AvaloniaUI.ViewModels
         [Reactive]
         public bool IsActiveGroupAdmin { get; set; }
 
+        public ReactiveCommand<Unit, Unit> SwitchToHomeCommand { get; }
         public ReactiveCommand<int, Unit> SwitchGroupDisplay { get; }
         public ReactiveCommand<User, Unit> ChangeRoleCommand { get; }
         public ReactiveCommand<User, Unit> KickUserCommand { get; }
@@ -48,6 +49,7 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public AppViewModel(LoginResponse logResp, IUserService userService, IGroupService groupService)
         {
+            SwitchToHomeCommand = ReactiveCommand.CreateFromTask(SwitchToHome);
             SwitchGroupDisplay = ReactiveCommand.CreateFromTask<int>(SwitchGroup);
             ChangeRoleCommand = ReactiveCommand.CreateFromTask<User>(ChangeRole);
             KickUserCommand = ReactiveCommand.CreateFromTask<User>(KickUser);
@@ -79,6 +81,11 @@ namespace Groover.AvaloniaUI.ViewModels
 
             IsActiveGroupAdmin = selectedUg.GroupRole == "Admin";
             ActiveGroup = group;
+        }
+
+        public async Task SwitchToHome()
+        {
+
         }
 
         private async Task ChangeRole(User user)
