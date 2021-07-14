@@ -11,9 +11,9 @@
         Title="Groover.AvaloniaUI"
         WindowStartupLocation="CenterScreen">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>  
+  <Design.DataContext>
+      <vm:MainWindowViewModel/>
+  </Design.DataContext>
   <Panel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
     <views:AppView Name="mainView">
     </views:AppView>

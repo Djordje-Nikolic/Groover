@@ -17,19 +17,27 @@ namespace Groover.API.Models
             CreateMap<LoggedInDTO, LogInResponse>();
             CreateMap<RegisterRequest, RegisterDTO>();
             CreateMap<LogInRequest, LogInDTO>();
-            CreateMap<UserDTO, UserResponse>();
+            CreateMap<UserDTO, UserResponse>()
+                .ForMember(d => d.AvatarBase64, options =>
+                    options.MapFrom(s => s.AvatarImage != null ? Convert.ToBase64String(s.AvatarImage) : null));
 
             CreateMap<GroupUserDTO, GroupUserResponse>()
                 .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
             CreateMap<GroupUserDTO, UserGroupResponse>()
                 .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
 
-            CreateMap<UserDTO, UserLiteResponse>();
-            CreateMap<GroupDTO, GroupLiteResponse>();
+            CreateMap<UserDTO, UserLiteResponse>()
+                .ForMember(d => d.AvatarBase64, options =>
+                    options.MapFrom(s => s.AvatarImage != null ? Convert.ToBase64String(s.AvatarImage) : null));
+            CreateMap<GroupDTO, GroupLiteResponse>()
+                .ForMember(d => d.ImageBase64, options =>
+                    options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null));
             CreateMap<GroupUserDTO, GroupUserLiteResponse>()
                 .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));
 
-            CreateMap<GroupDTO, GroupResponse>();
+            CreateMap<GroupDTO, GroupResponse>()
+                .ForMember(d => d.ImageBase64, options =>
+                    options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null));
             CreateMap<CreateGroupRequest, GroupDTO>();
             CreateMap<UpdateGroupRequest, GroupDTO>();
             CreateMap<ConfirmEmailRequest, ConfirmEmailDTO>();

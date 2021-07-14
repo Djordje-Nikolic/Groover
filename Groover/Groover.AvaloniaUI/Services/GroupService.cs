@@ -26,6 +26,11 @@ namespace Groover.AvaloniaUI.Services
             return await this.SendRequestAsync<BaseResponse>(queryParams, HttpMethod.Delete, _controller, "delete");
         }
 
+        public async Task<byte[]> GetImageAsync(int groupId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<BaseResponse> InviteUserAsync(int groupId, int userId)
         {
             var queryParams = new Dictionary<string, string>();
@@ -42,6 +47,11 @@ namespace Groover.AvaloniaUI.Services
             return await this.SendRequestAsync<BaseResponse>(queryParams, HttpMethod.Patch, _controller, "removeUser");
         }
 
+        public async Task<BaseResponse> SetImageAsync(/* some image and group id*/)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<BaseResponse> UpdateUserRoleAsync(int groupId, int userId, GrooverGroupRole newRole)
         {
             var queryParams = new Dictionary<string, string>();
@@ -50,5 +60,7 @@ namespace Groover.AvaloniaUI.Services
             queryParams.Add("newRole", newRole.ToString());
             return await this.SendRequestAsync<BaseResponse>(queryParams, HttpMethod.Patch, _controller, "updateRole");
         }
+
+
     }
 }

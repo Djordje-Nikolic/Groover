@@ -7,6 +7,7 @@ using Groover.BL.Services.Interfaces;
 using Groover.BL.Utils;
 using Groover.DB.MySqlDb;
 using Groover.DB.MySqlDb.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -31,12 +32,14 @@ namespace Groover.BL.Services
         private readonly IUserTwoFactorTokenProvider<User> _inviteTokenProvider;
         private readonly IEmailSender _emailSender;
         private readonly UserManager<User> _userManager;
+        private readonly IImageProcessor _imageProcessor;
 
         public GroupService(GrooverDbContext context,
             IMapper mapper,
             ITokenProviderAccessor<User> tokenProviderAccessor,
             ILogger<GroupService> logger,
             IEmailSender emailSender,
+            IImageProcessor imageProcessor,
             UserManager<User> userManager)
         {
             this._tokenProviderAccessor = tokenProviderAccessor;
@@ -45,6 +48,7 @@ namespace Groover.BL.Services
             this._mapper = mapper;
             this._userManager = userManager;
             this._emailSender = emailSender;
+            this._imageProcessor = imageProcessor;
             this._inviteTokenProvider = _tokenProviderAccessor.GetTokenProvider(Constants.GroupInviteTokenProvider);
         }
 
@@ -86,6 +90,31 @@ namespace Groover.BL.Services
 
             var createdDTO = _mapper.Map<GroupDTO>(group);
             return createdDTO;
+        }
+
+        public async Task<GroupDTO> SetImage(int groupId, IFormFile imageFile)
+        {
+            if (groupId <= 0)
+                throw new BadRequestException("Invalid group id.", "bad_id");
+
+            var group = await _context.Groups
+                .Where(group => group.Id == groupId)
+                .Include(group => group.GroupUsers)
+                .ThenInclude(gu => gu.User)
+                .FirstOrDefaultAsync();
+
+            if (group == null)
+            {
+                throw new NotFoundException($"Group with id {groupId} not found.", "not_found");
+            }
+
+            var imageBytes = await this._imageProcessor.Process(imageFile);
+            group.Image = imageBytes;
+            _context.Groups.Update(group);
+            await _context.SaveChangesAsync();
+
+            var groupDto = this._mapper.Map<GroupDTO>(group);
+            return groupDto;
         }
 
         public async Task DeleteAsync(int id)

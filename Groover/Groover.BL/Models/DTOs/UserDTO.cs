@@ -11,6 +11,7 @@ namespace Groover.BL.Models.DTOs
         public int Id { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
+        public byte[] AvatarImage { get; set; }
         public ICollection<GroupUserDTO> UserGroups { get; set; }
     }
 }

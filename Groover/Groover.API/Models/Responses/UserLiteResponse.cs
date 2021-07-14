@@ -9,5 +9,6 @@ namespace Groover.API.Models.Responses
     {
         public int Id { get; set; }
         public string Username { get; set; }
+        public string AvatarBase64 { get; set; }
     }
 }

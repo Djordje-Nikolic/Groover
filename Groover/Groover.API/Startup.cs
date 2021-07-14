@@ -47,6 +47,7 @@ namespace Groover.API
             AddJwt(services);
 
             AddEmailService(services);
+            AddImageProcessing(services);
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGroupService, GroupService>();
@@ -117,6 +118,17 @@ namespace Groover.API
                 .Get<EmailConfiguration>();
             services.AddSingleton(emailConfig);
             services.AddScoped<IEmailSender, EmailSender>();
+
+            return services;
+        }
+
+        private IServiceCollection AddImageProcessing(IServiceCollection services)
+        {
+            var imageConfig = Configuration
+                .GetSection("ImageConfiguration")
+                .Get<ImageConfiguration>();
+            services.AddSingleton(imageConfig);
+            services.AddSingleton<IImageProcessor, ImageProcessor>();
 
             return services;
         }

@@ -34,10 +34,14 @@ namespace Groover.AvaloniaUI.ViewModels
         public List<UserGroup> UserGroups { get; set; }
 
         [Reactive]
-        public Group ActiveGroup { get; set; }
+        public List<ChatViewModel> ChatViewModels { get; set; }
 
-        [Reactive]
+        [ObservableAsProperty]
         public bool IsActiveGroupAdmin { get; set; }
+        [ObservableAsProperty]
+        public Group ActiveGroup { get; }
+        [Reactive]
+        public ChatViewModel ActiveChatViewModel { get; set; }
 
         public ReactiveCommand<Unit, Unit> SwitchToHomeCommand { get; }
         public ReactiveCommand<int, Unit> SwitchGroupDisplay { get; }
@@ -66,7 +70,19 @@ namespace Groover.AvaloniaUI.ViewModels
             if (logResp == null)
                 return;
 
+            //Set active group when chatviewmodel changes
+            this.WhenAnyValue(vm => vm.ActiveChatViewModel)
+                .Select(cvm => cvm?.UserGroup.Group)
+                .ToPropertyEx(this, x => x.ActiveGroup);
+
+            //Set active group isadmin
+            this.WhenAnyValue(vm => vm.ActiveChatViewModel)
+                .Where(cvm => cvm != null)
+                .Select(cvm => cvm.UserGroup.GroupRole == "Admin")
+                .ToPropertyEx(this, x => x.IsActiveGroupAdmin);
+
             UserGroups = logResp.User.UserGroups.ToList();
+            ChatViewModels = GenerateChatViewModels();
         }
 
         public async Task SwitchGroup(int groupIdToSelect)
@@ -79,13 +95,33 @@ namespace Groover.AvaloniaUI.ViewModels
             var group = selectedUg.Group;
             group.GroupUsers = group.GroupUsers.OrderByDescending(x => x, _groupRoleComparer).ToList();
 
-            IsActiveGroupAdmin = selectedUg.GroupRole == "Admin";
-            ActiveGroup = group;
+            //IsActiveGroupAdmin = selectedUg.GroupRole == "Admin";
+            //ActiveGroup = group;
+            ActiveChatViewModel = this.ChatViewModels.Find(vm => vm.UserGroup.Group == group);
         }
 
         public async Task SwitchToHome()
         {
+            //ActiveGroup = null;
+            ActiveChatViewModel = null;
+        }
 
+        private List<ChatViewModel> GenerateChatViewModels()
+        {
+            List<ChatViewModel> chatViewModels = new List<ChatViewModel>();
+            foreach (var userGroup in UserGroups)
+            {
+                var viewModel = new ChatViewModel();
+
+                //Set callbacks
+
+                //Set data
+                viewModel.InitializeData(LoginResponse.User, userGroup, _groupService);
+
+                chatViewModels.Add(viewModel);
+            }
+
+            return chatViewModels;
         }
 
         private async Task ChangeRole(User user)

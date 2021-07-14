@@ -3,8 +3,10 @@ using Groover.API.Models.Requests;
 using Groover.API.Models.Responses;
 using Groover.BL.Handlers.Requirements;
 using Groover.BL.Models.DTOs;
+using Groover.BL.Models.Exceptions;
 using Groover.BL.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -59,6 +61,18 @@ namespace Groover.API.Controllers
         }
 
         //Anyone
+        [HttpGet("getImage")]
+        public async Task<IActionResult> GetImage(int groupId)
+        {
+            _logger.LogInformation($"Attempting to retrieve the group image: {groupId}");
+
+            var groupDTO = await _groupService.GetGroupAsync(groupId);
+
+            _logger.LogInformation($"Successfully retrieved the group image: {groupId}");
+            return File(groupDTO.Image, "image/*");
+        }
+
+        //Anyone
         [HttpPost("create")]
         public async Task<IActionResult> Create(CreateGroupRequest createGroupRequest)
         {
@@ -93,6 +107,25 @@ namespace Groover.API.Controllers
             _logger.LogInformation($"Successfully deleted the group by id {id}.");
 
             return Ok(new { message = $"Successfully deleted the group by id {id}." });
+        }
+
+        //Admin
+        [HttpPatch("setImage")]
+        public async Task<IActionResult> SetImage([FromForm] SetGroupImageRequest request)
+        {
+            _logger.LogInformation($"Attempting to set an image for group: {request.GroupId}");
+
+            if (!await IsGroupAdminAsync(request.GroupId))
+            {
+                return Forbid();
+            }
+
+            var updatedGroup = await _groupService.SetImage(request.GroupId, request.ImageFile);
+            var response = this._autoMapper.Map<GroupResponse>(updatedGroup);
+
+            _logger.LogInformation($"Successfully set an image for group: {request.GroupId}");
+
+            return Ok(response);
         }
 
         //Admin

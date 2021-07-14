@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Groover.API.Controllers
@@ -41,6 +42,17 @@ namespace Groover.API.Controllers
 
             _logger.LogInformation($"Successfully retrieved the user: {username}");
             return Ok(response);
+        }
+
+        [HttpGet("getAvatar")]
+        public async Task<IActionResult> GetAvatar(int userId)
+        {
+            _logger.LogInformation($"Attempting to retrieve the avatar for the user: {userId}");
+
+            var userDTO = await _userService.GetUserAsync(userId);
+
+            _logger.LogInformation($"Successfully retrieved the avatar for the user: {userId}");
+            return File(userDTO.AvatarImage, "image/*");
         }
 
         [AllowAnonymous]
@@ -92,6 +104,23 @@ namespace Groover.API.Controllers
             await _userService.ConfirmEmailAsync(confirmModel);
 
             return Ok(new { message = "Confirmation successful. " });
+        }
+
+        [HttpPatch("setAvatar")]
+        public async Task<IActionResult> SetAvatar(IFormFile imageFile)
+        {
+            int? userId = GetUserId();
+            if (userId == null)
+                throw new UnauthorizedException("User id not set in claims");
+
+            _logger.LogInformation($"Attempting to set an avatar for user: {userId.Value}");
+
+            var updatedUser = await _userService.SetAvatar(userId.Value, imageFile);
+            var response = this._autoMapper.Map<UserResponse>(updatedUser);
+
+            _logger.LogInformation($"Successfully set an avator for user: {userId.Value}");
+
+            return Ok(response);
         }
 
         [AllowAnonymous]
@@ -236,6 +265,12 @@ namespace Groover.API.Controllers
         {
             //Test this
             return Url.Action(nameof(ConfirmEmail), "user", new { token, email} , Request.Scheme);
+        }
+
+        private int? GetUserId()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            return claim == null ? null : int.Parse(claim.Value);
         }
     }
 }
