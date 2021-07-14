@@ -5,68 +5,110 @@
              xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
              xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
              xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             xmlns:views="using:Groover.AvaloniaUI.Views"
              xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Groover.AvaloniaUI.Views.AppView"
              Name="Root">
   <UserControl.Resources>
     <StackLayout x:Key="VerticalStackLayout"
-                        Orientation="Vertical"
-                        Spacing="12"/>
+                        Orientation="Vertical"/>
     <utils:IsAdminConverter x:Key="isAdminConverter"/>
     <utils:AreEqualIntegersConverter x:Key="areEqualIntegersConverter" />
   </UserControl.Resources>
   <Grid ColumnDefinitions="64, *, 164" RowDefinitions="40, *, Auto" ShowGridLines="true" HorizontalAlignment="Stretch">
     <StackPanel Orientation="Vertical" Grid.Column="0" Grid.RowSpan="3"
-                HorizontalAlignment="Center" Margin="7,12,7,12">
-      <Button  Width="50" Height="50"
-                    ToolTip.Tip="Home"
-                    Command="{Binding ElementName=Root, Path=DataContext.SwitchToHomeCommand}"
-                    assist:ButtonAssist.CornerRadius="50">
-        <TextBlock Text="Home"
-                   HorizontalAlignment="Center"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap"/>
-      </Button>
+                HorizontalAlignment="Center" Margin="0,6,0,12">
+      <Panel HorizontalAlignment="Stretch" Width="52" Height="52" Margin="7,6,7,6" VerticalAlignment="Center">
+        <Ellipse Width="52" Height="52"
+                 StrokeThickness="2" Stroke="Red"
+                 IsVisible="{Binding ActiveGroup, Converter={x:Static ObjectConverters.IsNull}}">
+        </Ellipse>
+        <Button Width="50" Height="50"
+              ToolTip.Tip="Home"
+              Command="{Binding ElementName=Root, Path=DataContext.SwitchToHomeCommand}"
+              assist:ButtonAssist.CornerRadius="50">
+          <TextBlock Text="Home"
+                     HorizontalAlignment="Center"
+                     TextAlignment="Center"
+                     TextWrapping="Wrap"/>
+        </Button>
+      </Panel>
       <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
-                    Margin="0,12,0,0">
+                    Margin="0,0,0,0">
         <ItemsRepeater Items="{Binding UserGroups}"
                        Layout="{DynamicResource VerticalStackLayout}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch">
           <ItemsRepeater.ItemTemplate>
             <DataTemplate>
-              <Button Width="50" Height="50"
-                      ToolTip.Tip="{Binding Group.Name}"
-                      Command="{Binding ElementName=Root, Path=DataContext.SwitchGroupDisplay}"
-                      CommandParameter="{Binding Group.Id}"
-                      assist:ButtonAssist.CornerRadius="50">
-                <Button.ContextMenu>
-                  <ContextMenu>
-                    <MenuItem Header="Invite user"
-                              Command="{Binding DataContext.InviteUserCommand, ElementName=Root}"
-                              CommandParameter="{Binding Group}"
-                              IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
-                    <MenuItem Header="Leave group"
-                              Command="{Binding DataContext.LeaveGroupCommand, ElementName=Root}"
-                              CommandParameter="{Binding Group}"></MenuItem>
-                    <MenuItem Header="Delete group"
-                              Command="{Binding DataContext.DeleteGroupCommand, ElementName=Root}"
-                              CommandParameter="{Binding Group}"
-                              IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
-                  </ContextMenu>
-                </Button.ContextMenu>
-                <TextBlock Text="{Binding Group.Id}"
-                           HorizontalAlignment="Center"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap"/>
-              </Button>
+              <Panel HorizontalAlignment="Stretch" Width="52" Height="52" Margin="7,6,7,6" VerticalAlignment="Center">
+                <Ellipse Width="52" Height="52" StrokeThickness="2" Stroke="Red">
+                  <Ellipse.IsVisible>
+                    <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="false">
+                      <Binding Path="Group.Id" FallbackValue="-1" Mode="OneWay"></Binding>
+                      <Binding Path="DataContext.ActiveGroup.Id" FallbackValue="-2" ElementName="Root" Mode="OneWay"></Binding>
+                    </MultiBinding>
+                  </Ellipse.IsVisible>
+                </Ellipse>
+                <Button Width="50" Height="50"
+                        ToolTip.Tip="{Binding Group.Name}"
+                        Command="{Binding ElementName=Root, Path=DataContext.SwitchGroupDisplay}"
+                        CommandParameter="{Binding Group.Id}"
+                        assist:ButtonAssist.CornerRadius="50">
+                  <Button.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Invite user"
+                                Command="{Binding DataContext.InviteUserCommand, ElementName=Root}"
+                                CommandParameter="{Binding Group}"
+                                IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
+                      <MenuItem Header="Leave group"
+                                Command="{Binding DataContext.LeaveGroupCommand, ElementName=Root}"
+                                CommandParameter="{Binding Group}"></MenuItem>
+                      <MenuItem Header="Delete group"
+                                Command="{Binding DataContext.DeleteGroupCommand, ElementName=Root}"
+                                CommandParameter="{Binding Group}"
+                                IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
+                    </ContextMenu>
+                  </Button.ContextMenu>
+                  <TextBlock Text="{Binding Group.Id}"
+                             HorizontalAlignment="Center"
+                             TextAlignment="Center"
+                             TextWrapping="Wrap"/>
+                </Button>
+              </Panel>             
             </DataTemplate>
           </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>
       </ScrollViewer>
-    </StackPanel>  
+    </StackPanel>
+
+    <Carousel Grid.Column="1" Grid.Row="1" Grid.RowSpan="2"
+                Items="{Binding ChatViewModels}"
+                SelectedItem="{Binding ActiveChatViewModel, Mode=OneWay}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Margin="2">
+      <Carousel.ItemTemplate>
+        <DataTemplate>
+          <Panel HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch">
+            <views:ChatView DataContext="{Binding}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch">
+              <views:ChatView.IsVisible>
+                <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="false">
+                  <Binding Path="UserGroup.Group.Id" FallbackValue="-1" Mode="OneWay"></Binding>
+                  <Binding Path="DataContext.ActiveGroup.Id" FallbackValue="-2" ElementName="Root" Mode="OneWay"></Binding>
+                </MultiBinding>
+              </views:ChatView.IsVisible>
+            </views:ChatView>
+          </Panel>
+        </DataTemplate>
+      </Carousel.ItemTemplate>  
+    </Carousel>
+    
     <ScrollViewer Grid.Column="2" Grid.Row="1" Grid.RowSpan="2"
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Disabled">
@@ -90,7 +132,7 @@
                          VerticalAlignment="Center"
                          HorizontalAlignment="Center">
                   <Ellipse.Fill>
-                    <SolidColorBrush Color="Red"></SolidColorBrush>
+                    <ImageBrush Source="{Binding User.AvatarImage}"></ImageBrush>
                   </Ellipse.Fill>
                 </Ellipse>
                 <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding User.Username}"

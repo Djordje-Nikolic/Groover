@@ -13,9 +13,20 @@ namespace Groover.AvaloniaUI.Views
 {
     public partial class AppView : ReactiveUserControl<AppViewModel>
     {
+        private Panel chatContainerPanel;
+
         public AppView()
         {
             InitializeComponent();
+
+            //chatContainerPanel = this.FindControl<Panel>("ChatContainerPanel");
+
+            //this.WhenActivated(disposables =>
+            //{
+            //    this.WhenAny(v => v.ViewModel.ChatViewModels)
+
+
+            //});
         }
 
         private void InitializeComponent()

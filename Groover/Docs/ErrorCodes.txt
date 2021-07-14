@@ -54,3 +54,13 @@ Groover Group Service Error List:
 4 not_found_group
 5 last_admin
 6 already_member
+
+Groover Image Error Codes:
+
+1 too_wide
+2 too_tall
+3 too_narrow
+4 too_short
+5 too_big
+6 invalid_extension
+7 bad_format

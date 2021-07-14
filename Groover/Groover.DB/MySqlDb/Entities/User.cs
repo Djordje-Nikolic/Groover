@@ -11,5 +11,6 @@ namespace Groover.DB.MySqlDb.Entities
     {
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
         public virtual ICollection<GroupUser> UserGroups { get; set; }
+        public virtual byte[] AvatarImage { get; set; }
     }
 }

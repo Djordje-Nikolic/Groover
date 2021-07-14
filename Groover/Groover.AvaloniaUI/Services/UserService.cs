@@ -47,5 +47,15 @@ namespace Groover.AvaloniaUI.Services
         {
             _apiService.RemoveAccessToken();
         }
+
+        public async Task<byte[]> GetAvatarAsync(int userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<BaseResponse> SetAvatarAsync(/* Some image*/)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -19,6 +19,8 @@ using Groover.BL.Models.DTOs;
 using Groover.BL.Services.Interfaces;
 using Groover.BL.Handlers.Requirements;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http;
+using Groover.BL.Helpers;
 
 namespace Groover.BL.Services
 {
@@ -31,6 +33,7 @@ namespace Groover.BL.Services
         private readonly ILogger<UserService> _logger;
         private readonly IMapper _mapper;
         private readonly IEmailSender _emailSender;
+        private readonly IImageProcessor _imageProcessor;
 
         public UserService(GrooverDbContext context,
             SignInManager<User> signInManager,
@@ -38,6 +41,7 @@ namespace Groover.BL.Services
             IConfiguration config,
             IMapper mapper,
             IEmailSender emailSender,
+            IImageProcessor imageProcessor,
             ILogger<UserService> logger)
         {
             this._context = context;
@@ -46,7 +50,8 @@ namespace Groover.BL.Services
             this._configuration = config;
             this._logger = logger;
             this._mapper = mapper;
-            this._emailSender = emailSender;    
+            this._emailSender = emailSender;
+            this._imageProcessor = imageProcessor;
         }
 
         public async Task<ICollection<UserDTO>> GetUsersAsync()
@@ -67,6 +72,7 @@ namespace Groover.BL.Services
             var user = await _context.Users
                 .Where(user => user.Id == userId)
                 .Include(user => user.UserGroups)
+                    .ThenInclude(ug => ug.Group)
                 .FirstOrDefaultAsync();
 
             if (user == null)
@@ -87,6 +93,7 @@ namespace Groover.BL.Services
             var user = await _context.Users
                 .Where(user => user.UserName == username)
                 .Include(user => user.UserGroups)
+                    .ThenInclude(ug => ug.Group)
                 .FirstOrDefaultAsync();
 
             if (user == null)
@@ -130,7 +137,6 @@ namespace Groover.BL.Services
 
             user = await _context.Users
                 .Where(user => user.UserName == model.Username)
-                .Include(user => user.RefreshTokens)
                 .Include(user => user.UserGroups)
                     .ThenInclude(ug => ug.Group)
                     .ThenInclude(g => g.GroupUsers)
@@ -140,9 +146,9 @@ namespace Groover.BL.Services
             _logger.LogInformation($"User credentials approved. username: {model.Username}");
             string tokenString = await GenerateJwtToken(user);
             RefreshToken refreshToken = GenerateRefreshToken(ipAddress);
+            refreshToken.User = user;
 
-            user.RefreshTokens.Add(refreshToken);
-            _context.Users.Update(user);
+            _context.RefreshTokens.Add(refreshToken);
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"Tokens for user {model.Username} issued successfully.");
@@ -153,6 +159,33 @@ namespace Groover.BL.Services
             loginResp.RefreshToken = refreshToken.Token;
 
             return loginResp;
+        }
+
+        public async Task<UserDTO> SetAvatar(int userId, IFormFile imageFile)
+        {
+            if (userId <= 0)
+                throw new BadRequestException("Invalid user id.", "bad_id");
+
+            var user = await _context.Users
+                .Where(user => user.Id == userId)
+                .Include(user => user.UserGroups)
+                    .ThenInclude(ug => ug.Group)
+                    .ThenInclude(g => g.GroupUsers)
+                    .ThenInclude(gu => gu.User)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new NotFoundException($"User with id {userId} not found.", "not_found");
+            }
+
+            var imageBytes = await this._imageProcessor.Process(imageFile);
+            user.AvatarImage = imageBytes;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            var userDto = this._mapper.Map<UserDTO>(user);
+            return userDto;
         }
 
         public async Task RevokeRefreshTokenAsync(string token, string ipAddress)
@@ -440,5 +473,6 @@ namespace Groover.BL.Services
             model.Username = model.Username.Trim();
             model.Password = model.Password.Trim();
         }
+
     }
 }

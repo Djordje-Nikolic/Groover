@@ -10,9 +10,11 @@ namespace Groover.AvaloniaUI.Services.Interfaces
 {
     public interface IGroupService
     {
-        public Task<BaseResponse> DeleteGroupAsync(int groupId);
-        public Task<BaseResponse> InviteUserAsync(int groupId, int userId);
-        public Task<BaseResponse> RemoveUserAsync(int groupId, int userId);
-        public Task<BaseResponse> UpdateUserRoleAsync(int groupId, int userId, GrooverGroupRole newRole);
+        Task<BaseResponse> DeleteGroupAsync(int groupId);
+        Task<BaseResponse> InviteUserAsync(int groupId, int userId);
+        Task<BaseResponse> RemoveUserAsync(int groupId, int userId);
+        Task<BaseResponse> UpdateUserRoleAsync(int groupId, int userId, GrooverGroupRole newRole);
+        Task<byte[]> GetImageAsync(int groupId);
+        Task<BaseResponse> SetImageAsync(/* Some image and group id*/);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Groover.BL.Models.DTOs;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,5 +21,6 @@ namespace Groover.BL.Services.Interfaces
         Task<int> RevokeRefreshTokensAsync(int userId, string ipAddress);
         Task<LoggedInDTO> RefreshTokenAsync(string token, string ipAddress);
         Task<int> DeleteInactiveRefreshTokensAsync(DateTime? beforeDate);
+        Task<UserDTO> SetAvatar(int userId, IFormFile imageFile);
     }
 }
