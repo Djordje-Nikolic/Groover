@@ -24,6 +24,7 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
+        public Interaction<GroupEditDialogViewModel, Group?> ShowGroupEditDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
 
         [Reactive]
@@ -50,6 +51,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public ReactiveCommand<Group, Unit> InviteUserCommand { get; }
         public ReactiveCommand<Group, Unit> LeaveGroupCommand { get; }
         public ReactiveCommand<Group, Unit> DeleteGroupCommand { get; }
+        public ReactiveCommand<Group, Unit> EditGroupCommand { get; }
 
         public AppViewModel(LoginResponse logResp, IUserService userService, IGroupService groupService)
         {
@@ -60,6 +62,7 @@ namespace Groover.AvaloniaUI.ViewModels
             InviteUserCommand = ReactiveCommand.CreateFromTask<Group>(InviteUser);
             LeaveGroupCommand = ReactiveCommand.CreateFromTask<Group>(LeaveGroup);
             DeleteGroupCommand = ReactiveCommand.CreateFromTask<Group>(DeleteGroup);
+            EditGroupCommand = ReactiveCommand.CreateFromTask<Group>(EditGroup);
 
             _userService = userService;
             _groupService = groupService;
@@ -122,6 +125,20 @@ namespace Groover.AvaloniaUI.ViewModels
             }
 
             return chatViewModels;
+        }
+
+        private async Task EditGroup(Group group)
+        {
+            if (ShowGroupEditDialog == null)
+                return;
+
+            var vm = new GroupEditDialogViewModel("Edit group", groupToEdit: group);
+            var updatedGroup = await ShowGroupEditDialog.Handle(vm);
+
+            if (updatedGroup != null)
+            {
+                //Send request
+            }
         }
 
         private async Task ChangeRole(User user)
