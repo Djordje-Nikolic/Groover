@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Groover.AvaloniaUI.Models;
+using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Utils;
 using Groover.AvaloniaUI.ViewModels;
@@ -49,6 +50,10 @@ namespace Groover.AvaloniaUI.Views
                 .RegisterHandler(DoShowUserSearchDialogAsync)
                 .DisposeWith(disposables);
 
+                ViewModel.ShowGroupEditDialog
+                .RegisterHandler(DoShowGroupEditDialogAsync)
+                .DisposeWith(disposables);
+
                 this.WhenAnyValue(v => v.ViewModel.WelcomeDialogResult)
                 .Select(result => result?.AppViewModel)
                 .Do(vm => 
@@ -58,6 +63,7 @@ namespace Groover.AvaloniaUI.Views
                          vm.ShowYesNoDialog = ViewModel.ShowYesNoDialog;
                          vm.ShowGroupRoleDialog = ViewModel.ShowGroupRoleDialog;
                          vm.ShowUserSearchDialog = ViewModel.ShowUserSearchDialog;
+                         vm.ShowGroupEditDialog = ViewModel.ShowGroupEditDialog;
                      }
                  })
                 .BindTo(this, x => x._mainView.DataContext)
@@ -116,6 +122,15 @@ namespace Groover.AvaloniaUI.Views
             dialog.DataContext = interaction.Input;
 
             var result = await dialog.ShowDialog<int?>(this);
+            interaction.SetOutput(result);
+        }
+
+        private async Task DoShowGroupEditDialogAsync(InteractionContext<GroupEditDialogViewModel, Group?> interaction)
+        {
+            var dialog = new GroupEditDialogView();
+            dialog.DataContext = interaction.Input;
+
+            var result = await dialog.ShowDialog<Group?>(this);
             interaction.SetOutput(result);
         }
     }

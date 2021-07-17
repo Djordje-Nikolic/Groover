@@ -3,14 +3,16 @@ using System;
 using Groover.DB.MySqlDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Groover.DB.Migrations
 {
     [DbContext(typeof(GrooverDbContext))]
-    partial class GrooverDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210716194603_NoUniqueGroupName")]
+    partial class NoUniqueGroupName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,11 +32,9 @@ namespace Groover.DB.Migrations
                         .HasColumnType("longblob");
 
                     b.Property<string>("Name")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name");
 
                     b.ToTable("Groups");
                 });

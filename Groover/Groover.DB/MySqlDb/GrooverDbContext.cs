@@ -35,8 +35,7 @@ namespace Groover.DB.MySqlDb
 
             builder.Entity<Group>()
                 .HasIndex(g => g.Name)
-                .IsUnique();
-
+                .IsUnique(false);
         }
     }
 }
