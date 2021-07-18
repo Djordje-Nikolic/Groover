@@ -8,6 +8,7 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="Avalonia" Version="0.10.6" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
@@ -19,6 +20,9 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\Dialogs\GroupDialogView.axaml.cs">
+      <DependentUpon>GroupDialogView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\WelcomeWindow.axaml.cs">
       <DependentUpon>WelcomeWindow.axaml</DependentUpon>
     </Compile>

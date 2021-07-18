@@ -1,4 +1,7 @@
-﻿using Avalonia.Media.Imaging;
+﻿using AutoMapper;
+using Avalonia.Media.Imaging;
+using Groover.AvaloniaUI.Models.Requests;
+using Groover.AvaloniaUI.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models.DTOs
 {
-    public class User
+    public class User : IDeepCopy<User>
     {
         public int Id { get; set; }
         public string Username { get; set; }
@@ -58,6 +61,13 @@ namespace Groover.AvaloniaUI.Models.DTOs
 
                 return _avatarImage;
             }
+        }
+
+        public User DeepCopy(IMapper mapper)
+        {
+            UserRequest serialized = mapper.Map<UserRequest>(this);
+            User copy = mapper.Map<User>(serialized);
+            return copy;
         }
     }
 }

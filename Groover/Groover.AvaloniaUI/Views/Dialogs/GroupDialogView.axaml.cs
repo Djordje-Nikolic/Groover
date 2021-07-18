@@ -4,8 +4,10 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Groover.AvaloniaUI.ViewModels;
 using Groover.AvaloniaUI.ViewModels.Dialogs;
 using ReactiveUI;
+using ReactiveUI.Validation.Extensions;
 using System;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -13,12 +15,16 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Views.Dialogs
 {
-    public class GroupEditDialogView : ReactiveWindow<GroupEditDialogViewModel>
+    public class GroupDialogView : ReactiveWindow<BaseGroupViewModel>
     {
-        public GroupEditDialogView()
+        private ProgressBar _progressBar;
+        private TextBlock _imageError;
+        public GroupDialogView()
         {
             this.InitializeComponent();
 
+            _progressBar = this.FindControl<ProgressBar>("isUpdating");
+            _imageError = this.FindControl<TextBlock>("imageError");
             var imageButton = this.FindControl<Button>("chooseImageButton");
             imageButton.AddHandler(PointerPressedEvent, onImageButtonPointerReleased, handledEventsToo: true);
 #if DEBUG
@@ -27,11 +33,18 @@ namespace Groover.AvaloniaUI.Views.Dialogs
 
             this.WhenActivated(disposables =>
             {
-                ViewModel.YesCommand.Subscribe(x => this.Close(x)).DisposeWith(disposables);
+                ViewModel.YesCommand.Subscribe(x => { if (x.IsSuccessful) this.Close(x); }).DisposeWith(disposables);
                 ViewModel.NoCommand.Subscribe(x => this.Close(x)).DisposeWith(disposables);
 
                 ViewModel.ShowChooseImageDialog
                     .RegisterHandler(DoShowChooseImageDialogAsync)
+                    .DisposeWith(disposables);
+
+                this.WhenAnyObservable(v => v.ViewModel.YesCommand.IsExecuting)
+                    .BindTo(this, x => x._progressBar.IsVisible)
+                    .DisposeWith(disposables);
+
+                this.BindValidation(ViewModel, vm => vm.GroupImage, v => v._imageError.Text)
                     .DisposeWith(disposables);
             });
         }

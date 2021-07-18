@@ -54,6 +54,8 @@ Groover Group Service Error List:
 4 not_found_group
 5 last_admin
 6 already_member
+7 undefined							Data undefined
+8 failed_validation
 
 Groover Image Error Codes:
 

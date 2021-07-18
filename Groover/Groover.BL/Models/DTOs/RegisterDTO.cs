@@ -9,11 +9,11 @@ namespace Groover.BL.Models.DTOs
 {
     public class RegisterDTO
     {
-		[Required]
+		[Required(AllowEmptyStrings =false)]
 		public string Username { get; set; }
-		[Required]
+		[Required(AllowEmptyStrings = false)]
 		public string Password { get; set; }
-		[Required]
+		[Required(AllowEmptyStrings = false)]
 		public string Email { get; set; }
 	}
 }

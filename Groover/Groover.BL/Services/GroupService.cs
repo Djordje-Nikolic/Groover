@@ -290,13 +290,10 @@ namespace Groover.BL.Services
             if (group == null)
                 throw new NotFoundException($"No group by id {groupDTO.Id}.", "not_found");
 
-            if (await _context.Groups.AnyAsync(g => g.Name == groupDTO.Name && 
-                                                    g.Id != groupDTO.Id) == true)
-                throw new BadRequestException("Group with that name already exists.", "duplicate_name");
-
             Group groupNew = _mapper.Map<Group>(groupDTO);
             group.Name = groupNew.Name;
             group.Description = groupNew.Description;
+            group.Image = groupNew.Image;
 
             _context.Groups.Update(group);
             await _context.SaveChangesAsync();

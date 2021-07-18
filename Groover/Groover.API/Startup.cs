@@ -40,8 +40,8 @@ namespace Groover.API
             services.AddControllers()
                 .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
-            //string identityConnectionString = Configuration.GetConnectionString("grooverMySql");
-            string identityConnectionString = Configuration.GetConnectionString("grooverMySqlPC");
+            string identityConnectionString = Configuration.GetConnectionString("grooverMySql");
+            //string identityConnectionString = Configuration.GetConnectionString("grooverMySqlPC");
             services.AddIdentityDatabase(identityConnectionString);
             AutoMigrator.ApplyMigrations(identityConnectionString);
 
