@@ -1,4 +1,6 @@
-﻿using ReactiveUI;
+﻿using AutoMapper;
+using Groover.AvaloniaUI.Services.Interfaces;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Splat;
 using System;
@@ -42,6 +44,14 @@ namespace Groover.AvaloniaUI.ViewModels
                 .Select(val => new Unit())
                 .Delay(TimeSpan.FromSeconds(3))
                 .InvokeCommand(helperCommand);
+        }
+
+        public AppViewModel GenerateAppViewModel()
+        {
+            return new AppViewModel(LoginViewModel?.Response,
+                                                    Locator.Current.GetRequiredService<IUserService>(),
+                                                    Locator.Current.GetRequiredService<IGroupService>(),
+                                                    Locator.Current.GetRequiredService<IMapper>());
         }
     }
 }

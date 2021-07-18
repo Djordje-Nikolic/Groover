@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using Avalonia.Media.Imaging;
-using Groover.AvaloniaUI.Models.Requests;
-using Groover.AvaloniaUI.Utils;
+﻿using Avalonia.Media.Imaging;
+using Groover.AvaloniaUI.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Groover.AvaloniaUI.Models.DTOs
+namespace Groover.AvaloniaUI.Models.Responses
 {
-    public class Group : IDeepCopy<Group>
+    public class GroupResponse : BaseResponse
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -23,7 +21,7 @@ namespace Groover.AvaloniaUI.Models.DTOs
         private Bitmap? _image;
         public string ImageBase64
         {
-            get 
+            get
             {
                 return ImageBytes != null ? Convert.ToBase64String(ImageBytes) : null;
             }
@@ -64,13 +62,6 @@ namespace Groover.AvaloniaUI.Models.DTOs
 
                 return _image;
             }
-        }
-
-        public Group DeepCopy(IMapper mapper)
-        {
-            GroupRequest serialized = mapper.Map<GroupRequest>(this);
-            Group copy = mapper.Map<Group>(serialized);
-            return copy;
         }
     }
 }

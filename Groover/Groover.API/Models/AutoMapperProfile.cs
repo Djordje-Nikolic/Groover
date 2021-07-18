@@ -38,8 +38,12 @@ namespace Groover.API.Models
             CreateMap<GroupDTO, GroupResponse>()
                 .ForMember(d => d.ImageBase64, options =>
                     options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null));
-            CreateMap<CreateGroupRequest, GroupDTO>();
-            CreateMap<UpdateGroupRequest, GroupDTO>();
+            CreateMap<CreateGroupRequest, GroupDTO>()
+                .ForMember(d => d.Image, options => 
+                    options.MapFrom(s => !string.IsNullOrWhiteSpace(s.ImageBase64) ? Convert.FromBase64String(s.ImageBase64): null));
+            CreateMap<UpdateGroupRequest, GroupDTO>()
+                .ForMember(d => d.Image, options =>
+                    options.MapFrom(s => !string.IsNullOrWhiteSpace(s.ImageBase64) ? Convert.FromBase64String(s.ImageBase64) : null)); ;
             CreateMap<ConfirmEmailRequest, ConfirmEmailDTO>();
             CreateMap<RefreshTokenDTO, RefreshTokenResponse>();
         }

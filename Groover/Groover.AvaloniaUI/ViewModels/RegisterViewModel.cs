@@ -20,7 +20,7 @@ namespace Groover.AvaloniaUI.ViewModels
     public class RegisterViewModel : ReactiveValidationObject
     {
         private IUserService _userService;
-        private GrooverConstants _userParameters;
+        private UserConstants _userParameters;
 
         [ObservableAsProperty]
         public bool RegisteredSuccessfully { get; }
@@ -48,7 +48,7 @@ namespace Groover.AvaloniaUI.ViewModels
         private ReactiveCommand<RegisterResponse, List<string>> GenerateErrorMessages { get; }
         private ReactiveCommand<RegisterResponse, string> GenerateSuccessMessage { get; }
 
-        public RegisterViewModel(IUserService userService, GrooverConstants userParameters)
+        public RegisterViewModel(IUserService userService, UserConstants userParameters)
         {
             _userService = userService;
             _userParameters = userParameters;

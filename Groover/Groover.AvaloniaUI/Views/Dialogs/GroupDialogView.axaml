@@ -7,7 +7,7 @@
         xmlns:dvms="clr-namespace:Groover.AvaloniaUI.ViewModels.Dialogs"
         xmlns:dvs="using:Groover.AvaloniaUI.Views.Dialogs"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="Groover.AvaloniaUI.Views.Dialogs.GroupEditDialogView"
+        x:Class="Groover.AvaloniaUI.Views.Dialogs.GroupDialogView"
         WindowStartupLocation="CenterOwner"
         SystemDecorations="None"
         Title="{Binding TitleText}"
@@ -21,28 +21,49 @@
   </Window.Styles>
   <styles:Card CornerRadius="20">
     <StackPanel HorizontalAlignment="Center"
-            Width="200"
+            Width="300"
             VerticalAlignment="Stretch"
             Orientation="Vertical">
       <TextBlock Name="titleTextBox" HorizontalAlignment="Left" 
                  Classes="Headline6" Margin="0,0,0,20" 
                  Text="{Binding TitleText}" TextWrapping="Wrap" 
                  TextAlignment="Center">Placeholder title</TextBlock>
-      <StackPanel Name="bodyContainer" Width="{Binding #titleTextBox.Width, Mode=OneWay}">
+      <ProgressBar Name="isUpdating" Margin="0,0,0,7" Classes="Circle" Width="40" MinWidth="40" Height="40" MinHeight="40" HorizontalAlignment="Center" IsIndeterminate="True" />
+      <ListBox Items="{Binding Errors}" 
+               IsVisible="{Binding Errors, Converter={x:Static ObjectConverters.IsNotNull}}" 
+               Margin="0,0,0,7"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox.Styles>
+          <Style Selector="ListBoxItem">
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="0,2,0,2"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsHitTestVisible" Value="False" />
+          </Style>
+        </ListBox.Styles>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" Margin="0" Padding="0" Foreground="Red" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <StackPanel Name="bodyContainer"
+                  IsEnabled="{Binding !#isUpdating.IsVisible}"
+                  Width="{Binding #titleTextBox.Width, Mode=OneWay}">
         <TextBox UseFloatingWatermark="True"
              Classes="Outline Dense"
              assist:TextFieldAssist.Label="Name"
-             Text="{Binding Group.Name}"/>
+             Text="{Binding GroupName}"/>
         <TextBox UseFloatingWatermark="True" 
                  Classes="Outline Dense" 
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
-                 Text="{Binding Group.Description}"
+                 Text="{Binding GroupDesc}"
                  assist:TextFieldAssist.Label="Description"/>
         <Button Name="chooseImageButton"
                 assist:ButtonAssist.CornerRadius="5" 
                 Height="200" Width="200" Classes="Light Outline"
-                Margin="0,10,0,0"
+                Margin="0,20,0,0"
                 ToolTip.ShowDelay="1000">
           <ToolTip.Tip>
             <TextBlock>Left click to choose a different image, right click to clear</TextBlock>
@@ -56,23 +77,9 @@
                      Classes="ButtonText" FontSize="16" 
                      FontWeight="Thin">Choose group image</TextBlock>
         </Button>
-        <ListBox Margin="0,10,0,10" Items="{Binding ImageErrors}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-          <ListBox.Styles>
-            <Style Selector="ListBoxItem">
-              <Setter Property="Margin" Value="0"/>
-              <Setter Property="Padding" Value="0,2,0,2"/>
-              <Setter Property="Focusable" Value="False"/>
-              <Setter Property="IsHitTestVisible" Value="False" />
-            </Style>
-          </ListBox.Styles>
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Text="{Binding}" Margin="0" Padding="0" Foreground="Red" HorizontalAlignment="Center"  TextAlignment="Center" TextWrapping="Wrap"/>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+        <TextBlock Name="imageError" Foreground="Red" Margin="0,5,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
       </StackPanel>
-      <StackPanel Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
         <Button assist:ButtonAssist.CornerRadius="5" Command="{Binding YesCommand}" Classes="Flat" Margin="0,0,5,0">
           <TextBlock Classes="ButtonText" Text="{Binding YesButtonText}">ACCEPT</TextBlock>
         </Button>

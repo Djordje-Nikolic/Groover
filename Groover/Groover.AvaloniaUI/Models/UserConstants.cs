@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models
 {
-    public class GrooverConstants
+    public class UserConstants
     {
         public TimeSpan LockoutLength { get; set; }
         public int MaxLoginAttempts { get; set; }
@@ -18,7 +18,7 @@ namespace Groover.AvaloniaUI.Models
         public bool PasswordRequireUppercase { get; set; }
         public bool PasswordRequireNonAlphanumeric { get; set; }
         
-        public GrooverConstants(NameValueCollection nvC)
+        public UserConstants(NameValueCollection nvC)
         {
             if (nvC == null)
                 throw new ArgumentNullException();

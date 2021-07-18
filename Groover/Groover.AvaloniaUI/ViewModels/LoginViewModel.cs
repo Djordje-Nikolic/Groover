@@ -19,7 +19,7 @@ namespace Groover.AvaloniaUI.ViewModels
     public class LoginViewModel : ReactiveValidationObject
     {
         private IUserService _userService;
-        private GrooverConstants _userParameters;
+        private UserConstants _userParameters;
 
         [ObservableAsProperty]
         public bool LoggedInSuccessfully { get; }
@@ -43,7 +43,7 @@ namespace Groover.AvaloniaUI.ViewModels
         private ReactiveCommand<LoginResponse, List<string>> GenerateErrorMessages { get; }
         private ReactiveCommand<LoginResponse, string> GenerateSuccessMessage { get; }
 
-        public LoginViewModel(IUserService userService, GrooverConstants userParameters)
+        public LoginViewModel(IUserService userService, UserConstants userParameters)
         {
             _userService = userService;
             _userParameters = userParameters;

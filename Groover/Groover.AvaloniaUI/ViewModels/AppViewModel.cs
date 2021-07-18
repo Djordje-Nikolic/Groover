@@ -1,4 +1,5 @@
-﻿using Groover.AvaloniaUI.Models;
+﻿using AutoMapper;
+using Groover.AvaloniaUI.Models;
 using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
@@ -21,10 +22,11 @@ namespace Groover.AvaloniaUI.ViewModels
         private GroupRoleComparer _groupRoleComparer = new GroupRoleComparer();
         private IUserService _userService;
         private IGroupService _groupService;
+        private IMapper _mapper;
 
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
-        public Interaction<GroupEditDialogViewModel, Group?> ShowGroupEditDialog { get; set; }
+        public Interaction<BaseGroupViewModel, GroupResponse?> ShowGroupEditDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
 
         [Reactive]
@@ -52,8 +54,9 @@ namespace Groover.AvaloniaUI.ViewModels
         public ReactiveCommand<Group, Unit> LeaveGroupCommand { get; }
         public ReactiveCommand<Group, Unit> DeleteGroupCommand { get; }
         public ReactiveCommand<Group, Unit> EditGroupCommand { get; }
+        public ReactiveCommand<Unit, Unit> CreateGroupCommand { get; }
 
-        public AppViewModel(LoginResponse logResp, IUserService userService, IGroupService groupService)
+        public AppViewModel(LoginResponse logResp, IUserService userService, IGroupService groupService, IMapper mapper)
         {
             SwitchToHomeCommand = ReactiveCommand.CreateFromTask(SwitchToHome);
             SwitchGroupDisplay = ReactiveCommand.CreateFromTask<int>(SwitchGroup);
@@ -63,9 +66,11 @@ namespace Groover.AvaloniaUI.ViewModels
             LeaveGroupCommand = ReactiveCommand.CreateFromTask<Group>(LeaveGroup);
             DeleteGroupCommand = ReactiveCommand.CreateFromTask<Group>(DeleteGroup);
             EditGroupCommand = ReactiveCommand.CreateFromTask<Group>(EditGroup);
+            CreateGroupCommand = ReactiveCommand.CreateFromTask(CreateGroup);
 
             _userService = userService;
             _groupService = groupService;
+            _mapper = mapper;
 
             LoginResponse = logResp;
 
@@ -132,12 +137,27 @@ namespace Groover.AvaloniaUI.ViewModels
             if (ShowGroupEditDialog == null)
                 return;
 
-            var vm = new GroupEditDialogViewModel("Edit group", groupToEdit: group);
-            var updatedGroup = await ShowGroupEditDialog.Handle(vm);
+            var deepCopiedGroup = group.DeepCopy(this._mapper);
+            var vm = new GroupEditDialogViewModel(_groupService, _mapper, groupToEdit: deepCopiedGroup);
+            var groupResponse = await ShowGroupEditDialog.Handle(vm);
 
-            if (updatedGroup != null)
+            if (groupResponse != null)
             {
-                //Send request
+                //Await update? Or force update
+            }
+        }
+
+        private async Task CreateGroup()
+        {
+            if (ShowGroupEditDialog == null)
+                return;
+
+            var vm = new GroupCreateDialogViewModel(_groupService, _mapper);
+            var groupResponse = await ShowGroupEditDialog.Handle(vm);
+
+            if (groupResponse != null)
+            {
+                //Await update? Or force update
             }
         }
 

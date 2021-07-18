@@ -1,4 +1,5 @@
 ﻿using Groover.AvaloniaUI.Models;
+using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
 using System;
@@ -50,6 +51,16 @@ namespace Groover.AvaloniaUI.Services
         public async Task<BaseResponse> SetImageAsync(/* some image and group id*/)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<GroupResponse> UpdateGroupAsync(GroupRequest groupRequest)
+        {
+            return await this.SendRequestAsync<GroupRequest, GroupResponse>(groupRequest, HttpMethod.Put, _controller, "update");
+        }
+
+        public async Task<GroupResponse> CreateGroupAsync(GroupRequest groupRequest)
+        {
+            return await this.SendRequestAsync<GroupRequest, GroupResponse>(groupRequest, HttpMethod.Post, _controller, "create");
         }
 
         public async Task<BaseResponse> UpdateUserRoleAsync(int groupId, int userId, GrooverGroupRole newRole)

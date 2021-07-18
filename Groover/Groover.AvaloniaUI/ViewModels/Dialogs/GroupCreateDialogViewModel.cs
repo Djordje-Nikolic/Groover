@@ -1,39 +1,28 @@
-﻿using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Media.Imaging;
+﻿using AutoMapper;
 using Groover.AvaloniaUI.Models.DTOs;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using ReactiveUI.Validation.Extensions;
-using ReactiveUI.Validation.Helpers;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
-using AutoMapper;
-using Groover.AvaloniaUI.Models.Requests;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.ViewModels.Dialogs
 {
-    public class GroupEditDialogViewModel : BaseGroupViewModel
+    public class GroupCreateDialogViewModel : BaseGroupViewModel
     {
-        public GroupEditDialogViewModel(IGroupService groupService, 
-            IMapper mapper,
-            Group groupToEdit) : base("Edit group", groupService, mapper, groupToEdit)
+        public GroupCreateDialogViewModel(IGroupService groupService, IMapper mapper) 
+            : base("Create group", groupService, mapper, new Group())
         {
-            YesButtonText = "Update group";
+            YesButtonText = "Create group";
         }
-        
+
         public override async Task<GroupResponse?> ExecuteOperation()
         {
             GroupRequest groupRequest = this._mapper.Map<GroupRequest>(Group);
-            var response = await this._groupService.UpdateGroupAsync(groupRequest);
+            var response = await this._groupService.CreateGroupAsync(groupRequest);
 
             if (response.IsSuccessful)
                 return response;

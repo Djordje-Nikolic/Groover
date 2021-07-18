@@ -78,9 +78,7 @@ namespace Groover.AvaloniaUI.Views
             {
                 WelcomeDialogResult res = new WelcomeDialogResult()
                 {
-                    AppViewModel = new AppViewModel(this.ViewModel.LoginViewModel?.Response, 
-                                                    Locator.Current.GetRequiredService<IUserService>(),
-                                                    Locator.Current.GetRequiredService<IGroupService>()),
+                    AppViewModel = this.ViewModel.GenerateAppViewModel(),
                     ExitApp = !this.ViewModel.LoginViewModel?.LoggedInSuccessfully ?? true
                 };
                 this.Close(res);

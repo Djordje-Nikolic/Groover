@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Specialized;
+using AutoMapper;
 
 namespace Groover.AvaloniaUI
 {
@@ -22,8 +23,11 @@ namespace Groover.AvaloniaUI
             var apiConfig = new ApiConfiguration(ConfigurationManager.GetSection("apiSettings") as NameValueCollection);
             services.RegisterConstant<IApiConfiguration>(apiConfig);
 
-            var identityConfig = new GrooverConstants(ConfigurationManager.GetSection("identitySettings") as NameValueCollection);
-            services.RegisterConstant<GrooverConstants>(identityConfig);
+            var identityConfig = new UserConstants(ConfigurationManager.GetSection("identitySettings") as NameValueCollection);
+            services.RegisterConstant<UserConstants>(identityConfig);
+
+            var imageConfig = new ImageConstants(ConfigurationManager.GetSection("imageSettings") as NameValueCollection);
+            services.RegisterConstant<ImageConstants>(imageConfig);
 
             services.RegisterLazySingleton<IApiService>(() => new ApiService(
                 resolver.GetRequiredService<IApiConfiguration>()));
@@ -36,15 +40,18 @@ namespace Groover.AvaloniaUI
             services.Register<IUserService>(() => new UserService(
                 resolver.GetRequiredService<IApiService>()));
 
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
+            services.Register<IMapper>(() => new Mapper(config));
+
             //ViewModels
             services.Register<MainWindowViewModel>(() => new MainWindowViewModel());
             services.Register<WelcomeViewModel>(() => new WelcomeViewModel());
             services.Register<LoginViewModel>(() => new LoginViewModel(
                 resolver.GetRequiredService<IUserService>(),
-                resolver.GetRequiredService<GrooverConstants>()));
+                resolver.GetRequiredService<UserConstants>()));
             services.Register<RegisterViewModel>(() => new RegisterViewModel(
                 resolver.GetRequiredService<IUserService>(),
-                resolver.GetRequiredService<GrooverConstants>()));
+                resolver.GetRequiredService<UserConstants>()));
         }
 
         public static TService GetRequiredService<TService>(this IReadonlyDependencyResolver resolver)

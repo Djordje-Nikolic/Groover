@@ -125,12 +125,12 @@ namespace Groover.AvaloniaUI.Views
             interaction.SetOutput(result);
         }
 
-        private async Task DoShowGroupEditDialogAsync(InteractionContext<GroupEditDialogViewModel, Group?> interaction)
+        private async Task DoShowGroupEditDialogAsync(InteractionContext<BaseGroupViewModel, GroupResponse?> interaction)
         {
-            var dialog = new GroupEditDialogView();
+            var dialog = new GroupDialogView();
             dialog.DataContext = interaction.Input;
 
-            var result = await dialog.ShowDialog<Group?>(this);
+            var result = await dialog.ShowDialog<GroupResponse?>(this);
             interaction.SetOutput(result);
         }
     }
