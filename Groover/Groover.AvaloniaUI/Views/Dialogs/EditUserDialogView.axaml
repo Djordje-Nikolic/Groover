@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,7 +7,7 @@
         xmlns:dvms="clr-namespace:Groover.AvaloniaUI.ViewModels.Dialogs"
         xmlns:dvs="using:Groover.AvaloniaUI.Views.Dialogs"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="Groover.AvaloniaUI.Views.Dialogs.GroupDialogView"
+        x:Class="Groover.AvaloniaUI.Views.Dialogs.EditUserDialogView"
         WindowStartupLocation="CenterOwner"
         SystemDecorations="None"
         Title="{Binding TitleText}"
@@ -24,13 +24,13 @@
             Width="300"
             VerticalAlignment="Stretch"
             Orientation="Vertical">
-      <TextBlock Name="titleTextBox" HorizontalAlignment="Left" 
-                 Classes="Headline6" Margin="0,0,0,20" 
-                 Text="{Binding TitleText}" TextWrapping="Wrap" 
+      <TextBlock Name="titleTextBox" HorizontalAlignment="Left"
+                 Classes="Headline6" Margin="0,0,0,20"
+                 Text="{Binding TitleText}" TextWrapping="Wrap"
                  TextAlignment="Center">Placeholder title</TextBlock>
       <ProgressBar Name="isUpdating" Margin="0,0,0,7" Classes="Circle" Width="40" MinWidth="40" Height="40" MinHeight="40" HorizontalAlignment="Center" IsIndeterminate="True" />
-      <ListBox Items="{Binding Errors}" 
-               IsVisible="{Binding Errors, Converter={x:Static ObjectConverters.IsNotNull}}" 
+      <ListBox Items="{Binding Errors}"
+               IsVisible="{Binding Errors, Converter={x:Static ObjectConverters.IsNotNull}}"
                Margin="0,0,0,7"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <ListBox.Styles>
@@ -51,17 +51,21 @@
                   IsEnabled="{Binding !#isUpdating.IsVisible}"
                   Width="{Binding #titleTextBox.Width, Mode=OneWay}">
         <TextBox UseFloatingWatermark="True"
-             Classes="Outline Dense"
-             assist:TextFieldAssist.Label="Name"
-             Text="{Binding GroupName}"/>
-        <TextBox UseFloatingWatermark="True" 
-                 Classes="Outline Dense" 
-                 AcceptsReturn="True"
-                 TextWrapping="Wrap"
-                 Text="{Binding GroupDesc}"
-                 assist:TextFieldAssist.Label="Description"/>
+                 Classes="Outline Dense"
+                 assist:TextFieldAssist.Label="Username"
+                 Text="{Binding Username}"/>
+        <TextBox UseFloatingWatermark="True"
+                 Classes="Outline Dense revealPasswordButton Body2"
+                 assist:TextFieldAssist.Label="Password"
+                 PasswordChar="*"
+                 Text="{Binding Password}"/>
+        <TextBox UseFloatingWatermark="True"
+                 Classes="Outline Dense revealPasswordButton Body2"
+                 assist:TextFieldAssist.Label="Confirm password"
+                 PasswordChar="*"
+                 Text="{Binding ConfirmPassword}"/>
         <Button Name="chooseImageButton"
-                assist:ButtonAssist.CornerRadius="200" 
+                assist:ButtonAssist.CornerRadius="200"
                 Height="200" Width="200" Classes="Light Outline"
                 Margin="0,10,0,0"
                 ToolTip.ShowDelay="400">
@@ -71,13 +75,13 @@
           <Panel>
             <Ellipse Height="200" Width="200">
               <Ellipse.Fill>
-                <ImageBrush Source="{Binding GroupImage}" Stretch="UniformToFill"></ImageBrush>
+                <ImageBrush Source="{Binding AvatarImage}" Stretch="UniformToFill"></ImageBrush>
               </Ellipse.Fill>
             </Ellipse>
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-           IsVisible="{Binding GroupImage, Converter={x:Static ObjectConverters.IsNull}}"
-           Classes="ButtonText" FontSize="16"
-           FontWeight="Thin">Choose group image</TextBlock>
+                       IsVisible="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNull}}"
+                       Classes="ButtonText" FontSize="16"
+                       FontWeight="Thin">Choose user image</TextBlock>
           </Panel>
         </Button>
         <TextBlock Name="imageError" Foreground="Red" Margin="0,5,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>

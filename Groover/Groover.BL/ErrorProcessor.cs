@@ -16,7 +16,7 @@ namespace Groover.BL
 			string clientErrors = "";
 			foreach (var error in identityErrors)
 			{
-				logger.LogWarning($"Registration error: {error.Description}");
+				logger.LogWarning($"Identity errors: {error.Description}");
 				devErrors += error.Description;
 				clientErrors += error.Code;
 				if (identityErrors.Last() != error)
@@ -26,8 +26,8 @@ namespace Groover.BL
 				}
 			}
 
-			logger.LogWarning("Registration failed.");
-			throw new BadRequestException("Registration errors: " + devErrors, clientErrors);
+			logger.LogWarning("Identity check failed.");
+			throw new BadRequestException("Identity errors: " + devErrors, clientErrors);
 		}
 
 		public static void Process(IEnumerable<string> invalidFields, ILogger logger)

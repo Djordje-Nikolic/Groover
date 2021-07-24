@@ -73,6 +73,7 @@ namespace Groover.BL.Services
                 throw new BadRequestException("Group with that name already exists.", "duplicate_name");
 
             Group group = _mapper.Map<Group>(groupDTO);
+            group.ImagePath = _imageProcessor.GetDefaultGroupImage();
             GroupUser groupUser = new GroupUser();
             groupUser.Group = group;
             groupUser.User = user;
@@ -108,8 +109,25 @@ namespace Groover.BL.Services
                 throw new NotFoundException($"Group with id {groupId} not found.", "not_found");
             }
 
-            var imageBytes = await this._imageProcessor.Process(imageFile);
-            group.Image = imageBytes;
+            var imageBytes = await this._imageProcessor.ProcessAsync(imageFile);
+            if (imageBytes != group.Image)
+            {
+                if (!string.IsNullOrWhiteSpace(group.ImagePath))
+                {
+                    this._imageProcessor.DeleteImage(group.ImagePath);
+                }
+
+                if (imageBytes != null)
+                {
+                    var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
+                    group.ImagePath = imagePath;
+                }
+                else
+                {
+                    group.ImagePath = this._imageProcessor.GetDefaultGroupImage();
+                }
+            }
+
             _context.Groups.Update(group);
             await _context.SaveChangesAsync();
 
@@ -293,7 +311,25 @@ namespace Groover.BL.Services
             Group groupNew = _mapper.Map<Group>(groupDTO);
             group.Name = groupNew.Name;
             group.Description = groupNew.Description;
-            group.Image = groupNew.Image;
+
+            var imageBytes = await this._imageProcessor.CheckAsync(groupDTO.Image);
+            if (imageBytes != group.Image)
+            {
+                if (!string.IsNullOrWhiteSpace(group.ImagePath))
+                {
+                    this._imageProcessor.DeleteImage(group.ImagePath);
+                }
+
+                if (imageBytes != null)
+                {
+                    var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
+                    group.ImagePath = imagePath;
+                }
+                else
+                {
+                    group.ImagePath = this._imageProcessor.GetDefaultGroupImage();
+                }
+            }
 
             _context.Groups.Update(group);
             await _context.SaveChangesAsync();

@@ -20,6 +20,9 @@ namespace Groover.API.Models
             CreateMap<UserDTO, UserResponse>()
                 .ForMember(d => d.AvatarBase64, options =>
                     options.MapFrom(s => s.AvatarImage != null ? Convert.ToBase64String(s.AvatarImage) : null));
+            CreateMap<UpdateUserRequest, UserDTO>()
+                .ForMember(d => d.AvatarImage, options =>
+                    options.MapFrom(s => !string.IsNullOrWhiteSpace(s.AvatarBase64) ? Convert.FromBase64String(s.AvatarBase64) : null));
 
             CreateMap<GroupUserDTO, GroupUserResponse>()
                 .ForMember(d => d.GroupRole, options => options.MapFrom(s => s.GroupRole.ToString()));

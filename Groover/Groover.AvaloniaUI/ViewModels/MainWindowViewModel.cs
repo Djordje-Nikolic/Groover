@@ -17,6 +17,7 @@ namespace Groover.AvaloniaUI.ViewModels
         //Change this to return some ViewModel if necessary
         public Interaction<WelcomeViewModel, WelcomeDialogResult?> ShowWelcomeDialog { get; set; }
         public Interaction<BaseGroupViewModel, GroupResponse?> ShowGroupEditDialog { get; set; }
+        public Interaction<EditUserDialogViewModel, UserResponse?> ShowUserEditDialog { get; set; }
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
@@ -32,6 +33,7 @@ namespace Groover.AvaloniaUI.ViewModels
             ShowGroupRoleDialog = new Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?>();
             ShowUserSearchDialog = new Interaction<ChooseUserDialogViewModel, int?>();
             ShowGroupEditDialog = new Interaction<BaseGroupViewModel, GroupResponse?>();
+            ShowUserEditDialog = new Interaction<EditUserDialogViewModel, UserResponse?>();
 
             WelcomeDialogCommand = ReactiveCommand.CreateFromTask(async () =>
             {

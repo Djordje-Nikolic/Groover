@@ -66,6 +66,11 @@ namespace Groover.AvaloniaUI.Services
             _httpClient.DefaultRequestHeaders.Authorization = null;
         }
 
+        public void CleanRefreshTokens()
+        {
+            //Find a way to do this
+        }
+
         private Uri MakeUri(Controller controller, string endpointMethod)
         {
             string uri = $"{controller}/{endpointMethod}";

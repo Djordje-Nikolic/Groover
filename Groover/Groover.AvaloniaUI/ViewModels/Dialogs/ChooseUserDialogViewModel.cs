@@ -54,7 +54,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
             TitleText = "Invite user";
             YesButtonText = "SEND INVITE";
             NoButtonText = "CANCEL";
-            UsernameId = -1;
+            UsernameId = null;
 
             _userService = userService;
             _currentUsers = currentUsers ?? new List<User>();
@@ -66,7 +66,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
             NoCommand = ReactiveCommand.Create<Unit, int?>(x => null);
             CheckCommand = ReactiveCommand.CreateFromTask<string, int?>(x => CheckUsername(x), this.WhenAnyValue(vm => vm.UsernameId)
                                                                                      .Select(val => val == null));
-
+            
             CheckCommand.BindTo(this, x => x.UsernameId);
         }
 

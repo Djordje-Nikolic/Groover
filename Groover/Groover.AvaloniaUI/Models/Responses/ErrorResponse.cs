@@ -11,6 +11,6 @@ namespace Groover.AvaloniaUI.Models.Responses
         public string Error { get; set; }
         public string ErrorCode { get; set; }
         public string ErrorValue { get; set; }
-        public List<string> ErrorCodes { get { return ErrorCode.Split(" ").ToList(); } }
+        public List<string> ErrorCodes { get { return ErrorCode?.Split(" ").ToList() ?? new List<string>(); } }
     }
 }

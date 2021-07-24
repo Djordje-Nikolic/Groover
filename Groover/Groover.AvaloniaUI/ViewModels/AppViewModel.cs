@@ -27,6 +27,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
         public Interaction<BaseGroupViewModel, GroupResponse?> ShowGroupEditDialog { get; set; }
+        public Interaction<EditUserDialogViewModel, UserResponse?> ShowUserEditDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
 
         [Reactive]
@@ -55,6 +56,8 @@ namespace Groover.AvaloniaUI.ViewModels
         public ReactiveCommand<Group, Unit> DeleteGroupCommand { get; }
         public ReactiveCommand<Group, Unit> EditGroupCommand { get; }
         public ReactiveCommand<Unit, Unit> CreateGroupCommand { get; }
+        public ReactiveCommand<Unit, bool> LogoutCommand { get; }
+        public ReactiveCommand<User, Unit> EditUserCommand { get; }
 
         public AppViewModel(LoginResponse logResp, IUserService userService, IGroupService groupService, IMapper mapper)
         {
@@ -67,6 +70,8 @@ namespace Groover.AvaloniaUI.ViewModels
             DeleteGroupCommand = ReactiveCommand.CreateFromTask<Group>(DeleteGroup);
             EditGroupCommand = ReactiveCommand.CreateFromTask<Group>(EditGroup);
             CreateGroupCommand = ReactiveCommand.CreateFromTask(CreateGroup);
+            EditUserCommand = ReactiveCommand.CreateFromTask<User>(EditUser);
+            LogoutCommand = ReactiveCommand.CreateFromTask<bool>(Logout);
 
             _userService = userService;
             _groupService = groupService;
@@ -210,12 +215,48 @@ namespace Groover.AvaloniaUI.ViewModels
             }
         }
 
+        private async Task EditUser(User user)
+        {
+            if (ShowUserEditDialog == null)
+                return;
+
+            var deepCopiedUser = user.DeepCopy(this._mapper);
+            var vm = new EditUserDialogViewModel("Edit User", _userService, _mapper, deepCopiedUser);
+            var userResponse = await ShowUserEditDialog.Handle(vm);
+
+            if (userResponse != null)
+            {
+                //Await update? Or force update
+            }
+        }
+
+        private async Task<bool> Logout()
+        {
+            if (ShowYesNoDialog == null)
+                return false;
+
+            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to logout?", "Logout");
+            var logoutAccepted = await ShowYesNoDialog.Handle(yesNoVm);
+
+            if (logoutAccepted)
+            {
+                UserGroups = null;
+                ActiveChatViewModel = null;
+                ChatViewModels = null;
+                LoginResponse = null;
+                _userService.Logout();
+                return true;
+            }
+            else
+                return false;
+        }
+
         private async Task KickUser(User user)
         {
             if (ShowYesNoDialog == null)
                 return;
 
-            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to kick user '{user.Username}' from the group?", "Kick user?");
+            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to kick user '{user.Username}' from the group?", "Kick user");
             var kickAccepted = await ShowYesNoDialog.Handle(yesNoVm);
 
             if (kickAccepted)
@@ -262,7 +303,7 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (chosenUserId != null)
             {
-                var response = await _groupService.InviteUserAsync(ActiveGroup.Id, chosenUserId.Value);
+                var response = await _groupService.InviteUserAsync(group.Id, chosenUserId.Value);
 
                 if (response.IsSuccessful)
                 {
@@ -301,7 +342,7 @@ namespace Groover.AvaloniaUI.ViewModels
             if (ShowYesNoDialog == null)
                 return;
 
-            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to leave '{group.Name}'?", "Leave group?");
+            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to leave '{group.Name}'?", "Leave group");
             var leaveAccepted = await ShowYesNoDialog.Handle(yesNoVm);
 
             if (leaveAccepted)
@@ -342,7 +383,7 @@ namespace Groover.AvaloniaUI.ViewModels
             if (ShowYesNoDialog == null)
                 return;
 
-            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to delete '{group.Name}'? This will delete all data related to this group.", "Delete group?");
+            var yesNoVm = new YesNoDialogViewModel($"Are you sure you want to delete '{group.Name}'? This will delete all data related to this group.", "Delete group");
             var deleteAccepted = await ShowYesNoDialog.Handle(yesNoVm);
 
             if (deleteAccepted)

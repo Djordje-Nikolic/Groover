@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ namespace Groover.BL.Models
         public int MaxWidth { get; set; }
         public int MinHeight { get; set; }
         public int MaxHeight { get; set; }
-        public double MaxSizeInMb { get; set; }
         public string AllowedExtensions { get; set; }
         public List<string> AllowedExtensionsList 
         { 
@@ -23,6 +23,8 @@ namespace Groover.BL.Models
                     .ToList(); 
             } 
         }
+
+        public double MaxSizeInMb { get; set; }
         public double MaxSizeInBytes
         {
             get
@@ -30,5 +32,9 @@ namespace Groover.BL.Models
                 return (double)MaxSizeInMb * 1024 * 1024;
             }
         }
+
+        public string DefaultUserImagePath { get; set; }
+        public string DefaultGroupImagePath { get; set; }
+        public string ImagesDirectoryPath { get; set; }
     }
 }

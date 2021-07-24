@@ -15,6 +15,7 @@ namespace Groover.BL.Models
         {
             CreateMap<RegisterDTO, User>();
             CreateMap<User, UserDTO>();
+            CreateMap<UserDTO, User>();
             CreateMap<Group, GroupDTO>();
             CreateMap<GroupDTO, Group>();
             CreateMap<GroupUser, GroupUserDTO>();
