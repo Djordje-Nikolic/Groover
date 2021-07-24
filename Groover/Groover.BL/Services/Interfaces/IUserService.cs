@@ -15,6 +15,7 @@ namespace Groover.BL.Services.Interfaces
         Task<LoggedInDTO> LogInAsync(LogInDTO model, string ipAddress);
         Task ConfirmEmailAsync(ConfirmEmailDTO model);
         Task<RegisteredDTO> RegisterAsync(RegisterDTO model);
+        Task<UserDTO> UpdateUserAsync(UserDTO model);
         Task SendConfirmationEmailAsync(string confirmationUrl, UserDTO user);
         Task RevokeRefreshTokenAsync(string token, string ipAddress);
         Task<int> RevokeRefreshTokensAsync(DateTime? beforeDate, string ipAddress);

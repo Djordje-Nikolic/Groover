@@ -31,6 +31,12 @@ namespace Groover.AvaloniaUI.Services
             return response;
         }
 
+        public void Logout()
+        {
+            this._apiService.RemoveAccessToken();
+            this._apiService.CleanRefreshTokens();
+        }
+
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
             return await this.SendRequestAsync<RegisterRequest, RegisterResponse>(request, HttpMethod.Post, _controller, "register");
@@ -56,6 +62,11 @@ namespace Groover.AvaloniaUI.Services
         public async Task<BaseResponse> SetAvatarAsync(/* Some image*/)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<UserResponse> UpdateUserAsync(UserRequest request)
+        {
+            return await this.SendRequestAsync<UserRequest, UserResponse>(request, HttpMethod.Put, _controller, "update");
         }
     }
 }

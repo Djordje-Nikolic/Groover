@@ -55,6 +55,19 @@ namespace Groover.API.Controllers
             return File(userDTO.AvatarImage, "image/*");
         }
 
+        [HttpPut("update")]
+        public async Task<IActionResult> Update([FromBody] UpdateUserRequest updateUserRequest)
+        {
+            _logger.LogInformation($"Attempting to update user with id {updateUserRequest.Id}");
+
+            var updateModel = this._autoMapper.Map<UserDTO>(updateUserRequest);
+            var updatedUser = await _userService.UpdateUserAsync(updateModel);
+            _logger.LogInformation($"Update succeeded for user with id {updateUserRequest.Id}.");
+
+            var response = _autoMapper.Map<UserResponse>(updatedUser);
+            return Ok(response);
+        }
+
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> LogIn([FromBody] LogInRequest logInRequest)

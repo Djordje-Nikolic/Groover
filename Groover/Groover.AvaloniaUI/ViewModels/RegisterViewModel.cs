@@ -120,6 +120,9 @@ namespace Groover.AvaloniaUI.ViewModels
                 string matchMessage;
                 switch (code)
                 {
+                    case "undefined":
+                        matchMessage = "Registration data undefined.";
+                        break;
                     case "InvalidUserName":
                         matchMessage = "Invalid username format.";
                         break;
@@ -154,7 +157,7 @@ namespace Groover.AvaloniaUI.ViewModels
                         matchMessage = "An error has occured.";
                         break;
                     default:
-                        matchMessage = "Error logging in.";
+                        matchMessage = "Error registering the user.";
                         break;
                 }
                 messages.Add(matchMessage);

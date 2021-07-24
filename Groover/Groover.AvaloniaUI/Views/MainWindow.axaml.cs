@@ -46,6 +46,10 @@ namespace Groover.AvaloniaUI.Views
                 .RegisterHandler(DoShowGroupRoleDialogAsync)
                 .DisposeWith(disposables);
 
+                ViewModel.ShowUserEditDialog
+                .RegisterHandler(DoShowUserEditDialogAsync)
+                .DisposeWith(disposables);
+
                 ViewModel.ShowUserSearchDialog
                 .RegisterHandler(DoShowUserSearchDialogAsync)
                 .DisposeWith(disposables);
@@ -53,6 +57,8 @@ namespace Groover.AvaloniaUI.Views
                 ViewModel.ShowGroupEditDialog
                 .RegisterHandler(DoShowGroupEditDialogAsync)
                 .DisposeWith(disposables);
+
+                //this._mainView.LogoutCommand.Subscribe(x => ShowWelcomeDialog());
 
                 this.WhenAnyValue(v => v.ViewModel.WelcomeDialogResult)
                 .Select(result => result?.AppViewModel)
@@ -64,6 +70,12 @@ namespace Groover.AvaloniaUI.Views
                          vm.ShowGroupRoleDialog = ViewModel.ShowGroupRoleDialog;
                          vm.ShowUserSearchDialog = ViewModel.ShowUserSearchDialog;
                          vm.ShowGroupEditDialog = ViewModel.ShowGroupEditDialog;
+                         vm.ShowUserEditDialog = ViewModel.ShowUserEditDialog;
+                         vm.LogoutCommand.Subscribe(x =>
+                         {
+                             if (x == true)
+                                 ShowWelcomeDialog();
+                         }).DisposeWith(disposables);
                      }
                  })
                 .BindTo(this, x => x._mainView.DataContext)
@@ -80,6 +92,11 @@ namespace Groover.AvaloniaUI.Views
         }
 
         private void DoOnOpen(object? sender, EventArgs e)
+        {
+            ShowWelcomeDialog();
+        }
+
+        private void ShowWelcomeDialog()
         {
             this.ViewModel.WelcomeDialogCommand.Execute().Subscribe();
         }
@@ -131,6 +148,15 @@ namespace Groover.AvaloniaUI.Views
             dialog.DataContext = interaction.Input;
 
             var result = await dialog.ShowDialog<GroupResponse?>(this);
+            interaction.SetOutput(result);
+        }
+
+        private async Task DoShowUserEditDialogAsync(InteractionContext<EditUserDialogViewModel, UserResponse?> interaction)
+        {
+            var dialog = new EditUserDialogView();
+            dialog.DataContext = interaction.Input;
+
+            var result = await dialog.ShowDialog<UserResponse?>(this);
             interaction.SetOutput(result);
         }
     }

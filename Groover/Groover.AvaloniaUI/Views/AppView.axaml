@@ -16,7 +16,7 @@
     <utils:IsAdminConverter x:Key="isAdminConverter"/>
     <utils:AreEqualIntegersConverter x:Key="areEqualIntegersConverter" />
   </UserControl.Resources>
-  <Grid ColumnDefinitions="64, *, 164" RowDefinitions="40, *, Auto" ShowGridLines="true" HorizontalAlignment="Stretch">
+  <Grid ColumnDefinitions="64, *, 164" RowDefinitions="55, *, Auto" ShowGridLines="true" HorizontalAlignment="Stretch">
     <StackPanel Orientation="Vertical" Grid.Column="0" Grid.RowSpan="3"
                 HorizontalAlignment="Center" Margin="0,6,0,12">
       <Panel HorizontalAlignment="Stretch" Width="52" Height="52" Margin="7,6,7,6" VerticalAlignment="Center">
@@ -53,6 +53,7 @@
                   </Ellipse.IsVisible>
                 </Ellipse>
                 <Button Width="50" Height="50"
+                        Classes="Flat"
                         ToolTip.Tip="{Binding Group.Name}"
                         Command="{Binding ElementName=Root, Path=DataContext.SwitchGroupDisplay}"
                         CommandParameter="{Binding Group.Id}"
@@ -76,10 +77,13 @@
                                 IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
                     </ContextMenu>
                   </Button.ContextMenu>
-                  <TextBlock Text="{Binding Group.Id}"
-                             HorizontalAlignment="Center"
-                             TextAlignment="Center"
-                             TextWrapping="Wrap"/>
+                  <Ellipse Height="50" Width="50"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center">
+                    <Ellipse.Fill>
+                      <ImageBrush Stretch="UniformToFill" Source="{Binding Group.Image}"></ImageBrush>
+                    </Ellipse.Fill>
+                  </Ellipse>
                 </Button>
               </Panel>             
             </DataTemplate>
@@ -87,13 +91,29 @@
         </ItemsRepeater>
       </ScrollViewer>
     </StackPanel>
-
+    <Panel Grid.Column="1" Grid.Row="1" Grid.RowSpan="2"
+           HorizontalAlignment="Stretch"
+           VerticalAlignment="Stretch"
+           IsVisible="{Binding ActiveChatViewModel, Converter={x:Static ObjectConverters.IsNull}}">
+      <Border Padding="15,10,15,10" BorderThickness="3" BorderBrush="Aqua">
+        <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
+          <Label Margin="0,5,0,5">Group Controls</Label>
+          <styles:Card HorizontalAlignment="Stretch" Padding="20">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+              <Button Classes="Light" Command="{Binding CreateGroupCommand}">
+                Create New Group
+              </Button>
+            </StackPanel>
+          </styles:Card>
+        </StackPanel>
+      </Border>
+    </Panel>
     <Carousel Grid.Column="1" Grid.Row="1" Grid.RowSpan="2"
                 Items="{Binding ChatViewModels}"
                 SelectedItem="{Binding ActiveChatViewModel, Mode=OneWay}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                Margin="2">
+                IsVisible="{Binding ActiveChatViewModel, Converter={x:Static ObjectConverters.IsNotNull}}">
       <Carousel.ItemTemplate>
         <DataTemplate>
           <Panel HorizontalAlignment="Stretch"
@@ -101,18 +121,44 @@
             <views:ChatView DataContext="{Binding}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch">
-              <views:ChatView.IsVisible>
-                <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="false">
-                  <Binding Path="UserGroup.Group.Id" FallbackValue="-1" Mode="OneWay"></Binding>
-                  <Binding Path="DataContext.ActiveGroup.Id" FallbackValue="-2" ElementName="Root" Mode="OneWay"></Binding>
-                </MultiBinding>
-              </views:ChatView.IsVisible>
             </views:ChatView>
           </Panel>
         </DataTemplate>
       </Carousel.ItemTemplate>  
     </Carousel>
-    
+    <Border Grid.Row="0" DataContext="{Binding LoginResponse}" Grid.Column="2">
+      <Button Classes="Flat" HorizontalContentAlignment="Left">
+        <Grid Margin="4,0,0,4"
+              ColumnDefinitions="40,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+          <Ellipse Grid.Column="0"
+                   Height="35" Width="35"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center">
+            <Ellipse.Fill>
+              <ImageBrush Stretch="UniformToFill" Source="{Binding User.AvatarImage, FallbackValue=null}"></ImageBrush>
+            </Ellipse.Fill>
+          </Ellipse>
+          <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding User.Username}"
+               VerticalAlignment="Center"
+               HorizontalAlignment="Left"
+               TextWrapping="NoWrap">
+          </TextBlock>
+        </Grid>
+        <Button.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Edit user"
+                      Command="{Binding DataContext.EditUserCommand, ElementName=Root}"
+                      CommandParameter="{Binding User}">
+            </MenuItem>
+            <MenuItem Header="Logout"
+                      Command="{Binding DataContext.LogoutCommand, ElementName=Root}">
+            </MenuItem>
+          </ContextMenu>
+        </Button.ContextMenu>
+      </Button>
+    </Border>
     <ScrollViewer Grid.Column="2" Grid.Row="1" Grid.RowSpan="2"
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Disabled">
@@ -136,7 +182,7 @@
                          VerticalAlignment="Center"
                          HorizontalAlignment="Center">
                   <Ellipse.Fill>
-                    <ImageBrush Source="{Binding User.AvatarImage}"></ImageBrush>
+                    <ImageBrush Stretch="UniformToFill" Source="{Binding User.AvatarImage}"></ImageBrush>
                   </Ellipse.Fill>
                 </Ellipse>
                 <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding User.Username}"

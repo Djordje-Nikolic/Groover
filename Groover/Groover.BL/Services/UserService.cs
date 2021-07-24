@@ -60,7 +60,7 @@ namespace Groover.BL.Services
 
             _logger.LogInformation("Successfully fetched all the users in the database.");
 
-            var userDTOs = _mapper.Map<List<UserDTO>>(users);
+            var userDTOs = _mapper.Map<ICollection<UserDTO>>(users);
             return userDTOs;
         }
 
@@ -102,6 +102,69 @@ namespace Groover.BL.Services
             }
 
             _logger.LogInformation($"Successfully found the user with username {user.UserName}.");
+            var userDTO = _mapper.Map<UserDTO>(user);
+            return userDTO;
+        }
+
+        public async Task<UserDTO> UpdateUserAsync(UserDTO model)
+        {
+            if (model == null)
+                throw new BadRequestException("User data undefined.", "undefined");
+
+            DTOValidator<UserDTO> validator = new DTOValidator<UserDTO>();
+            validator.Validate(model);
+            if (validator.IsValid == false)
+                ErrorProcessor.Process(validator.ValidationResults, _logger);
+
+            Preprocess(model);
+            var user = await _context.Users
+                .Where(user => user.Id == model.Id)
+                .FirstOrDefaultAsync();
+            if (user == null)
+                throw new NotFoundException($"User with id {model.Id} not found.", "not_found");
+
+            if (user.UserName != model.Username)
+            {
+                var duplicateUser = await _userManager.FindByNameAsync(model.Username);
+                if (duplicateUser != null)
+                    throw new BadRequestException($"Username '{model.Username}' is already taken.", "DuplicateUserName");
+            }
+
+            //Update things that can be updated
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+                if (!result.Succeeded)
+                    ErrorProcessor.Process(result.Errors, _logger);
+            }
+
+            user = await _userManager.FindByIdAsync(model.Id.ToString());
+            var userNew = _mapper.Map<User>(model);
+            user.UserName = userNew.UserName;
+
+            //Process and save image if needed
+            var imageBytes = await this._imageProcessor.CheckAsync(model.AvatarImage);
+            if (imageBytes != user.AvatarImage)
+            {
+                if (!string.IsNullOrWhiteSpace(user.AvatarImagePath))
+                {
+                    this._imageProcessor.DeleteImage(user.AvatarImagePath);
+                }
+
+                if (imageBytes != null)
+                {
+                    var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
+                    user.AvatarImagePath = imagePath;
+                }
+                else
+                {
+                    user.AvatarImagePath = this._imageProcessor.GetDefaultGroupImage();
+                }
+            }
+
+            await _userManager.UpdateAsync(user);
+
             var userDTO = _mapper.Map<UserDTO>(user);
             return userDTO;
         }
@@ -179,8 +242,25 @@ namespace Groover.BL.Services
                 throw new NotFoundException($"User with id {userId} not found.", "not_found");
             }
 
-            var imageBytes = await this._imageProcessor.Process(imageFile);
-            user.AvatarImage = imageBytes;
+            var imageBytes = await this._imageProcessor.ProcessAsync(imageFile);
+            if (imageBytes != user.AvatarImage)
+            {
+                if (!string.IsNullOrWhiteSpace(user.AvatarImagePath))
+                {
+                    this._imageProcessor.DeleteImage(user.AvatarImagePath);
+                }
+
+                if (imageBytes != null)
+                {
+                    var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
+                    user.AvatarImagePath = imagePath;
+                }
+                else
+                {
+                    user.AvatarImagePath = this._imageProcessor.GetDefaultGroupImage();
+                }
+            }
+
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
@@ -348,13 +428,20 @@ namespace Groover.BL.Services
 
         public async Task<RegisteredDTO> RegisterAsync(RegisterDTO model)
         {
+            if (model == null)
+                throw new BadRequestException("User data undefined.", "undefined");
+
             DTOValidator<RegisterDTO> validator = new DTOValidator<RegisterDTO>();
             validator.Validate(model);
             if (validator.IsValid == false)
                 ErrorProcessor.Process(validator.ValidationResults, _logger);
 
             Preprocess(model);
+            if (!EmailValidator.IsValid(model.Email))
+                throw new BadRequestException($"Email invalid: {model.Email}.", "InvalidEmail");
+
             User user = _mapper.Map<User>(model);
+            user.AvatarImagePath = _imageProcessor.GetDefaultUserImage();
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -474,5 +561,10 @@ namespace Groover.BL.Services
             model.Password = model.Password.Trim();
         }
 
+        private void Preprocess(UserDTO model)
+        {
+            model.Email = model.Email?.Trim();
+            model.Username = model.Username.Trim();
+        }
     }
 }

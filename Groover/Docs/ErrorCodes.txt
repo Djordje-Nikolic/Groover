@@ -14,6 +14,7 @@ Id 	ErrorCode   					Explanation									ErrorValue
 10	failed_confirmation 			Couldnt confirm email
 11 	internal						Unknown error
 12  email_not_confirmed				Email hasnt been confirmed for this user.
+13  failed_password_update
 
 IdentityErrors:
 
