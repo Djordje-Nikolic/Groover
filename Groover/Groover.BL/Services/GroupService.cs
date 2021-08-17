@@ -73,7 +73,19 @@ namespace Groover.BL.Services
                 throw new BadRequestException("Group with that name already exists.", "duplicate_name");
 
             Group group = _mapper.Map<Group>(groupDTO);
-            group.ImagePath = _imageProcessor.GetDefaultGroupImage();
+            
+
+            if (groupDTO.Image != null)
+            {
+                var imageBytes = await this._imageProcessor.CheckAsync(groupDTO.Image);
+                var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
+                group.ImagePath = imagePath;
+            }
+            else
+            {
+                group.ImagePath = this._imageProcessor.GetDefaultGroupImage();
+            }
+
             GroupUser groupUser = new GroupUser();
             groupUser.Group = group;
             groupUser.User = user;
