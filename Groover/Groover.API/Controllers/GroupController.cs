@@ -25,18 +25,21 @@ namespace Groover.API.Controllers
 
         private readonly IGroupService _groupService;
         private readonly IUserService _userService;
+        private readonly INotificationService _notificationService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IMapper _autoMapper;
         private readonly ILogger<GroupController> _logger;
 
         public GroupController(IGroupService groupService, 
                                IUserService userService,
+                               INotificationService notificationService,
                                IAuthorizationService authorizationService,
                                IMapper autoMapper, 
                                ILogger<GroupController> logger)
         {
             _groupService = groupService;
             _userService = userService;
+            _notificationService = notificationService;
             _authorizationService = authorizationService;
             _autoMapper = autoMapper;
             _logger = logger;

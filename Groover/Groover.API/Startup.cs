@@ -22,6 +22,9 @@ using Groover.BL.Models;
 using Groover.BL.Services.Interfaces;
 using Groover.BL.Services;
 using Groover.BL.Helpers;
+using Groover.API.Hubs;
+using System.Threading.Tasks;
+using Groover.BL.Hubs;
 
 namespace Groover.API
 {
@@ -50,6 +53,7 @@ namespace Groover.API
             AddEmailService(services);
             AddImageProcessing(services);
 
+            services.AddSignalR();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGroupService, GroupService>();
 
@@ -83,6 +87,7 @@ namespace Groover.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<GroupChatHub>("/hubs/groupchat");
             });
         }
 
@@ -105,6 +110,23 @@ namespace Groover.API
                         ValidIssuer = Configuration["Jwt:Issuer"],
                         ValidAudience = Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:SecretKey"]))
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            // If the request is for our hub...
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/hubs/groupchat"))
+                            {
+                                // Read the token out of the query string
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                     options.Validate();
                 });

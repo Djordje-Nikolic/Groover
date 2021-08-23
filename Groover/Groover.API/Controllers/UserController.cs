@@ -24,9 +24,14 @@ namespace Groover.API.Controllers
         private readonly IUserService _userService;
         private readonly IMapper _autoMapper;
         private readonly ILogger<UserController> _logger;
+        private readonly INotificationService _notificationService;
 
-        public UserController(IUserService userService, IMapper autoMapper, ILogger<UserController> logger)
+        public UserController(IUserService userService,
+            INotificationService notificationService,
+            IMapper autoMapper, 
+            ILogger<UserController> logger)
         {
+            _notificationService = notificationService;
             _userService = userService;
             _autoMapper = autoMapper;
             _logger = logger;
