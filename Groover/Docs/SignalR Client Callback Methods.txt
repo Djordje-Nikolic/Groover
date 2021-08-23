@@ -3,3 +3,12 @@ ConnectedToGroup(string groupId, string userId)
 DisconnectedFromGroup(string groupId, string userId)
 
 Sluze za prihvatanje notifikacija:
+ForceTokenRefresh(string userId)
+GroupDeleted(string groupId)
+GroupUpdated(string groupId)
+LoggedInUserUpdated(UserDataResponse user)
+UserUpdated(string groupId, UserDataResponse user)
+UserRoleUpdated(string groupId, string userId, string newRole)
+UserInvited(string groupId, string userId)
+UserJoined(string groupId, UserDataResponse user)
+UserLeft(string groupId, string userId)

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Groover.BL.Handlers.Requirements
 {
-    public  static class GroupClaimTypeConstants
+    public static class GroupClaimTypeConstants
     {
         public const string Admin = "group_admin";
         public const string Member = "group_member";

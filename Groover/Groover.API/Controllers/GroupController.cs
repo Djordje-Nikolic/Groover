@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Groover.API.Models.Requests;
 using Groover.API.Models.Responses;
+using Groover.API.Services.Interfaces;
 using Groover.BL.Handlers.Requirements;
 using Groover.BL.Models.DTOs;
 using Groover.BL.Models.Exceptions;
@@ -109,6 +110,9 @@ namespace Groover.API.Controllers
 
             _logger.LogInformation($"Successfully deleted the group by id {id}.");
 
+            //Send notifications
+            await _notificationService.GroupDeletedAsync(id.ToString());
+
             return Ok(new { message = $"Successfully deleted the group by id {id}." });
         }
 
@@ -124,9 +128,13 @@ namespace Groover.API.Controllers
             }
 
             var updatedGroup = await _groupService.SetImage(request.GroupId, request.ImageFile);
-            var response = this._autoMapper.Map<GroupResponse>(updatedGroup);
-
             _logger.LogInformation($"Successfully set an image for group: {request.GroupId}");
+
+            var response = this._autoMapper.Map<GroupResponse>(updatedGroup);
+            var notificationData = this._autoMapper.Map<GroupDataResponse>(response);
+
+            //Send notification
+            await this._notificationService.GroupUpdatedAsync(notificationData);
 
             return Ok(response);
         }
@@ -143,10 +151,14 @@ namespace Groover.API.Controllers
             }
 
             GroupDTO groupDTO = _autoMapper.Map<GroupDTO>(updateGroupRequest);
-            GroupDTO updatedDTO = await _groupService.UpdateGroupAsync(groupDTO);
-            var response = _autoMapper.Map<GroupResponse>(updatedDTO);
-
+            GroupDTO updatedDTO = await _groupService.UpdateGroupAsync(groupDTO); 
             _logger.LogInformation($"Successfully updated the group by id {updateGroupRequest.Id}.");
+
+            var response = _autoMapper.Map<GroupResponse>(updatedDTO);
+            var notificationData = this._autoMapper.Map<GroupDataResponse>(response);
+
+            //Send notification
+            await this._notificationService.GroupUpdatedAsync(notificationData);
 
             return Ok(response);
         }
@@ -165,8 +177,14 @@ namespace Groover.API.Controllers
             _logger.LogInformation($"Attempting to accept an invitation for user {request.UserId} to group {request.GroupId}.");
 
             await _groupService.AcceptInviteAsync(request.Token, request.GroupId, request.UserId);
-
             _logger.LogInformation($"Successfully accepted an invitation for user {request.UserId} to group {request.GroupId}.");
+
+            //Send notification and invalidate token
+            UserDTO userDTO = await _userService.GetUserAsync(request.UserId);
+            var notificationData = _autoMapper.Map<UserDataResponse>(userDTO);
+
+            await _notificationService.ForceTokenRefreshAsync(request.UserId.ToString());
+            await _notificationService.UserJoinedGroupAsync(request.GroupId.ToString(), notificationData);
 
             return Ok(new { message = $"Successfully accepted an invitation for user { request.UserId} to group { request.GroupId}."});
         }
@@ -190,8 +208,10 @@ namespace Groover.API.Controllers
 
             var acceptUrl = GenerateInvitationUrl(invitationDTO.InvitationToken, invitationDTO.Group.Id, invitationDTO.User.Id);
             await _groupService.SendInvitationEmailAsync(acceptUrl, invitationDTO.Group, invitationDTO.User, senderId.Value);
-
             _logger.LogInformation($"Successfully invited user {userId} to group {groupId}.");
+
+            //Send notification
+            await _notificationService.UserInvitedAsync(groupId.ToString(), userId.ToString());
 
             return Ok(new { message = $"Successfully invited user {userId} to group {groupId}." });
         }
@@ -211,8 +231,11 @@ namespace Groover.API.Controllers
             }
 
             await _groupService.RemoveUserAsync(groupId, userId);
-
             _logger.LogInformation($"Successfully removed user {userId} from group {groupId}.");
+
+            //Send notification and invalidate token
+            await _notificationService.ForceTokenRefreshAsync(userId.ToString());
+            await _notificationService.UserLeftGroupAsync(groupId.ToString(), userId.ToString());
 
             return Ok(new { message = $"Successfully removed user {userId} from group {groupId}." });
         }
@@ -228,9 +251,12 @@ namespace Groover.API.Controllers
                 return Forbid();
             }
 
-            await _groupService.UpdateUserRoleAsync(groupId, userId, newRole);
-
+            newRole = await _groupService.UpdateUserRoleAsync(groupId, userId, newRole);
             _logger.LogInformation($"Successfully updated role of user {userId} in group {groupId}.");
+
+            //Send notification and invalidate token
+            await _notificationService.ForceTokenRefreshAsync(userId.ToString());
+            await _notificationService.UserRoleUpdatedAsync(groupId.ToString(), userId.ToString(), newRole);
 
             return Ok(new { message = $"Successfully updated role of user {userId} in group {groupId}." });
         }

@@ -1,4 +1,4 @@
-﻿using Groover.BL.Hubs.Interfaces;
+﻿using Groover.API.Hubs.Interfaces;
 using Groover.BL.Handlers.Requirements;
 using Groover.BL.Models.Exceptions;
 using Groover.DB.MySqlDb.Entities;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Groover.BL.Hubs
+namespace Groover.API.Hubs
 {
     public class GroupChatHub : Hub
     {
