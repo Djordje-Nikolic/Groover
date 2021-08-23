@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Groover.API.Models.Requests;
 using Groover.API.Models.Responses;
+using Groover.API.Services.Interfaces;
+using Groover.BL.Handlers.Requirements;
 using Groover.BL.Models.DTOs;
 using Groover.BL.Models.Exceptions;
 using Groover.BL.Services.Interfaces;
@@ -70,6 +72,12 @@ namespace Groover.API.Controllers
             _logger.LogInformation($"Update succeeded for user with id {updateUserRequest.Id}.");
 
             var response = _autoMapper.Map<UserResponse>(updatedUser);
+            var notificationData = _autoMapper.Map<UserDataResponse>(response);
+
+            //Send notifications
+            var groups = GetGroupList();
+            await _notificationService.UserUpdatedAsync(notificationData, groups);
+
             return Ok(response);
         }
 
@@ -134,9 +142,14 @@ namespace Groover.API.Controllers
             _logger.LogInformation($"Attempting to set an avatar for user: {userId.Value}");
 
             var updatedUser = await _userService.SetAvatar(userId.Value, imageFile);
-            var response = this._autoMapper.Map<UserResponse>(updatedUser);
-
             _logger.LogInformation($"Successfully set an avator for user: {userId.Value}");
+
+            var response = this._autoMapper.Map<UserResponse>(updatedUser);
+            var notificationData = _autoMapper.Map<UserDataResponse>(response);
+
+            //Send notifications
+            var groups = GetGroupList();
+            await _notificationService.UserUpdatedAsync(notificationData, groups);
 
             return Ok(response);
         }
@@ -289,6 +302,14 @@ namespace Groover.API.Controllers
         {
             var claim = User.FindFirst(ClaimTypes.NameIdentifier);
             return claim == null ? null : int.Parse(claim.Value);
+        }
+
+        private List<string> GetGroupList()
+        {
+            return User.Claims
+                .Where(claim => claim.Type == GroupClaimTypeConstants.Member)
+                .Select(claim => claim.Value)
+                .ToList();
         }
     }
 }

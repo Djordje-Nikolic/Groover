@@ -20,6 +20,10 @@ namespace Groover.API.Models
             CreateMap<UserDTO, UserResponse>()
                 .ForMember(d => d.AvatarBase64, options =>
                     options.MapFrom(s => s.AvatarImage != null ? Convert.ToBase64String(s.AvatarImage) : null));
+            CreateMap<UserDTO, UserDataResponse>()
+                .ForMember(d => d.AvatarBase64, options =>
+                    options.MapFrom(s => s.AvatarImage != null ? Convert.ToBase64String(s.AvatarImage) : null));
+            CreateMap<UserResponse, UserDataResponse>();
             CreateMap<UpdateUserRequest, UserDTO>()
                 .ForMember(d => d.AvatarImage, options =>
                     options.MapFrom(s => !string.IsNullOrWhiteSpace(s.AvatarBase64) ? Convert.FromBase64String(s.AvatarBase64) : null));
@@ -41,6 +45,10 @@ namespace Groover.API.Models
             CreateMap<GroupDTO, GroupResponse>()
                 .ForMember(d => d.ImageBase64, options =>
                     options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null));
+            CreateMap<GroupDTO, GroupDataResponse>()
+                .ForMember(d => d.ImageBase64, options =>
+                    options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null));
+            CreateMap<GroupResponse, GroupDataResponse>();
             CreateMap<CreateGroupRequest, GroupDTO>()
                 .ForMember(d => d.Image, options => 
                     options.MapFrom(s => !string.IsNullOrWhiteSpace(s.ImageBase64) ? Convert.FromBase64String(s.ImageBase64): null));

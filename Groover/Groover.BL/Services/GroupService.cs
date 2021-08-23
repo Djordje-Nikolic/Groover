@@ -356,7 +356,7 @@ namespace Groover.BL.Services
             return updatedDTO;
         }
 
-        public async Task UpdateUserRoleAsync(int groupId, int userId, string newRole)
+        public async Task<string> UpdateUserRoleAsync(int groupId, int userId, string newRole)
         {
             if (groupId <= 0)
                 throw new BadRequestException("Group id is invalid.", "bad_id");
@@ -394,6 +394,8 @@ namespace Groover.BL.Services
             groupUser.GroupRole = groupRoleNew;
             _context.GroupUsers.Update(groupUser);
             await _context.SaveChangesAsync();
+
+            return groupRoleNew.ToString();
         }
 
         private async Task<string> GenerateInviteTokenAsync(int groupId, User user)
