@@ -1,0 +1,5 @@
+Sluze za otvaranja i zatvaranje konekcija, prikazivanje ko je online ili ne:
+ConnectedToGroup(string groupId, string userId)
+DisconnectedFromGroup(string groupId, string userId)
+
+Sluze za prihvatanje notifikacija:
