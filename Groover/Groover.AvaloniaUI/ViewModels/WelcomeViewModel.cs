@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Groover.AvaloniaUI.Models;
 using Groover.AvaloniaUI.Services.Interfaces;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -52,7 +53,8 @@ namespace Groover.AvaloniaUI.ViewModels
                                                     Locator.Current.GetRequiredService<IUserService>(),
                                                     Locator.Current.GetRequiredService<IGroupService>(),
                                                     Locator.Current.GetRequiredService<IGroupChatService>(),
-                                                    Locator.Current.GetRequiredService<IMapper>());
+                                                    Locator.Current.GetRequiredService<IMapper>(),
+                                                    Locator.Current.GetRequiredService<UserConstants>());
 
         }
     }
