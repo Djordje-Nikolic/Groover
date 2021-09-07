@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Requests;
+using Groover.AvaloniaUI.Models.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace Groover.AvaloniaUI.Models
             CreateMap<User, UserRequest>();
             CreateMap<UserRequest, User>();
             CreateMap<GroupRequest, Group>();
+
+            CreateMap<UserResponse, User>();
         }
     }
 }

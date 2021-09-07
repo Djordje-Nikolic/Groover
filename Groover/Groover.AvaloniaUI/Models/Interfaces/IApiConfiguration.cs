@@ -10,5 +10,6 @@ namespace Groover.AvaloniaUI.Models.Interfaces
     {
         string BaseAddress { get; set; }
         string APIKey { get; set; }
+        string GroupChatHubAddress { get; set; }
     }
 }

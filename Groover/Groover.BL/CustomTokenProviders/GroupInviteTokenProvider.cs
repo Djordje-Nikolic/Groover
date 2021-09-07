@@ -21,5 +21,6 @@ namespace Groover.BL.CustomTokenProviders
 
     public class GroupInviteTokenProviderOptions : DataProtectionTokenProviderOptions
     {
+        
     }
 }

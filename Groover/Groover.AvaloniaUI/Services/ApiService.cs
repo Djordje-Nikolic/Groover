@@ -1,5 +1,7 @@
 ﻿using Groover.AvaloniaUI.Models.Interfaces;
+using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,14 +21,14 @@ namespace Groover.AvaloniaUI.Services
 
     public class ApiService : IApiService
     {
-        private IApiConfiguration _apiConfig;
+        public IApiConfiguration ApiConfig { get; private set; }
         private HttpClient _httpClient;
         private HttpClientHandler _httpClientHandler;
         private CookieContainer _cookieContainer { get { return _httpClientHandler.CookieContainer; } }
 
         public ApiService(IApiConfiguration apiConfiguration)
         {
-            _apiConfig = apiConfiguration;
+            ApiConfig = apiConfiguration;
 
             InitializeHttpClient();
         }
@@ -59,6 +61,28 @@ namespace Groover.AvaloniaUI.Services
         public void SetAccessToken(string token, string type = "Bearer")
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(type, token);
+        }
+
+        public string? GetAccessToken()
+        {
+            return _httpClient.DefaultRequestHeaders.Authorization?.Parameter;
+        }
+
+        public async Task RefreshTokenAsync()
+        {
+            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, string.Empty);
+
+            var response = await SendAsync(message, Controller.User, "RefreshToken");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            TokenResponse parsedResponse;
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                parsedResponse = JsonConvert.DeserializeObject<TokenResponse>(responseContent);
+
+                if (!string.IsNullOrWhiteSpace(parsedResponse.Token))
+                    SetAccessToken(parsedResponse.Token);
+            }
         }
 
         public void RemoveAccessToken()
@@ -99,7 +123,7 @@ namespace Groover.AvaloniaUI.Services
             _httpClient = new HttpClient(_httpClientHandler);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            _httpClient.BaseAddress = new Uri(_apiConfig.BaseAddress, UriKind.Absolute);
+            _httpClient.BaseAddress = new Uri(ApiConfig.BaseAddress, UriKind.Absolute);
         }
     }
 }

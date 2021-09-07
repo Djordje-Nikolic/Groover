@@ -40,6 +40,15 @@ namespace Groover.AvaloniaUI.Services
             return await this.SendRequestAsync<BaseResponse>(queryParams, HttpMethod.Patch, _controller, "inviteUser");
         }
 
+        public async Task<BaseResponse> AcceptInviteAsync(string token, int groupId, int userId)
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add("token", token);
+            queryParams.Add("groupId", groupId.ToString());
+            queryParams.Add("userId", userId.ToString());
+            return await this.SendRequestAsync<BaseResponse>(queryParams, HttpMethod.Get, _controller, "acceptInvite");
+        }
+
         public async Task<BaseResponse> RemoveUserAsync(int groupId, int userId)
         {
             var queryParams = new Dictionary<string, string>();
@@ -60,7 +69,7 @@ namespace Groover.AvaloniaUI.Services
 
         public async Task<GroupResponse> CreateGroupAsync(GroupRequest groupRequest)
         {
-            return await this.SendRequestAsync<GroupRequest, GroupResponse>(groupRequest, HttpMethod.Post, _controller, "create");
+            return await this.SendRequestAsync<GroupRequest, GroupResponse>(groupRequest, HttpMethod.Post, _controller, "create", 0);
         }
 
         public async Task<BaseResponse> UpdateUserRoleAsync(int groupId, int userId, GrooverGroupRole newRole)

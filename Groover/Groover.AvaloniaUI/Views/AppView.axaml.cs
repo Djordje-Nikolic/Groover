@@ -38,6 +38,14 @@ namespace Groover.AvaloniaUI.Views
             //        }).DisposeWith(disposables))
             //        .DisposeWith(disposables);
             //});
+
+            this.WhenActivated(disposables =>
+            {
+                this.WhenAnyValue(x => x.ViewModel)
+                    .WhereNotNull()
+                    .Subscribe(async (x) => await x.InitializeChatConnections())
+                    .DisposeWith(disposables);
+            });
         }
 
         private void InitializeComponent()

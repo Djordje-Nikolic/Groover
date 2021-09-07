@@ -51,7 +51,9 @@ namespace Groover.AvaloniaUI.ViewModels
             return new AppViewModel(LoginViewModel?.Response,
                                                     Locator.Current.GetRequiredService<IUserService>(),
                                                     Locator.Current.GetRequiredService<IGroupService>(),
+                                                    Locator.Current.GetRequiredService<IGroupChatService>(),
                                                     Locator.Current.GetRequiredService<IMapper>());
+
         }
     }
 }

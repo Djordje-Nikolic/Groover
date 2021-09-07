@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Groover.AvaloniaUI.Views.NotificationsView">
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="unreadColor"></SolidColorBrush>
+    <SolidColorBrush x:Key="readColor"></SolidColorBrush>
+    <utils:ReadBackgroundColorConverter 
+      x:Key="readBackgroundColorConverter"
+      UnreadColor="{StaticResource ThemeAccentBrush}"
+      ReadColor="{StaticResource ThemeForegroundLowBrush}">
+    </utils:ReadBackgroundColorConverter>
+    <utils:IsEqualIntegerConverter
+      x:Key="isIntegerZero"
+      DefaultIntegerToCompareTo="0">
+    </utils:IsEqualIntegerConverter>
+  </UserControl.Resources>
+  <styles:Card CornerRadius="5" MinWidth="100" MaxWidth="250"
+               Padding="0,0,0,0">
+    <Panel HorizontalAlignment="Stretch"
+           VerticalAlignment="Stretch">
+      <TextBlock FontSize="11" Margin="15,10,15,10"
+                 IsVisible="{Binding Notifications.Count, Converter={StaticResource isIntegerZero}}">
+        No current notifications!
+      </TextBlock>
+      <ListBox Name="notificationListBox"
+               Items="{Binding Notifications}"
+               Margin="0"
+               Padding="0">
+        <ListBox.Styles>
+          <Style Selector="ListBoxItem">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+          </Style>
+        </ListBox.Styles>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Button assist:ButtonAssist.CornerRadius="0"
+                    Command="{Binding #notificationListBox.DataContext.ClickCommand}"
+                    CommandParameter="{Binding}"
+                    Classes="Flat"
+                    HorizontalAlignment="Stretch"
+                    Margin="0"
+                    Padding="15,10,15,10">
+              <TextBlock Text="{Binding TitleText}"
+                         FontSize="11"
+                         Margin="0"
+                         Padding="0"      
+                         Foreground="{Binding Read, Converter={StaticResource readBackgroundColorConverter}}"
+                         HorizontalAlignment="Stretch"
+                         TextAlignment="Left"
+                         TextWrapping="Wrap"/>
+            </Button>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Panel>
+  </styles:Card>
+</UserControl>

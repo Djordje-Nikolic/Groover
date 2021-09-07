@@ -12,7 +12,6 @@ namespace Groover.BL.Models.DTOs
         public int Id { get; set; }
         [Required(AllowEmptyStrings = false)]
         public string Name { get; set; }
-        [Required(AllowEmptyStrings = false)]
         public string Description { get; set; }
         public byte[] Image { get; set; }
         public ICollection<GroupUserDTO> GroupUsers { get; set; }

@@ -5,7 +5,7 @@
              xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
              xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
              xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="300" 
+             mc:Ignorable="d"
              x:Class="Groover.AvaloniaUI.Views.LoginView">
    <styles:Card Width="300" Padding="0,0,0,5">
     <StackPanel Orientation="Vertical"

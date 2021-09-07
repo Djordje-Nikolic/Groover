@@ -15,6 +15,8 @@ namespace Groover.AvaloniaUI.Services
     {
         protected IApiService _apiService;
 
+        public const int DefaultRetryOnUnauthorizedAttempts = 1;
+
         public GrooverService(IApiService apiService)
         {
             _apiService = apiService;
@@ -24,7 +26,8 @@ namespace Groover.AvaloniaUI.Services
             TRequest request,
             HttpMethod httpMethod,
             Controller controller,
-            string endpointMethod) where TResponse : BaseResponse, new()
+            string endpointMethod, 
+            int retryOnUnauthorized = DefaultRetryOnUnauthorizedAttempts) where TResponse : BaseResponse, new()
         {
             HttpRequestMessage message = new HttpRequestMessage(httpMethod, string.Empty);
             var json = JsonConvert.SerializeObject(request);
@@ -48,6 +51,15 @@ namespace Groover.AvaloniaUI.Services
             }
 
             parsedResponse.StatusCode = response.StatusCode;
+
+            //Retry logic
+            if (retryOnUnauthorized > 0 &&
+                parsedResponse.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                await _apiService.RefreshTokenAsync();
+                await SendRequestAsync<TRequest, TResponse>(request, httpMethod, controller, endpointMethod, retryOnUnauthorized - 1);
+            }
+
             return parsedResponse;
         }
 
@@ -55,7 +67,8 @@ namespace Groover.AvaloniaUI.Services
                 IDictionary<string, string> queryParameters,
                 HttpMethod httpMethod,
                 Controller controller,
-                string endpointMethod) where TResponse : BaseResponse, new()
+                string endpointMethod,
+                int retryOnUnauthorized = DefaultRetryOnUnauthorizedAttempts) where TResponse : BaseResponse, new()
         {
             HttpRequestMessage message = new HttpRequestMessage(httpMethod, string.Empty);
 
@@ -78,6 +91,15 @@ namespace Groover.AvaloniaUI.Services
             }
 
             parsedResponse.StatusCode = response.StatusCode;
+
+            //Retry logic
+            if (retryOnUnauthorized > 0 &&
+                parsedResponse.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                await _apiService.RefreshTokenAsync();
+                await SendRequestAsync<TResponse>(queryParameters, httpMethod, controller, endpointMethod, retryOnUnauthorized - 1);
+            }
+
             return parsedResponse;
         }
 

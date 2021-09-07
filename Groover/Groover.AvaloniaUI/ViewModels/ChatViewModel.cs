@@ -29,5 +29,30 @@ namespace Groover.AvaloniaUI.ViewModels
             User = loggedInUser;
             UserGroup = userGroup;
         }
+
+        internal void UpdateGroupData(Group group)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void UserLeft(GroupUser gu)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void UserJoined(GroupUser gu)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void UserRoleUpdated(int uId, string newRole)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void UserUpdated(User user)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

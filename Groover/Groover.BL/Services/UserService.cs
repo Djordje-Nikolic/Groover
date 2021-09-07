@@ -147,12 +147,13 @@ namespace Groover.BL.Services
             var imageBytes = await this._imageProcessor.CheckAsync(model.AvatarImage);
             if (imageBytes != user.AvatarImage)
             {
-                if (!string.IsNullOrWhiteSpace(user.AvatarImagePath))
+                if (!string.IsNullOrWhiteSpace(user.AvatarImagePath) &&
+                    user.AvatarImagePath != _imageProcessor.GetDefaultUserImage())
                 {
                     this._imageProcessor.DeleteImage(user.AvatarImagePath);
                 }
 
-                if (imageBytes != null)
+                if (imageBytes != null && imageBytes.Length > 0)
                 {
                     var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
                     user.AvatarImagePath = imagePath;
@@ -245,12 +246,13 @@ namespace Groover.BL.Services
             var imageBytes = await this._imageProcessor.ProcessAsync(imageFile);
             if (imageBytes != user.AvatarImage)
             {
-                if (!string.IsNullOrWhiteSpace(user.AvatarImagePath))
+                if (!string.IsNullOrWhiteSpace(user.AvatarImagePath) &&
+                    user.AvatarImagePath != _imageProcessor.GetDefaultUserImage())
                 {
                     this._imageProcessor.DeleteImage(user.AvatarImagePath);
                 }
 
-                if (imageBytes != null)
+                if (imageBytes != null && imageBytes.Length > 0)
                 {
                     var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
                     user.AvatarImagePath = imagePath;
@@ -526,7 +528,7 @@ namespace Groover.BL.Services
                 issuer: _configuration.GetSection("Jwt:Issuer").Value,
                 audience: _configuration.GetSection("Jwt:Audience").Value,
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddMinutes(5),
                 signingCredentials: credentials);
 
             var jwtTokenHandler = new JwtSecurityTokenHandler();

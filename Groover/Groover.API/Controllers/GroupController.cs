@@ -54,7 +54,7 @@ namespace Groover.API.Controllers
 
             if (!await IsGroupMemberAsync(id))
             {
-                return new ForbidResult();
+                throw new UnauthorizedException($"User is not group {id} member.", "not_member");
             }
 
             GroupDTO groupDTO = await _groupService.GetGroupAsync(id);
@@ -84,13 +84,21 @@ namespace Groover.API.Controllers
 
             var userId = GetUserId();
             if (userId == null)
-                return Unauthorized();
+                throw new UnauthorizedException("User id undefined.", "bad_id");
 
             GroupDTO groupDTO = _autoMapper.Map<GroupDTO>(createGroupRequest);
             GroupDTO createdDTO = await _groupService.CreateGroupAsync(groupDTO, userId.Value);
-            var response = _autoMapper.Map<GroupResponse>(createdDTO);
-
             _logger.LogInformation($"Successfully create a group by name {createGroupRequest.Name}.");
+
+            var response = _autoMapper.Map<GroupResponse>(createdDTO);
+            GroupUserDTO ugData = (await _userService.GetUserAsync(userId.Value))
+                                   .UserGroups.Where(ug => ug.GroupId == createdDTO.Id)
+                                   .First();
+            var notificationData = _autoMapper.Map<UserGroupResponse>(ugData);
+
+            //Send notification and invalidated tokens
+            await _notificationService.ForceTokenRefreshAsync(userId.Value.ToString());
+            await _notificationService.GroupCreatedAsync(notificationData, userId.ToString());
 
             return Ok(response);
         }
@@ -103,7 +111,7 @@ namespace Groover.API.Controllers
 
             if (!await IsGroupAdminAsync(id))
             {
-                return Forbid();
+                throw new UnauthorizedException($"User is not group {id} admin.", "not_admin");
             }
 
             await _groupService.DeleteAsync(id);
@@ -124,7 +132,7 @@ namespace Groover.API.Controllers
 
             if (!await IsGroupAdminAsync(request.GroupId))
             {
-                return Forbid();
+                throw new UnauthorizedException($"User is not group {request.GroupId} admin.", "not_admin");
             }
 
             var updatedGroup = await _groupService.SetImage(request.GroupId, request.ImageFile);
@@ -147,7 +155,7 @@ namespace Groover.API.Controllers
 
             if (!await IsGroupAdminAsync(updateGroupRequest.Id))
             {
-                return Forbid();
+                throw new UnauthorizedException($"User is not group {updateGroupRequest.Id} admin.", "not_admin");
             }
 
             GroupDTO groupDTO = _autoMapper.Map<GroupDTO>(updateGroupRequest);
@@ -165,7 +173,7 @@ namespace Groover.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("acceptInvite")]
-        public async Task<IActionResult> AcceptInvite(string token, int userId, int groupId)
+        public async Task<IActionResult> AcceptInvite(string token, int groupId, int userId)
         {
             AcceptInvitationRequest request = new AcceptInvitationRequest()
             {
@@ -176,15 +184,15 @@ namespace Groover.API.Controllers
 
             _logger.LogInformation($"Attempting to accept an invitation for user {request.UserId} to group {request.GroupId}.");
 
-            await _groupService.AcceptInviteAsync(request.Token, request.GroupId, request.UserId);
+            var groupUserDTO = await _groupService.AcceptInviteAsync(request.Token, request.GroupId, request.UserId);
             _logger.LogInformation($"Successfully accepted an invitation for user {request.UserId} to group {request.GroupId}.");
 
             //Send notification and invalidate token
-            UserDTO userDTO = await _userService.GetUserAsync(request.UserId);
-            var notificationData = _autoMapper.Map<UserDataResponse>(userDTO);
+            var groupUserLiteResp = _autoMapper.Map<GroupUserLiteResponse>(groupUserDTO);
+            var userGroupResp = _autoMapper.Map<UserGroupResponse>(groupUserDTO);
 
             await _notificationService.ForceTokenRefreshAsync(request.UserId.ToString());
-            await _notificationService.UserJoinedGroupAsync(request.GroupId.ToString(), notificationData);
+            await _notificationService.UserJoinedGroupAsync(request.GroupId.ToString(), groupUserLiteResp, userGroupResp);
 
             return Ok(new { message = $"Successfully accepted an invitation for user { request.UserId} to group { request.GroupId}."});
         }
@@ -198,20 +206,22 @@ namespace Groover.API.Controllers
 
             if (!await IsGroupAdminAsync(groupId))
             {
-                return Forbid();
+                throw new UnauthorizedException($"User is not group {groupId} admin.", "not_admin");
             }
 
             var invitationDTO = await _groupService.InviteUserAsync(groupId, userId);
             var senderId = GetUserId();
             if (senderId == null)
-                return Unauthorized();
+                throw new UnauthorizedException($"User id undefined.", "bad_id");
+
 
             var acceptUrl = GenerateInvitationUrl(invitationDTO.InvitationToken, invitationDTO.Group.Id, invitationDTO.User.Id);
             await _groupService.SendInvitationEmailAsync(acceptUrl, invitationDTO.Group, invitationDTO.User, senderId.Value);
             _logger.LogInformation($"Successfully invited user {userId} to group {groupId}.");
 
-            //Send notification
-            await _notificationService.UserInvitedAsync(groupId.ToString(), userId.ToString());
+            //Send notification for invite
+            GroupLiteResponse group = _autoMapper.Map<GroupLiteResponse>(invitationDTO.Group);
+            await _notificationService.UserInvitedAsync(invitationDTO.InvitationToken, group, userId.ToString());
 
             return Ok(new { message = $"Successfully invited user {userId} to group {groupId}." });
         }
@@ -227,15 +237,23 @@ namespace Groover.API.Controllers
 
             if (!await IsGroupAdminAsync(groupId) && !resultIsUser.Succeeded)
             {
-                return Forbid();
+                throw new UnauthorizedException($"User is not group {groupId} admin.", "not_admin");
             }
 
-            await _groupService.RemoveUserAsync(groupId, userId);
+            var lastMember = await _groupService.RemoveUserAsync(groupId, userId);
             _logger.LogInformation($"Successfully removed user {userId} from group {groupId}.");
 
             //Send notification and invalidate token
+            if (lastMember)
+            {
+                await _groupService.DeleteAsync(groupId);
+                await _notificationService.GroupDeletedAsync(groupId.ToString());
+            }
+            else
+            {
+                await _notificationService.UserLeftGroupAsync(groupId.ToString(), userId.ToString());
+            }
             await _notificationService.ForceTokenRefreshAsync(userId.ToString());
-            await _notificationService.UserLeftGroupAsync(groupId.ToString(), userId.ToString());
 
             return Ok(new { message = $"Successfully removed user {userId} from group {groupId}." });
         }
@@ -248,7 +266,7 @@ namespace Groover.API.Controllers
 
             if (!await IsGroupAdminAsync(groupId))
             {
-                return Forbid();
+                throw new UnauthorizedException($"User is not group {groupId} admin.", "not_admin");
             }
 
             newRole = await _groupService.UpdateUserRoleAsync(groupId, userId, newRole);

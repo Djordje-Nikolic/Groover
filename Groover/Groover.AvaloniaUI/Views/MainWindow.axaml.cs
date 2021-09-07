@@ -9,7 +9,9 @@ using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Utils;
 using Groover.AvaloniaUI.ViewModels;
 using Groover.AvaloniaUI.ViewModels.Dialogs;
+using Groover.AvaloniaUI.ViewModels.Notifications;
 using Groover.AvaloniaUI.Views.Dialogs;
+using Groover.AvaloniaUI.Views.Notifications;
 using ReactiveUI;
 using System;
 using System.Reactive;
@@ -22,6 +24,8 @@ namespace Groover.AvaloniaUI.Views
     public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         private AppView _mainView;
+        //private ProgressBar _progressBar;
+        private ReactiveCommand<LoginResponse, Unit> LoadingScreenCommand { get; }
 
         public MainWindow()
         {
@@ -29,8 +33,9 @@ namespace Groover.AvaloniaUI.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
-
+            //_progressBar = this.FindControl<ProgressBar>("progressBar");
             _mainView = this.FindControl<AppView>("mainView");
+            LoadingScreenCommand = ReactiveCommand.CreateFromTask<LoginResponse>(LoadingScreenAsync);
 
             this.WhenActivated(disposables =>
             {
@@ -58,6 +63,10 @@ namespace Groover.AvaloniaUI.Views
                 .RegisterHandler(DoShowGroupEditDialogAsync)
                 .DisposeWith(disposables);
 
+                ViewModel.ShowNotificationDialog
+                .RegisterHandler(DoShowNotificationDialogAsync)
+                .DisposeWith(disposables);
+
                 //this._mainView.LogoutCommand.Subscribe(x => ShowWelcomeDialog());
 
                 this.WhenAnyValue(v => v.ViewModel.WelcomeDialogResult)
@@ -71,11 +80,17 @@ namespace Groover.AvaloniaUI.Views
                          vm.ShowUserSearchDialog = ViewModel.ShowUserSearchDialog;
                          vm.ShowGroupEditDialog = ViewModel.ShowGroupEditDialog;
                          vm.ShowUserEditDialog = ViewModel.ShowUserEditDialog;
+                         vm.ShowNotificationDialog = ViewModel.ShowNotificationDialog;
                          vm.LogoutCommand.Subscribe(x =>
                          {
                              if (x == true)
+                             {
+                                 _mainView.IsVisible = false;
                                  ShowWelcomeDialog();
+                             }
                          }).DisposeWith(disposables);
+
+                         LoadingScreenCommand.Execute(vm.LoginResponse).Subscribe();
                      }
                  })
                 .BindTo(this, x => x._mainView.DataContext)
@@ -89,6 +104,14 @@ namespace Groover.AvaloniaUI.Views
             });
 
             this.Opened += DoOnOpen;
+        }
+
+        private async Task LoadingScreenAsync(LoginResponse loginResponse)
+        {
+            //_progressBar.IsVisible = true;
+            await Task.Delay(350);
+            //_progressBar.IsVisible = false;
+            _mainView.IsVisible = true;
         }
 
         private void DoOnOpen(object? sender, EventArgs e)
@@ -157,6 +180,30 @@ namespace Groover.AvaloniaUI.Views
             dialog.DataContext = interaction.Input;
 
             var result = await dialog.ShowDialog<UserResponse?>(this);
+            interaction.SetOutput(result);
+        }
+
+        private async Task DoShowNotificationDialogAsync(InteractionContext<NotificationViewModel, NotificationViewModel?> interaction)
+        {
+            var viewModel = interaction.Input;
+            Window dialog;
+
+            //Napisi odgovarajuce views i inicijalizuj ih ovde
+            if (viewModel is InviteViewModel)
+            {
+                dialog = new InviteView();
+            }
+            else if (viewModel is ErrorViewModel)
+            {
+                dialog = new ErrorView();
+            }
+            else
+            {
+                dialog = new NotificationView();
+            }
+            dialog.DataContext = viewModel;
+
+            var result = await dialog.ShowDialog<NotificationViewModel?>(this);
             interaction.SetOutput(result);
         }
     }

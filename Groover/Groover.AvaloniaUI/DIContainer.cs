@@ -32,6 +32,9 @@ namespace Groover.AvaloniaUI
             services.RegisterLazySingleton<IApiService>(() => new ApiService(
                 resolver.GetRequiredService<IApiConfiguration>()));
 
+            services.RegisterLazySingleton<IGroupChatService>(() => new GroupChatService(
+                resolver.GetRequiredService<IApiService>()));
+
             //Make into singleton?
             services.Register<IGroupService>(() => new GroupService(
                 resolver.GetRequiredService<IApiService>()));

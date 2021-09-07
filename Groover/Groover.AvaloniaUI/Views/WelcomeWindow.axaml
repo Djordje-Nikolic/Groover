@@ -11,15 +11,14 @@
              WindowStartupLocation="CenterOwner"
              SystemDecorations="None"
              Title="Login Or Register"
-             SizeToContent="WidthAndHeight">
+             TransparencyLevelHint="Transparent">
   <Window.Styles>
     <Style Selector="Window[SystemDecorations=None]">
       <Setter Property="Padding" Value="1"/>
-      <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="TransparencyLevelHint" Value="AcrylicBlur"/>
+      <Setter Property="Background" Value="Transparent"></Setter>
     </Style>
   </Window.Styles>
-  <styles:Card CornerRadius="20" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+  <styles:Card CornerRadius="20" HorizontalAlignment="Center" VerticalAlignment="Center">
       <StackPanel HorizontalAlignment="Center"
                   VerticalAlignment="Stretch"
                   Orientation="Vertical">

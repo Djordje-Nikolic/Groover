@@ -9,10 +9,10 @@ namespace Groover.BL.Services.Interfaces
     {
         Task<GroupDTO> GetGroupAsync(int groupId);
         Task<ICollection<GroupDTO>> GetGroupsAsync(ICollection<int> groupIds);
-        Task RemoveUserAsync(int groupId, int userId);
+        Task<bool> RemoveUserAsync(int groupId, int userId);
         Task<string> UpdateUserRoleAsync(int groupId, int userId, string newRole);
         Task<InvitationDTO> InviteUserAsync(int groupId, int userId);
-        Task AcceptInviteAsync(string token, int groupId, int userId);
+        Task<GroupUserDTO> AcceptInviteAsync(string token, int groupId, int userId);
         Task<GroupDTO> UpdateGroupAsync(GroupDTO groupDTO);
         Task DeleteAsync(int id);
         Task<GroupDTO> CreateGroupAsync(GroupDTO groupDTO, int userId);

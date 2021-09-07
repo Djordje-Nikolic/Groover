@@ -12,6 +12,7 @@ namespace Groover.AvaloniaUI.Models
     {
         public string BaseAddress { get; set; }
         public string APIKey { get; set; }
+        public string GroupChatHubAddress { get; set; }
 
         public ApiConfiguration(NameValueCollection nvC)
         {
@@ -20,6 +21,7 @@ namespace Groover.AvaloniaUI.Models
 
             BaseAddress = nvC["BaseAddress"];
             APIKey = nvC["APIKey"];
+            GroupChatHubAddress = nvC["GroupChatHubAddress"];
         }
     }
 }

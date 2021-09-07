@@ -25,20 +25,30 @@ namespace Groover.API.Services
             await _hubContext.Clients.Group(userGroupName).SendAsync("ForceTokenRefresh", userId);
         }
 
+        public async Task GroupCreatedAsync(UserGroupResponse newGroup, string userId)
+        {
+            string userGroupName = GroupChatHub.GenerateUserGroupName(userId);
+            await _hubContext.Clients.Group(userGroupName).SendAsync("GroupCreated", newGroup);
+        }
+
         public async Task UserLeftGroupAsync(string groupId, string userId)
         {
             await _hubContext.Clients.Group(groupId).SendAsync("UserLeft", groupId, userId);
         }
 
-        public async Task UserJoinedGroupAsync(string groupId, UserDataResponse user)
+        public async Task UserJoinedGroupAsync(string groupId, GroupUserLiteResponse groupUserData, UserGroupResponse userGroupData)
         {
-            await _hubContext.Clients.Group(groupId).SendAsync("UserJoined", groupId, user);
+            //Notify all user connections
+            string userGroupName = GroupChatHub.GenerateUserGroupName(groupUserData.User.Id.ToString());
+            await _hubContext.Clients.Group(userGroupName).SendAsync("LoggedInUserJoined", userGroupData);
+
+            await _hubContext.Clients.Group(groupId).SendAsync("UserJoined", groupId, groupUserData);
         }
 
-        public async Task UserInvitedAsync(string groupId, string userId)
+        public async Task UserInvitedAsync(string token, GroupLiteResponse group, string userId)
         {
             string userGroupName = GroupChatHub.GenerateUserGroupName(userId);
-            await _hubContext.Clients.Group(userGroupName).SendAsync("UserInvited", groupId, userId);
+            await _hubContext.Clients.Group(userGroupName).SendAsync("UserInvited", token, group, userId);
         }
 
         public async Task UserRoleUpdatedAsync(string groupId, string userId, string newRole)

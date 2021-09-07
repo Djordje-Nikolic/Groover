@@ -1,7 +1,10 @@
 ﻿using Groover.API.Hubs.Interfaces;
+using Groover.API.Services.Interfaces;
 using Groover.BL.Handlers.Requirements;
 using Groover.BL.Models.Exceptions;
+using Groover.BL.Services.Interfaces;
 using Groover.DB.MySqlDb.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
@@ -11,8 +14,19 @@ using System.Threading.Tasks;
 
 namespace Groover.API.Hubs
 {
+    [Authorize]
     public class GroupChatHub : Hub
     {
+        //private readonly IGroupService _groupService;
+        //private readonly INotificationService _notificationService;
+
+        //public GroupChatHub(IGroupService groupService,
+        //                    INotificationService notificationService) : base()
+        //{
+        //    _groupService = groupService;
+        //    _notificationService = notificationService;
+        //}
+
         public async override Task OnConnectedAsync()
         {
             var userId = GetUserId();
@@ -24,23 +38,24 @@ namespace Groover.API.Hubs
 
         public async Task OpenGroupConnection(string groupId)
         {
-            var claims = Context.User ?? throw new UnauthorizedException("Undefined claims.", "invalid_claims");
+            var claims = Context.User ?? throw new HubException("Unauthorized: invalid_claims");
             var isInGroup = claims.FindFirst(cl => cl.Type == GroupClaimTypeConstants.GetConstant(GroupRole.Member) &&
                                    cl.Value == groupId) != null;
 
             if (!isInGroup)
-                throw new UnauthorizedException("User is not a member of this group.", "not_a_member");
+                throw new HubException("Unauthorized: not_a_member");
 
             var userId = GetUserId();
 
             await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
 
+            //Notify group that I have connected
             await Clients.Group(groupId).SendAsync("ConnectedToGroup", groupId, userId);
         }
 
         public async Task CloseGroupConnection(string groupId)
         {
-            var claims = Context.User ?? throw new UnauthorizedException("Undefined claims.", "invalid_claims");
+            var claims = Context.User ?? throw new HubException("Unauthorized: invalid_claims");
 
             var userId = GetUserId();
 
@@ -49,11 +64,27 @@ namespace Groover.API.Hubs
             await Clients.Group(groupId).SendAsync("DisconnectedFromGroup", groupId, userId);
         }
 
+        public async Task NotifyConnection(string groupId, string userToNotifyId)
+        {
+            var claims = Context.User ?? throw new HubException("Unauthorized: invalid_claims");
+            var isInGroup = claims.FindFirst(cl => cl.Type == GroupClaimTypeConstants.GetConstant(GroupRole.Member) &&
+                                   cl.Value == groupId) != null;
+
+            if (!isInGroup)
+                throw new HubException("Unauthorized: not_a_member");
+
+            var senderId = GetUserId();
+
+            //Notify new user that I AM connected
+            var userGroupName = GenerateUserGroupName(userToNotifyId);
+            await Clients.Group(userGroupName).SendAsync("ConnectedToGroup", groupId, senderId);
+        }
+
         private string GetUserId()
         {
             var userId = Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrWhiteSpace(userId))
-                throw new BadRequestException("Couldn't determine user id.", "bad_id");
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new HubException("Unauthorized: bad_id");
 
             return userId;
         }

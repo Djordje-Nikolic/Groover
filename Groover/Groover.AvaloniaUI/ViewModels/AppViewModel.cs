@@ -14,6 +14,11 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using System.Collections.ObjectModel;
+using DynamicData.Binding;
+using DynamicData;
+using Groover.AvaloniaUI.ViewModels.Notifications;
 
 namespace Groover.AvaloniaUI.ViewModels
 {
@@ -22,7 +27,9 @@ namespace Groover.AvaloniaUI.ViewModels
         private GroupRoleComparer _groupRoleComparer = new GroupRoleComparer();
         private IUserService _userService;
         private IGroupService _groupService;
+        private IGroupChatService _groupChatService;
         private IMapper _mapper;
+        private readonly UserConstants _userParams;
 
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
@@ -31,14 +38,18 @@ namespace Groover.AvaloniaUI.ViewModels
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
 
         [Reactive]
+        public Interaction<NotificationViewModel, NotificationViewModel?> ShowNotificationDialog { get; set; } 
+        
+        [Reactive]
         public LoginResponse LoginResponse { get; set; }
 
-        //Represent logged in state?
-        [Reactive]
-        public List<UserGroup> UserGroups { get; set; }
+        
+        private SourceCache<UserGroup, int> _userGroupsCache;
+        private ReadOnlyObservableCollection<UserGroup> _userGroups;
+        public ReadOnlyObservableCollection<UserGroup> UserGroups => _userGroups;
 
-        [Reactive]
-        public List<ChatViewModel> ChatViewModels { get; set; }
+        private ReadOnlyObservableCollection<ChatViewModel> _chatViewModels;
+        public ReadOnlyObservableCollection<ChatViewModel> ChatViewModels => _chatViewModels;
 
         [ObservableAsProperty]
         public bool IsActiveGroupAdmin { get; set; }
@@ -46,6 +57,9 @@ namespace Groover.AvaloniaUI.ViewModels
         public Group ActiveGroup { get; }
         [Reactive]
         public ChatViewModel ActiveChatViewModel { get; set; }
+
+        [Reactive]
+        public NotificationsViewModel NotificationsViewModel { get; set; }
 
         public ReactiveCommand<Unit, Unit> SwitchToHomeCommand { get; }
         public ReactiveCommand<int, Unit> SwitchGroupDisplay { get; }
@@ -59,8 +73,14 @@ namespace Groover.AvaloniaUI.ViewModels
         public ReactiveCommand<Unit, bool> LogoutCommand { get; }
         public ReactiveCommand<User, Unit> EditUserCommand { get; }
 
-        public AppViewModel(LoginResponse logResp, IUserService userService, IGroupService groupService, IMapper mapper)
+        public AppViewModel(LoginResponse logResp, 
+                            IUserService userService, 
+                            IGroupService groupService,
+                            IGroupChatService groupChatService,
+                            IMapper mapper,
+                            UserConstants userParameters)
         {
+
             SwitchToHomeCommand = ReactiveCommand.CreateFromTask(SwitchToHome);
             SwitchGroupDisplay = ReactiveCommand.CreateFromTask<int>(SwitchGroup);
             ChangeRoleCommand = ReactiveCommand.CreateFromTask<User>(ChangeRole);
@@ -75,13 +95,13 @@ namespace Groover.AvaloniaUI.ViewModels
 
             _userService = userService;
             _groupService = groupService;
+            _groupChatService = groupChatService;
             _mapper = mapper;
+            _userParams = userParameters;
 
-            LoginResponse = logResp;
-
-            //It is assumed that the application is closing
-            if (logResp == null)
-                return;
+            NotificationsViewModel = new NotificationsViewModel();
+            this.WhenAnyValue(vm => vm.ShowNotificationDialog)
+                .ToPropertyEx(NotificationsViewModel, x => x.ShowNotificationDialog);
 
             //Set active group when chatviewmodel changes
             this.WhenAnyValue(vm => vm.ActiveChatViewModel)
@@ -89,14 +109,281 @@ namespace Groover.AvaloniaUI.ViewModels
                 .ToPropertyEx(this, x => x.ActiveGroup);
 
             //Set active group isadmin
-            this.WhenAnyValue(vm => vm.ActiveChatViewModel)
-                .Where(cvm => cvm != null)
-                .Select(cvm => cvm.UserGroup.GroupRole == "Admin")
+            this.WhenAnyValue(vm => vm.ActiveChatViewModel.UserGroup.GroupRole)
+                .Select(role => role == "Admin")
                 .ToPropertyEx(this, x => x.IsActiveGroupAdmin);
 
-            UserGroups = logResp.User.UserGroups.ToList();
-            ChatViewModels = GenerateChatViewModels();
+            InitializeLoginResponse(logResp);
         }
+
+        public async Task InitializeChatConnections()
+        {
+            var connection = await this._groupChatService.InitializeConnection();
+            connection.On<UserGroup>("GroupCreated", async (ug) => 
+            {
+                _userGroupsCache.AddOrUpdate(ug);
+                await this._groupChatService.JoinGroup(ug.Group.Id);
+
+                NotificationsViewModel.AddNotification(new NotificationViewModel()
+                {
+                    TitleText = "New group created!",
+                    BodyText = $"Group '{ug.Group.Name}' has been successfully created!"
+                });
+            });
+
+            connection.On<string>("GroupDeleted", async (groupId) =>
+            {
+                if (int.TryParse(groupId, out int gId))
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    if (ug != null)
+                    {
+                        await this._groupChatService.LeaveGroup(ug.Group.Id);
+                        _userGroupsCache.Remove(ug);
+
+                        SwitchToHomeCommand.Execute().Subscribe();
+
+                        NotificationsViewModel.AddNotification(new NotificationViewModel()
+                        {
+                            TitleText = "A group has been deleted",
+                            BodyText = $"Group '{ug.Group.Name}' has been deleted."
+                        });
+                    }
+                }
+            });
+
+            connection.On<Group>("GroupUpdated", (group) =>
+            {
+                if (group != null)
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == group.Id);
+                    if (ug != null)
+                    {
+                        ug.Group.Name = group.Name;
+                        ug.Group.Description = group.Description;
+                        ug.Group.ImageBase64 = group.ImageBase64;
+                        _userGroupsCache.AddOrUpdate(ug);
+
+                        var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == group.Id);
+                        //cVm.UpdateGroupData(group);
+                    }
+                }
+            });
+
+            connection.On<string, GroupUser>("UserJoined", (groupId, gu) =>
+            {
+                if (int.TryParse(groupId, out int gId))
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    if (ug != null)
+                    {
+                        InsertGroupUser(ug.Group.GroupUsers, gu);
+
+                        var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                        //cVm.UserJoined(gu);
+                    }
+                }
+            });
+
+            connection.On<UserGroup>("LoggedInUserJoined", async (userGroup) =>
+            {
+                if (userGroup != null)
+                {
+                    _userGroupsCache.AddOrUpdate(userGroup);
+                    await this._groupChatService.JoinGroup(userGroup.Group.Id);
+
+
+                    NotificationsViewModel.AddNotification(new NotificationViewModel()
+                    {
+                        TitleText = "You have joined a group!",
+                        BodyText = $"You have joined '{userGroup.Group.Name}'!"
+                    });
+                }
+            });
+
+            connection.On<string, string>("UserLeft", async (groupId, userId) =>
+            {
+                if (int.TryParse(groupId, out int gId) &&
+                    int.TryParse(userId, out int uId))
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    if (ug != null)
+                    {
+                        if (uId == LoginResponse.User.Id)
+                        {
+                            _userGroupsCache.Remove(ug);
+                            await this._groupChatService.LeaveGroup(ug.Group.Id);
+                        }
+                        else
+                        {
+                            var gu = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
+                            if (gu != null)
+                            {
+                                ug.Group.GroupUsers.Remove(gu);
+
+                                var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                                //cVm.UserLeft(gu);
+                            }
+                        }
+                    }
+                }
+            });
+
+            connection.On<string, string, string>("UserRoleUpdated", (groupId, userId, newRole) =>
+            {
+                if (int.TryParse(groupId, out int gId) &&
+                    int.TryParse(userId, out int uId))
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    if (ug != null)
+                    {
+                        if (uId == LoginResponse.User.Id)
+                        {
+                            ug.GroupRole = newRole;
+                        }
+
+                        var gu = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
+                        if (gu != null)
+                        {
+                            gu.GroupRole = newRole;
+
+                            SortGroupUsers(ug.Group.GroupUsers);
+
+                            var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                            //cVm.UserRoleUpdated(uId, newRole);
+                        }
+                    }
+                }
+            });
+
+            connection.On<User>("LoggedInUserUpdated", (user) =>
+            {
+                if (user != null)
+                {
+                    LoginResponse.User.Username = user.Username;
+                    LoginResponse.User.Email = user.Email;
+                    LoginResponse.User.AvatarBase64 = user.AvatarBase64;
+                }
+            });
+
+            connection.On<string, User>("UserUpdated", (groupId, user) =>
+            {
+                if (int.TryParse(groupId, out int gId))
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    if (ug != null)
+                    {
+                        var tempUser = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == user.Id)?.User;
+                        if (tempUser != null)
+                        {
+                            tempUser.Username = user.Username;
+                            tempUser.Email = user.Email;
+                            tempUser.AvatarBase64 = tempUser.AvatarBase64;
+
+                            var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                            //cVm.UserUpdated(user);
+                        }
+                    }
+                }
+            });
+
+            connection.On<string, string>("ConnectedToGroup", async (groupId, userId) =>
+            {
+                if (int.TryParse(groupId, out int gId) &&
+                    int.TryParse(userId, out int uId))
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    if (ug != null)
+                    {
+                        var user = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
+                        if (user != null)
+                        {
+                            user.IsOnline = true;
+                            await _groupChatService.NotifyConnection(gId, uId);
+                        }
+                    }
+                }
+            });
+
+            connection.On<string, string>("DisconnectedFromGroup", (groupId, userId) =>
+            {
+                if (int.TryParse(groupId, out int gId) &&
+                    int.TryParse(userId, out int uId))
+                {
+                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    if (ug != null)
+                    {
+                        var user = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
+                        if (user != null)
+                        {
+                            user.IsOnline = false;
+                        }
+                    }
+                }
+            });
+
+            connection.On<string, Group, string>("UserInvited", (token, group, userId) =>
+            {
+                if (int.TryParse(userId, out int uId) &&
+                    !string.IsNullOrWhiteSpace(token))
+                {
+                    if (uId == LoginResponse.User.Id)
+                    {
+                        //Since receiving the token automatically replaces any + with whitespace, this quick and dirty code fixes that
+                        token = token.Replace(' ', '+');
+
+                        NotificationsViewModel.AddNotification(new InviteViewModel(group, token, uId, _groupService));
+                    }
+                }
+            });
+
+            //Do the rest of callbacks
+
+            await this._groupChatService.StartConnection();
+            
+            foreach (var ug in this.UserGroups)
+            {
+                await this._groupChatService.JoinGroup(ug.Group.Id);
+            }
+        }
+
+        private void InitializeLoginResponse(LoginResponse logResp)
+        {
+            //It is assumed that the application is closing
+            if (logResp == null)
+                return;
+
+            LoginResponse = logResp;
+
+            this._userGroupsCache = new SourceCache<UserGroup, int>(ug => ug.Group.Id);
+            _userGroupsCache.Connect()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _userGroups)
+                .Subscribe();
+
+            UserGroups.ToObservableChangeSet()
+                .Transform(ug => /*Gets triggered on updates as well, 
+                                  * this is a problem*/GenerateChatViewModel(ug))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _chatViewModels)
+                .Subscribe();
+
+            _userGroupsCache.AddOrUpdate(LoginResponse.User.UserGroups);
+        }
+
+        //private async Task UpdateLoginResponse()
+        //{
+        //    var newUserResp = await _userService.GetByIdAsync(LoginResponse.User.Id);
+        //    if (newUserResp.IsSuccessful)
+        //    {
+        //        LoginResponse.User = _mapper.Map<User>(newUserResp);
+        //        InitializeLoginResponse(LoginResponse);
+        //    }
+        //    else
+        //    {
+        //        //Display errors
+        //    }
+        //}
 
         public async Task SwitchGroup(int groupIdToSelect)
         {
@@ -105,17 +392,13 @@ namespace Groover.AvaloniaUI.ViewModels
             if (selectedUg == null)
                 return;
 
-            var group = selectedUg.Group;
-            group.GroupUsers = group.GroupUsers.OrderByDescending(x => x, _groupRoleComparer).ToList();
+            SortGroupUsers(selectedUg.Group.GroupUsers);
 
-            //IsActiveGroupAdmin = selectedUg.GroupRole == "Admin";
-            //ActiveGroup = group;
-            ActiveChatViewModel = this.ChatViewModels.Find(vm => vm.UserGroup.Group == group);
+            ActiveChatViewModel = this.ChatViewModels.FirstOrDefault(vm => vm.UserGroup.Group == selectedUg.Group);
         }
 
         public async Task SwitchToHome()
         {
-            //ActiveGroup = null;
             ActiveChatViewModel = null;
         }
 
@@ -124,17 +407,24 @@ namespace Groover.AvaloniaUI.ViewModels
             List<ChatViewModel> chatViewModels = new List<ChatViewModel>();
             foreach (var userGroup in UserGroups)
             {
-                var viewModel = new ChatViewModel();
-
-                //Set callbacks
-
-                //Set data
-                viewModel.InitializeData(LoginResponse.User, userGroup, _groupService);
+                var viewModel = GenerateChatViewModel(userGroup);
 
                 chatViewModels.Add(viewModel);
             }
 
             return chatViewModels;
+        }
+
+        private ChatViewModel GenerateChatViewModel(UserGroup userGroup)
+        {
+            var viewModel = new ChatViewModel();
+
+            //Set callbacks
+
+            //Set data
+            viewModel.InitializeData(LoginResponse.User, userGroup, _groupService);
+
+            return viewModel;
         }
 
         private async Task EditGroup(Group group)
@@ -148,7 +438,57 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (groupResponse != null)
             {
-                //Await update? Or force update
+                if (!groupResponse.IsSuccessful)
+                {
+                    string titleText = $"Error updating group '{group.Name}'";
+                    string bodyText = "Unknown error occured.";
+
+                    if (groupResponse.ErrorResponse != null)
+                    {
+                        switch (groupResponse.ErrorResponse.ErrorCode)
+                        {
+                            case "not_admin":
+                                bodyText = "User is not the admin of the group.";
+                                break;
+                            case "undefined":
+                                bodyText = "Group data is undefined.";
+                                break;
+                            case "not_found":
+                                bodyText = "Couldn't find the group.";
+                                break;
+                            case "bad_format":
+                                bodyText = "Format of the image is invalid.";
+                                break;
+                            case "too_wide":
+                                bodyText = $"Image is too wide. Maximum width is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_narrow":
+                                bodyText = $"Image is too narrow. Minimum width is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_tall":
+                                bodyText = $"Image is too tall. Maximum height is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_short":
+                                bodyText = $"Image is too short. Minimum height is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_big":
+                                bodyText = $"Image is too big. Maximum size is '{groupResponse.ErrorResponse.ErrorValue}' bytes.";
+                                break;
+                            case "failed_validation":
+                                bodyText = "One of the fields was invalid.";
+                                break;
+                            default:
+                                bodyText = "Unknown error occured.";
+                                break;
+                        }
+                    }
+
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(groupResponse.ErrorResponse?.ErrorCode ?? groupResponse.StatusCode.ToString())
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
+                }
             }
         }
 
@@ -162,7 +502,60 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (groupResponse != null)
             {
-                //Await update? Or force update
+                if (!groupResponse.IsSuccessful)
+                {
+                    string titleText = $"Error creating a new group";
+                    string bodyText = "Unknown error occured.";
+
+                    if (groupResponse.ErrorResponse != null)
+                    {
+                        switch (groupResponse.ErrorResponse.ErrorCode)
+                        {
+                            case "bad_id":
+                                bodyText = "Id of the user is invalid.";
+                                break;
+                            case "undefined":
+                                bodyText = "Group data is undefined.";
+                                break;
+                            case "not_found":
+                                bodyText = "Couldn't find the user.";
+                                break;
+                            case "duplicate_name":
+                                bodyText = "A group with an identical name already exists.";
+                                break;
+                            case "bad_format":
+                                bodyText = "Format of the image is invalid.";
+                                break;
+                            case "too_wide":
+                                bodyText = $"Image is too wide. Maximum width is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_narrow":
+                                bodyText = $"Image is too narrow. Minimum width is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_tall":
+                                bodyText = $"Image is too tall. Maximum height is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_short":
+                                bodyText = $"Image is too short. Minimum height is '{groupResponse.ErrorResponse.ErrorValue}' px.";
+                                break;
+                            case "too_big":
+                                bodyText = $"Image is too big. Maximum size is '{groupResponse.ErrorResponse.ErrorValue}' bytes.";
+                                break;
+                            case "failed_validation":
+                                bodyText = "One of the fields was invalid.";
+                                break;
+                            default:
+                                bodyText = "Unknown error occured.";
+                                break;
+                        }
+                    }
+
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(groupResponse.ErrorResponse?.ErrorCode ?? groupResponse.StatusCode.ToString())
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
+                }
             }
         }
 
@@ -180,37 +573,42 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 var response = await _groupService.UpdateUserRoleAsync(ActiveGroup.Id, user.Id, chosenNewRole.Value);
 
-                if (response.IsSuccessful)
+                if (!response.IsSuccessful)
                 {
-                    //Display confirmation message
-                    //Wait for notification to update or update right away?
-                }
-                else
-                {
-                    string errorMessage;
-                    switch (response.ErrorResponse.ErrorCode)
+                    string titleText = $"Error changing the group role: User '{user.Username}' in group '{ActiveGroup.Name}'";
+                    string bodyText = "Unknown error occured.";
+
+                    if (response.ErrorResponse != null)
                     {
-                        case "bad_id":
-                            errorMessage = "One of the ID's is in an invalid format.";
-                            break;
-                        case "bad_role":
-                            errorMessage = "New role unrecognized.";
-                            break;
-                        case "not_found_group":
-                            errorMessage = "Chosen group does not exist.";
-                            break;
-                        case "not_found":
-                            errorMessage = "User is not a member of the group.";
-                            break;
-                        case "last_admin":
-                            errorMessage = "User is the last admin of the group, and can't be demoted.";
-                            break;
-                        default:
-                            errorMessage = "Unknown error occured.";
-                            break;
+
+                        switch (response.ErrorResponse.ErrorCode)
+                        {
+                            case "bad_id":
+                                bodyText = "One of the ID's is in an invalid format.";
+                                break;
+                            case "bad_role":
+                                bodyText = "New role unrecognized.";
+                                break;
+                            case "not_found_group":
+                                bodyText = "Chosen group does not exist.";
+                                break;
+                            case "not_found":
+                                bodyText = "User is not a member of the group.";
+                                break;
+                            case "last_admin":
+                                bodyText = "User is the last admin of the group, and can't be demoted.";
+                                break;
+                            default:
+                                bodyText = "Unknown error occured.";
+                                break;
+                        }
                     }
 
-                    //Display error message
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(response.ErrorResponse?.ErrorCode ?? response.StatusCode.ToString())
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
                 }
             }
         }
@@ -226,7 +624,110 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (userResponse != null)
             {
-                //Await update? Or force update
+                if (userResponse.IsSuccessful)
+                {
+                    string titleText = $"Error updating the logged-in user";
+                    string bodyText = "Unknown error occured.";
+                    string errorCode = userResponse.StatusCode.ToString();
+
+                    if (userResponse.ErrorResponse != null)
+                    {
+                        if (userResponse.ErrorCodes.Count > 1)
+                        {
+                            foreach (var code in userResponse.ErrorCodes)
+                            {
+                                StringBuilder bodyBuilder = new StringBuilder();
+                                switch (code)
+                                {
+                                    case "InvalidUserName":
+                                        bodyBuilder.Append("Invalid username format. ");
+                                        break;
+                                    case "InvalidEmail":
+                                        bodyBuilder.Append("Invalid email format. ");
+                                        break;
+                                    case "DuplicateUserName":
+                                        bodyBuilder.Append("User name is already taken. ");
+                                        break;
+                                    case "DuplicateEmail":
+                                        bodyBuilder.Append("Email address is already taken. ");
+                                        break;
+                                    case "PasswordTooShort":
+                                        bodyBuilder.Append($"Passwords must be at least {_userParams.PasswordMinLength} characters. ");
+                                        break;
+                                    case "PasswordRequiresUniqueChars":
+                                        bodyBuilder.Append($"Passwords must use at least {_userParams.PasswordMinUnique} different characters. ");
+                                        break;
+                                    case "PasswordRequiresNonAlphanumeric":
+                                        bodyBuilder.Append("Passwords must have at least one non alphanumeric character. ");
+                                        break;
+                                    case "PasswordRequiresLower":
+                                        bodyBuilder.Append("Passwords must have at least one lowercase ('a'-'z'). ");
+                                        break;
+                                    case "PasswordRequiresUpper":
+                                        bodyBuilder.Append("Passwords must have at least one uppercase ('A'-'Z'). ");
+                                        break;
+                                    case "PasswordRequiredDigit":
+                                        bodyBuilder.Append("Passwords must have at least one digit ('0'-'9'). ");
+                                        break;
+                                    case "DefaultError":
+                                        bodyBuilder.Append("An error has occured. ");
+                                        break;
+                                    default:
+                                        bodyText = $"Unknown error '{code}' occured. ";
+                                        break;
+                                }
+                                bodyText = bodyBuilder.ToString();
+                                errorCode = "failed_validation";
+                            }
+                        }
+                        else
+                        {
+                            switch (userResponse.ErrorResponse.ErrorCode)
+                            {
+                                case "undefined":
+                                    bodyText = "User data is undefined.";
+                                    break;
+                                case "not_found":
+                                    bodyText = "Couldn't find the user.";
+                                    break;
+                                case "DuplicateUserName":
+                                    bodyText = "A user with an identical name already exists.";
+                                    break;
+                                case "bad_format":
+                                    bodyText = "Format of the image is invalid.";
+                                    break;
+                                case "too_wide":
+                                    bodyText = $"Image is too wide. Maximum width is '{userResponse.ErrorResponse.ErrorValue}' px.";
+                                    break;
+                                case "too_narrow":
+                                    bodyText = $"Image is too narrow. Minimum width is '{userResponse.ErrorResponse.ErrorValue}' px.";
+                                    break;
+                                case "too_tall":
+                                    bodyText = $"Image is too tall. Maximum height is '{userResponse.ErrorResponse.ErrorValue}' px.";
+                                    break;
+                                case "too_short":
+                                    bodyText = $"Image is too short. Minimum height is '{userResponse.ErrorResponse.ErrorValue}' px.";
+                                    break;
+                                case "too_big":
+                                    bodyText = $"Image is too big. Maximum size is '{userResponse.ErrorResponse.ErrorValue}' bytes.";
+                                    break;
+                                case "failed_validation":
+                                    bodyText = "One of the fields was invalid.";
+                                    break;
+                                default:
+                                    bodyText = "Unknown error occured.";
+                                    break;
+                            }
+                            errorCode = userResponse.ErrorResponse.ErrorCode;
+                        }
+                    }
+
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(errorCode)
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
+                }
             }
         }
 
@@ -240,11 +741,11 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (logoutAccepted)
             {
-                UserGroups = null;
+                _userGroupsCache.Clear();
                 ActiveChatViewModel = null;
-                ChatViewModels = null;
                 LoginResponse = null;
                 _userService.Logout();
+                await _groupChatService.Reset();
                 return true;
             }
             else
@@ -263,31 +764,41 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 var response = await _groupService.RemoveUserAsync(ActiveGroup.Id, user.Id);
 
-                if (response.IsSuccessful)
+                if (!response.IsSuccessful)
                 {
-                    //Display confirmation message
-                    //Wait for notification to update or update right away?
-                }
-                else
-                {
-                    string errorMessage;
-                    switch (response.ErrorResponse.ErrorCode)
+                    string titleText = $"Error removing a user: User '{user.Username}' in group '{ActiveGroup.Name}'";
+                    string bodyText = "Unknown error occured.";
+
+                    if (response.ErrorResponse != null)
                     {
-                        case "bad_id":
-                            errorMessage = "One of the ID's is in an invalid format.";
-                            break;
-                        case "not_found_group":
-                            errorMessage = "Chosen group does not exist.";
-                            break;
-                        case "not_found":
-                            errorMessage = "User is not a member of the group.";
-                            break;
-                        default:
-                            errorMessage = "Unknown error occured.";
-                            break;
+                        switch (response.ErrorResponse.ErrorCode)
+                        {
+                            case "bad_id":
+                                bodyText = "Group or user id are invalid.";
+                                break;
+                            case "not_admin":
+                                bodyText = "User is not an admin of the group.";
+                                break;
+                            case "not_found_group":
+                                bodyText = "Chosen group does not exist.";
+                                break;
+                            case "not_found":
+                                bodyText = "User is not a member of the group.";
+                                break;
+                            case "last_admin":
+                                bodyText = "User is the last admin of a non-empty group and cannot leave.";
+                                break;
+                            default:
+                                bodyText = "Unknown error occured.";
+                                break;
+                        }
                     }
 
-                    //Display error message
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(response.ErrorResponse?.ErrorCode ?? response.StatusCode.ToString())
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
                 }
             }
         }
@@ -305,34 +816,41 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 var response = await _groupService.InviteUserAsync(group.Id, chosenUserId.Value);
 
-                if (response.IsSuccessful)
+                if (!response.IsSuccessful)
                 {
-                    //Display confirmation message
-                    //Wait for notification to update or update right away?
-                }
-                else
-                {
-                    string errorMessage;
-                    switch (response.ErrorResponse.ErrorCode)
+                    string titleText = $"Error inviting a user to group '{group.Name}'";
+                    string bodyText = "Unknown error occured.";
+
+                    if (response.ErrorResponse != null)
                     {
-                        case "bad_id":
-                            errorMessage = "One of the ID's is in an invalid format.";
-                            break;
-                        case "not_found_group":
-                            errorMessage = "Chosen group does not exist.";
-                            break;
-                        case "not_found":
-                            errorMessage = "User is not a member of the group.";
-                            break;
-                        case "already_member":
-                            errorMessage = "User is already a member of the group.";
-                            break;
-                        default:
-                            errorMessage = "Unknown error occured.";
-                            break;
+                        switch (response.ErrorResponse.ErrorCode)
+                        {
+                            case "bad_id":
+                                bodyText = "User or group id is invalid.";
+                                break;
+                            case "not_found_group":
+                                bodyText = "Group does not exist.";
+                                break;
+                            case "not_found":
+                                bodyText = "User does not exist.";
+                                break;
+                            case "not_admin":
+                                bodyText = "User is not an admin of the group and can't send invites.";
+                                break;
+                            case "already_member":
+                                bodyText = "Invited user is already a member of the group.";
+                                break;
+                            default:
+                                bodyText = "Unknown error occured.";
+                                break;
+                        }
                     }
 
-                    //Display error message
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(response.ErrorResponse?.ErrorCode ?? response.StatusCode.ToString())
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
                 }
             }
         }
@@ -349,32 +867,42 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 var response = await _groupService.RemoveUserAsync(group.Id, LoginResponse.User.Id);
 
-                if (response.IsSuccessful)
+                if (!response.IsSuccessful)
                 {
-                    //Display confirmation message
-                    //Wait for notification to update or update right away?
-                }
-                else
-                {
-                    string errorMessage;
-                    switch (response.ErrorResponse.ErrorCode)
+                    string titleText = $"Error leaving group '{group.Name}'";
+                    string bodyText = "Unknown error occured.";
+
+                    if (response.ErrorResponse != null)
                     {
-                        case "bad_id":
-                            errorMessage = "One of the ID's is in an invalid format.";
-                            break;
-                        case "not_found_group":
-                            errorMessage = "Chosen group does not exist.";
-                            break;
-                        case "not_found":
-                            errorMessage = "User is not the member of the group.";
-                            break;
-                        default:
-                            errorMessage = "Unknown error occured.";
-                            break;
+                        switch (response.ErrorResponse.ErrorCode)
+                        {
+                            case "bad_id":
+                                bodyText = "Group or user id are invalid.";
+                                break;
+                            case "not_admin":
+                                bodyText = "User is not an admin of the group.";
+                                break;
+                            case "not_found_group":
+                                bodyText = "Chosen group does not exist.";
+                                break;
+                            case "not_found":
+                                bodyText = "User is not a member of the group.";
+                                break;
+                            case "last_admin":
+                                bodyText = "User is the last admin of a non-empty group and cannot leave.";
+                                break;
+                            default:
+                                bodyText = "Unknown error occured.";
+                                break;
+                        }
                     }
 
-                    //Display error message
-                }
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(response.ErrorResponse?.ErrorCode ?? response.StatusCode.ToString())
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
+                }          
             }
         }
 
@@ -390,30 +918,154 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 var response = await _groupService.DeleteGroupAsync(group.Id);
 
-                if (response.IsSuccessful)
+                if (!response.IsSuccessful)
                 {
-                    //Display confirmation message
-                    //Wait for notification to update or update right away?
-                }
-                else
-                {
-                    string errorMessage;
-                    switch (response.ErrorResponse.ErrorCode)
+                    string titleText = $"Error deleting group '{group.Name}'";
+                    string bodyText = "Unknown error occured.";
+
+                    if (response.ErrorResponse != null)
                     {
-                        case "bad_id":
-                            errorMessage = "Group ID is in an invalid format.";
-                            break;
-                        case "not_found":
-                            errorMessage = "Chosen group does not exist.";
-                            break;
-                        default:
-                            errorMessage = "Unknown error occured.";
-                            break;
+                        switch (response.ErrorResponse.ErrorCode)
+                        {
+                            case "bad_id":
+                                bodyText = "Group id is invalid.";
+                                break;
+                            case "not_admin":
+                                bodyText = "User is not an admin of the group.";
+                                break;
+                            case "not_found":
+                                bodyText = "Group does not exist.";
+                                break;
+                            default:
+                                bodyText = "Unknown error occured.";
+                                break;
+                        }
                     }
 
-                    //Display error message
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(response.ErrorResponse?.ErrorCode ?? response.StatusCode.ToString())
+                    {
+                        TitleText = titleText,
+                        BodyText = bodyText
+                    });
                 }
             }
         }
+
+        #region GroupUsers methods
+        /// <summary>
+        /// This method sorts a collection of GroupUsers by their roles using a comparer in the class. The algortihm used is
+        /// inplace insertion sort.
+        /// </summary>
+        /// <param name="groupUsers"></param>
+        private void SortGroupUsers(ObservableCollection<GroupUser> groupUsers, bool ascending = false)
+        {
+            if (ascending)
+            {
+                for (int i = 0; i < groupUsers.Count - 1; i++)
+                {
+                    int targetElemInd = i;
+                    GroupUser targetElem = groupUsers[targetElemInd];
+
+                    for (int j = i + 1; j < groupUsers.Count; j++)
+                    {
+                        GroupUser currentElem = groupUsers[j];
+                        int compareValue = _groupRoleComparer.Compare(targetElem, currentElem);
+                        if (compareValue > 0)
+                        {
+                            targetElemInd = j;
+                            targetElem = currentElem;
+                        }
+                    }
+
+                    if (targetElemInd != i)
+                    {
+                        groupUsers.Move(targetElemInd, i);
+                        groupUsers.Move(i + 1, targetElemInd);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < groupUsers.Count - 1; i++)
+                {
+                    int targetElemInd = i;
+                    GroupUser targetElem = groupUsers[targetElemInd];
+
+                    for (int j = i + 1; j < groupUsers.Count; j++)
+                    {
+                        GroupUser currentElem = groupUsers[j];
+                        int compareValue = _groupRoleComparer.Compare(targetElem, currentElem);
+                        if (compareValue < 0)
+                        {
+                            targetElemInd = j;
+                            targetElem = currentElem;
+                        }
+                    }
+
+                    if (targetElemInd != i)
+                    {
+                        groupUsers.Move(targetElemInd, i);
+                        groupUsers.Move(i + 1, targetElemInd);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method will assume that the supplied collection is already sorted using the class comparer, and will insert
+        /// the new group user accordingly.
+        /// </summary>
+        /// <param name="groupUsers"></param>
+        /// <param name="newGroupUser"></param>
+        private void InsertGroupUser(ObservableCollection<GroupUser> groupUsers, GroupUser newGroupUser, bool ascending = false)
+        {
+            if (ascending)
+            {
+                int i = 0;
+                int compareValue;
+                do
+                {
+                    compareValue = _groupRoleComparer.Compare(newGroupUser, groupUsers[i]);
+                    i++;
+                }
+                while (compareValue < 0 &&
+                       i < groupUsers.Count);
+
+
+                //Found the spot
+                if (compareValue >= 0)
+                {
+                    groupUsers.Insert(i - 1, newGroupUser);
+                }
+                else //Spot is at the end of the collection
+                {
+                    groupUsers.Insert(i, newGroupUser);
+                }
+            }
+            else
+            {
+                int i = 0;
+                int compareValue;
+                do
+                {
+                    compareValue = _groupRoleComparer.Compare(newGroupUser, groupUsers[i]);
+                    i++;
+                }
+                while (compareValue > 0 &&
+                       i < groupUsers.Count);
+
+
+                //Found the spot
+                if (compareValue <= 0)
+                {
+                    groupUsers.Insert(i - 1, newGroupUser);
+                }
+                else //Spot is at the end of the collection
+                {
+                    groupUsers.Insert(i, newGroupUser);
+                }
+            }
+        }
+        #endregion
     }
 }
