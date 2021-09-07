@@ -477,6 +477,9 @@ namespace Groover.AvaloniaUI.ViewModels
                             case "failed_validation":
                                 bodyText = "One of the fields was invalid.";
                                 break;
+                            case "invalid_extension":
+                                bodyText = $"File has invalid extension. Allowed extensions: {groupResponse.ErrorResponse.ErrorValue}";
+                                break;
                             default:
                                 bodyText = "Unknown error occured.";
                                 break;
@@ -543,6 +546,9 @@ namespace Groover.AvaloniaUI.ViewModels
                                 break;
                             case "failed_validation":
                                 bodyText = "One of the fields was invalid.";
+                                break;
+                            case "invalid_extension":
+                                bodyText = $"File has invalid extension. Allowed extensions: {groupResponse.ErrorResponse.ErrorValue}";
                                 break;
                             default:
                                 bodyText = "Unknown error occured.";

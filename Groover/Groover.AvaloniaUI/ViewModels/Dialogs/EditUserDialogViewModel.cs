@@ -208,11 +208,14 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
                     case "PasswordRequiresUpper":
                         matchMessage = "Passwords must have at least one uppercase ('A'-'Z').";
                         break;
-                    case "PasswordRequiredDigit":
+                    case "PasswordRequiresDigit":
                         matchMessage = "Passwords must have at least one digit ('0'-'9').";
                         break;
                     case "DefaultError":
                         matchMessage = "An error has occured.";
+                        break;
+                    case "bad_format":
+                        matchMessage = "Image format is invalid.";
                         break;
                     case "too_wide":
                         matchMessage = $"Image is too wide. Max width: {int.Parse(response.ErrorResponse.ErrorValue)} px";

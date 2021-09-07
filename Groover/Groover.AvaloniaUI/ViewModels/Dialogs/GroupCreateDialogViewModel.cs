@@ -53,6 +53,12 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
                     case "undefined":
                         matchMessage = "Group update data undefined.";
                         break;
+                    case "duplicate_name":
+                        matchMessage = "A group with an identical name already exists.";
+                        break;
+                    case "bad_format":
+                        matchMessage = "Image format is invalid.";
+                        break;
                     case "too_wide":
                         matchMessage = $"Image is too wide. Max width: {int.Parse(response.ErrorResponse.ErrorValue)} px";
                         break;
@@ -66,7 +72,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
                         matchMessage = $"Image is too short. Min height: {int.Parse(response.ErrorResponse.ErrorValue)} px";
                         break;
                     case "too_big":
-                        matchMessage = $"Image is too big. Max size: {double.Parse(response.ErrorResponse.ErrorValue)} mb";
+                        matchMessage = $"Image is too big. Max size: {double.Parse(response.ErrorResponse.ErrorValue)} bytes";
                         break;
                     case "invalid_extension":
                         matchMessage = $"File has invalid extension. Allowed extensions: {response.ErrorResponse.ErrorValue}";
