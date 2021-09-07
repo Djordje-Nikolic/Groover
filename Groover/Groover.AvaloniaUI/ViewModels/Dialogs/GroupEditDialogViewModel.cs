@@ -64,6 +64,12 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
                     case "undefined":
                         matchMessage = "Group update data undefined.";
                         break;
+                    case "duplicate_name":
+                        matchMessage = "A group with an identical name already exists.";
+                        break;
+                    case "bad_format":
+                        matchMessage = "Image format is invalid.";
+                        break;
                     case "too_wide":
                         matchMessage = $"Image is too wide. Max width: {int.Parse(response.ErrorResponse.ErrorValue)} px";
                         break;
