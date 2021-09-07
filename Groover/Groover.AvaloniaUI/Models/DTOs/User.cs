@@ -2,65 +2,86 @@
 using Avalonia.Media.Imaging;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Utils;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models.DTOs
 {
-    public class User : IDeepCopy<User>
+    [DataContract]
+    public class User : ReactiveObject, IDeepCopy<User>
     {
+        [Reactive]
+        [DataMember]
         public int Id { get; set; }
+        [Reactive]
+        [DataMember]
         public string Username { get; set; }
+        [Reactive]
+        [DataMember]
         public string Email { get; set; }
-        public ICollection<UserGroup> UserGroups { get; set; }
+        [Reactive]
+        [DataMember]
+        public ObservableCollection<UserGroup> UserGroups { get; set; }
 
-        private bool _avatarChanged;
+        [Reactive]
+        [IgnoreDataMember]
+        public bool IsOnline { get; set; }
+
+        [IgnoreDataMember]
         private byte[] _avatarBytes;
-        private Bitmap? _avatarImage;
+        [DataMember]
         public string AvatarBase64
         {
-            get { return Convert.ToBase64String(AvatarBytes); }
+            get
+            {
+                return AvatarBytes != null ? Convert.ToBase64String(AvatarBytes) : null;
+            }
             set
             {
-                AvatarBytes = Convert.FromBase64String(value);
+                AvatarBytes = value != null ? Convert.FromBase64String(value) : null;
             }
         }
+        [IgnoreDataMember]
         public byte[] AvatarBytes
         {
             get { return _avatarBytes; }
             set
             {
-                _avatarChanged = true;
-                _avatarBytes = value;
+                this.RaiseAndSetIfChanged(ref _avatarBytes, value);
             }
         }
-        public Bitmap? AvatarImage
+
+        [IgnoreDataMember]
+        [ObservableAsProperty]
+        public Bitmap? AvatarImage { get; }
+
+        public User()
         {
-            get
-            {
-                if (_avatarChanged)
+            this.WhenAnyValue(user => user.AvatarBytes)
+                .Select(bytes =>
                 {
-                    if (AvatarBytes != null && AvatarBytes.Length > 0)
+                    if (bytes != null && bytes.Length > 0)
                     {
-                        using (var ms = new MemoryStream(AvatarBytes))
+                        using (var ms = new MemoryStream(bytes))
                         {
-                            _avatarImage = new Bitmap(ms);
+                            return new Bitmap(ms);
                         }
                     }
                     else
                     {
-                        _avatarImage = null;
+                        return null;
                     }
-
-                    _avatarChanged = false;
-                }
-
-                return _avatarImage;
-            }
+                })
+                .ToPropertyEx(this, user => user.AvatarImage);
         }
 
         public User DeepCopy(IMapper mapper)

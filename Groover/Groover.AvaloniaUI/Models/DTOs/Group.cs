@@ -2,28 +2,43 @@
 using Avalonia.Media.Imaging;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Utils;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models.DTOs
 {
-    public class Group : IDeepCopy<Group>
+    [DataContract]
+    public class Group : ReactiveObject, IDeepCopy<Group>
     {
+        [Reactive]
+        [DataMember]
         public int Id { get; set; }
+        [Reactive]
+        [DataMember]
         public string Name { get; set; }
+        [Reactive]
+        [DataMember]
         public string Description { get; set; }
-        public ICollection<GroupUser> GroupUsers { get; set; }
 
-        private bool _imageChanged;
+        [Reactive]
+        [DataMember]
+        public ObservableCollection<GroupUser> GroupUsers { get; set; }
+
+        [IgnoreDataMember]
         private byte[] _imageBytes;
-        private Bitmap? _image;
+        [DataMember]
         public string ImageBase64
         {
-            get 
+            get
             {
                 return ImageBytes != null ? Convert.ToBase64String(ImageBytes) : null;
             }
@@ -32,38 +47,38 @@ namespace Groover.AvaloniaUI.Models.DTOs
                 ImageBytes = value != null ? Convert.FromBase64String(value) : null;
             }
         }
+        [IgnoreDataMember]
         public byte[] ImageBytes
         {
             get { return _imageBytes; }
             set
             {
-                _imageChanged = true;
-                _imageBytes = value;
+                this.RaiseAndSetIfChanged(ref _imageBytes, value);
             }
         }
-        public Bitmap? Image
+
+        [IgnoreDataMember]
+        [ObservableAsProperty]
+        public Bitmap? Image { get; }
+
+        public Group()
         {
-            get
-            {
-                if (_imageChanged)
+            this.WhenAnyValue(user => user.ImageBytes)
+                .Select(bytes =>
                 {
-                    if (ImageBytes != null && ImageBytes.Length > 0)
+                    if (bytes != null && bytes.Length > 0)
                     {
-                        using (var ms = new MemoryStream(ImageBytes))
+                        using (var ms = new MemoryStream(bytes))
                         {
-                            _image = new Bitmap(ms);
+                            return new Bitmap(ms);
                         }
                     }
                     else
                     {
-                        _image = null;
+                        return null;
                     }
-
-                    _imageChanged = false;
-                }
-
-                return _image;
-            }
+                })
+                .ToPropertyEx(this, user => user.Image);
         }
 
         public Group DeepCopy(IMapper mapper)

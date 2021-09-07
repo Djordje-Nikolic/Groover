@@ -13,6 +13,7 @@ namespace Groover.AvaloniaUI.Services.Interfaces
     {
         Task<BaseResponse> DeleteGroupAsync(int groupId);
         Task<BaseResponse> InviteUserAsync(int groupId, int userId);
+        Task<BaseResponse> AcceptInviteAsync(string token, int groupId, int userId);
         Task<BaseResponse> RemoveUserAsync(int groupId, int userId);
         Task<BaseResponse> UpdateUserRoleAsync(int groupId, int userId, GrooverGroupRole newRole);
         Task<GroupResponse> UpdateGroupAsync(GroupRequest groupRequest);

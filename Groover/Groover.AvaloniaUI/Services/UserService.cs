@@ -39,7 +39,7 @@ namespace Groover.AvaloniaUI.Services
 
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
-            return await this.SendRequestAsync<RegisterRequest, RegisterResponse>(request, HttpMethod.Post, _controller, "register");
+            return await this.SendRequestAsync<RegisterRequest, RegisterResponse>(request, HttpMethod.Post, _controller, "register", 0);
         }
 
         public async Task<UserResponse> GetByUsernameAsync(string username)
@@ -49,9 +49,11 @@ namespace Groover.AvaloniaUI.Services
             return await this.SendRequestAsync<UserResponse>(queryParams, HttpMethod.Get, _controller, "getByUsername");
         }
 
-        public async Task LogoutAsync()
+        public async Task<UserResponse> GetByIdAsync(int id)
         {
-            _apiService.RemoveAccessToken();
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add("id", id.ToString());
+            return await this.SendRequestAsync<UserResponse>(queryParams, HttpMethod.Get, _controller, "getById");
         }
 
         public async Task<byte[]> GetAvatarAsync(int userId)

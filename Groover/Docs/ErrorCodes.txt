@@ -57,6 +57,8 @@ Groover Group Service Error List:
 6 already_member
 7 undefined							Data undefined
 8 failed_validation
+9 not_admin
+10 not_member
 
 Groover Hubs Error List:
 

@@ -3,6 +3,7 @@ using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Utils;
 using Groover.AvaloniaUI.ViewModels.Dialogs;
+using Groover.AvaloniaUI.ViewModels.Notifications;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Splat;
@@ -15,6 +16,7 @@ namespace Groover.AvaloniaUI.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         //Change this to return some ViewModel if necessary
+        public Interaction<NotificationViewModel, NotificationViewModel?> ShowNotificationDialog { get; set; }
         public Interaction<WelcomeViewModel, WelcomeDialogResult?> ShowWelcomeDialog { get; set; }
         public Interaction<BaseGroupViewModel, GroupResponse?> ShowGroupEditDialog { get; set; }
         public Interaction<EditUserDialogViewModel, UserResponse?> ShowUserEditDialog { get; set; }
@@ -34,6 +36,7 @@ namespace Groover.AvaloniaUI.ViewModels
             ShowUserSearchDialog = new Interaction<ChooseUserDialogViewModel, int?>();
             ShowGroupEditDialog = new Interaction<BaseGroupViewModel, GroupResponse?>();
             ShowUserEditDialog = new Interaction<EditUserDialogViewModel, UserResponse?>();
+            ShowNotificationDialog = new Interaction<NotificationViewModel, NotificationViewModel?>();
 
             WelcomeDialogCommand = ReactiveCommand.CreateFromTask(async () =>
             {

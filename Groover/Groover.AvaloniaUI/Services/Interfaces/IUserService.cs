@@ -13,6 +13,7 @@ namespace Groover.AvaloniaUI.Services.Interfaces
         Task<LoginResponse> LoginAsync(LoginRequest request);
         Task<RegisterResponse> RegisterAsync(RegisterRequest request);
         Task<UserResponse> GetByUsernameAsync(string username);
+        Task<UserResponse> GetByIdAsync(int id);
         Task<byte[]> GetAvatarAsync(int userId);
         Task<BaseResponse> SetAvatarAsync(/* Some image*/);
         Task<UserResponse> UpdateUserAsync(UserRequest request);

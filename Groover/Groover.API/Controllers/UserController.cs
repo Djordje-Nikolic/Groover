@@ -39,13 +39,29 @@ namespace Groover.API.Controllers
             _logger = logger;
         }
 
+        [HttpGet("getById")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            _logger.LogInformation($"Attempting to retrieve the user by id: {id}");
+
+            if (id != GetUserId())
+                return Unauthorized();
+
+            var userDTO = await _userService.GetUserAsync(id);
+            var response = _autoMapper.Map<UserResponse>(userDTO);
+
+            _logger.LogInformation($"Successfully retrieved the user by id: {id}");
+
+            return Ok(response);
+        }
+
         [HttpGet("getByUsername")]
         public async Task<IActionResult> GetByUsername(string username)
         {
             _logger.LogInformation($"Attempting to retrieve the user: {username}");
 
             var userDTO = await _userService.GetUserAsync(username);
-            var response = _autoMapper.Map<UserResponse>(userDTO);
+            var response = _autoMapper.Map<UserLiteResponse>(userDTO);
 
             _logger.LogInformation($"Successfully retrieved the user: {username}");
             return Ok(response);
@@ -168,7 +184,7 @@ namespace Groover.API.Controllers
 
             _logger.LogInformation($"Successfully refreshed the JWT token. New refresh token: {response.RefreshToken}");
 
-            return Ok(response);
+            return Ok(new { token = response.Token });
         }
 
         //Only global admin?
@@ -202,20 +218,6 @@ namespace Groover.API.Controllers
             var response = _autoMapper.Map<ICollection<UserResponse>>(userDTOs);
 
             _logger.LogInformation("Successfully fetched all the users from the database.");
-
-            return Ok(response);
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            _logger.LogInformation($"Attempting to fetch the user by id: {id}");
-
-            var userDTO = await _userService.GetUserAsync(id);
-            var response = _autoMapper.Map<UserResponse>(userDTO);
-
-            _logger.LogInformation($"Successfully fetched the user by id: {id}");
 
             return Ok(response);
         }

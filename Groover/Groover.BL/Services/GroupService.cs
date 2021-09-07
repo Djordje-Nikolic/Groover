@@ -75,7 +75,7 @@ namespace Groover.BL.Services
             Group group = _mapper.Map<Group>(groupDTO);
             
 
-            if (groupDTO.Image != null)
+            if (groupDTO.Image != null && groupDTO.Image.Length > 0)
             {
                 var imageBytes = await this._imageProcessor.CheckAsync(groupDTO.Image);
                 var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
@@ -124,12 +124,13 @@ namespace Groover.BL.Services
             var imageBytes = await this._imageProcessor.ProcessAsync(imageFile);
             if (imageBytes != group.Image)
             {
-                if (!string.IsNullOrWhiteSpace(group.ImagePath))
+                if (!string.IsNullOrWhiteSpace(group.ImagePath) &&
+                    group.ImagePath != _imageProcessor.GetDefaultGroupImage())
                 {
                     this._imageProcessor.DeleteImage(group.ImagePath);
                 }
 
-                if (imageBytes != null)
+                if (imageBytes != null && imageBytes.Length > 0)
                 {
                     var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
                     group.ImagePath = imagePath;
@@ -155,6 +156,12 @@ namespace Groover.BL.Services
             var group = await _context.Groups.FindAsync(id);
             if (group == null)
                 throw new NotFoundException($"No group by id {id}.", "not_found");
+
+            if (!string.IsNullOrWhiteSpace(group.ImagePath) &&
+                group.ImagePath != _imageProcessor.GetDefaultGroupImage())
+            {
+                this._imageProcessor.DeleteImage(group.ImagePath);
+            }
 
             var groupUsers = await _context.GroupUsers.Where(gu => gu.GroupId == id).ToListAsync();
             _context.GroupUsers.RemoveRange(groupUsers);
@@ -237,7 +244,7 @@ namespace Groover.BL.Services
             await _emailSender.SendEmailAsync(message);
         }
 
-        public async Task AcceptInviteAsync(string token, int groupId, int userId)
+        public async Task<GroupUserDTO> AcceptInviteAsync(string token, int groupId, int userId)
         {
             if (groupId <= 0)
                 throw new BadRequestException("Group id is invalid.", "bad_id");
@@ -266,9 +273,21 @@ namespace Groover.BL.Services
             groupUser.GroupRole = GroupRole.Member;
             await _context.GroupUsers.AddAsync(groupUser);
             await _context.SaveChangesAsync();
+
+            //Might need to cut down on some of these includes
+            groupUser = await _context.GroupUsers
+                .Where(gu => gu.GroupId == groupId && gu.UserId == userId)
+                .Include(gu => gu.User)
+                .Include(gu => gu.Group)
+                .ThenInclude(g => g.GroupUsers)
+                .ThenInclude(gu => gu.User)
+                .FirstOrDefaultAsync();
+
+            var groupUserDTO = this._mapper.Map<GroupUserDTO>(groupUser);
+            return groupUserDTO;
         }
 
-        public async Task RemoveUserAsync(int groupId, int userId)
+        public async Task<bool> RemoveUserAsync(int groupId, int userId)
         {
             if (groupId <= 0)
                 throw new BadRequestException("Group id is invalid.", "bad_id");
@@ -288,21 +307,23 @@ namespace Groover.BL.Services
             if (userToBeRemoved == null)
                 throw new NotFoundException("User is not a member of the group.", "not_found");
 
-            if (groupUsers.Count == 2)
+            if (userToBeRemoved.GroupRole == GroupRole.Admin &&
+                groupUsers.Count > 1)
             {
-                groupUsers.Remove(userToBeRemoved);
-
-                var lastUser = groupUsers.Last();
-                lastUser.GroupRole = GroupRole.Admin;
-                _context.GroupUsers.Update(lastUser);
-            }
-            else if (groupUsers.Count == 1)
-            {
-                _context.Groups.Remove(group);
+                var adminCount = groupUsers.Count(gu => gu.GroupRole == GroupRole.Admin);
+                if (adminCount == 1)
+                    throw new BadRequestException("User is last admin, cannot leave.", "last_admin");
             }
 
             _context.GroupUsers.Remove(userToBeRemoved);
             await _context.SaveChangesAsync();
+
+            //Return whether the user was last in group
+            groupUsers.Remove(userToBeRemoved);
+            if (groupUsers.Count == 0)
+                return true;
+            else
+                return false;
         }
 
         public async Task<GroupDTO> UpdateGroupAsync(GroupDTO groupDTO)
@@ -327,12 +348,13 @@ namespace Groover.BL.Services
             var imageBytes = await this._imageProcessor.CheckAsync(groupDTO.Image);
             if (imageBytes != group.Image)
             {
-                if (!string.IsNullOrWhiteSpace(group.ImagePath))
+                if (!string.IsNullOrWhiteSpace(group.ImagePath) &&
+                    group.ImagePath != _imageProcessor.GetDefaultGroupImage())
                 {
                     this._imageProcessor.DeleteImage(group.ImagePath);
                 }
 
-                if (imageBytes != null)
+                if (imageBytes != null && imageBytes.Length > 0)
                 {
                     var imagePath = await this._imageProcessor.SaveImageAsync(imageBytes);
                     group.ImagePath = imagePath;

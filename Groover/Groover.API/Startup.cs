@@ -24,7 +24,8 @@ using Groover.BL.Services;
 using Groover.BL.Helpers;
 using Groover.API.Hubs;
 using System.Threading.Tasks;
-using Groover.BL.Hubs;
+using Groover.API.Services;
+using Groover.API.Services.Interfaces;
 
 namespace Groover.API
 {
@@ -53,9 +54,14 @@ namespace Groover.API
             AddEmailService(services);
             AddImageProcessing(services);
 
-            services.AddSignalR();
+            services.AddSignalR(options =>
+            {
+                //Maybe remove after development
+                options.EnableDetailedErrors = true;
+            });
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<INotificationService, NotificationService>();
 
             services.AddSwaggerGen(c =>
             {
