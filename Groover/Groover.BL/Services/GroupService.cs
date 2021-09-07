@@ -69,8 +69,9 @@ namespace Groover.BL.Services
             if (user == null)
                 throw new NotFoundException($"No user by id {userId}.", "not_found");
 
-            if (await _context.Groups.AnyAsync(g => g.Name == groupDTO.Name) == true)
-                throw new BadRequestException("Group with that name already exists.", "duplicate_name");
+            //Removed unique name constraint
+            //if (await _context.Groups.AnyAsync(g => g.Name == groupDTO.Name) == true)
+            //    throw new BadRequestException("Group with that name already exists.", "duplicate_name");
 
             Group group = _mapper.Map<Group>(groupDTO);
             
