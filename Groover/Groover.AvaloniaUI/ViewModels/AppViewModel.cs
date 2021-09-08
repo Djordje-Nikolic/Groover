@@ -19,7 +19,7 @@ using System.Collections.ObjectModel;
 using DynamicData.Binding;
 using DynamicData;
 using Groover.AvaloniaUI.ViewModels.Notifications;
-using Groover.AvaloniaUI.Utils;
+using Avalonia.Threading;
 
 namespace Groover.AvaloniaUI.ViewModels
 {
@@ -170,14 +170,14 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             });
 
-            connection.On<string, GroupUser>("UserJoined", (groupId, gu) =>
+            connection.On<string, GroupUser>("UserJoined", async (groupId, gu) =>
             {
                 if (int.TryParse(groupId, out int gId))
                 {
                     var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        ug.Group.GroupUsers.InsertIntoSorted(gu);
+                        await Dispatcher.UIThread.InvokeAsync(() => ug.Group.GroupUsers.InsertIntoSorted(gu));
 
                         var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                         //cVm.UserJoined(gu);
@@ -189,7 +189,7 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (userGroup != null)
                 {
-                    userGroup.Group.GroupUsers.SortByRole();
+                    //userGroup.Group.GroupUsers.SortByRole();
                     _userGroupsCache.AddOrUpdate(userGroup);
                     await this._groupChatService.JoinGroup(userGroup.Group.Id);
 
@@ -230,7 +230,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             });
 
-            connection.On<string, string, string>("UserRoleUpdated", (groupId, userId, newRole) =>
+            connection.On<string, string, string>("UserRoleUpdated", async (groupId, userId, newRole) =>
             {
                 if (int.TryParse(groupId, out int gId) &&
                     int.TryParse(userId, out int uId))
@@ -248,7 +248,7 @@ namespace Groover.AvaloniaUI.ViewModels
                         {
                             gu.GroupRole = newRole;
 
-                            ug.Group.GroupUsers.SortByRole();
+                            await Dispatcher.UIThread.InvokeAsync(() => ug.Group.GroupUsers.SortByRole());
 
                             var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                             //cVm.UserRoleUpdated(uId, newRole);
@@ -411,7 +411,7 @@ namespace Groover.AvaloniaUI.ViewModels
             if (selectedUg == null)
                 return;
 
-            selectedUg.Group.GroupUsers.SortByRole();
+            //selectedUg.Group.GroupUsers.SortByRole();
 
             ActiveChatViewModel = this.ChatViewModels.FirstOrDefault(vm => vm.UserGroup.Group == selectedUg.Group);
         }

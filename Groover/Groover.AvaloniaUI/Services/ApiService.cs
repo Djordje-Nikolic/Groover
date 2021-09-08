@@ -105,7 +105,9 @@ namespace Groover.AvaloniaUI.Services
         }
 
         private Uri MakeUri(Controller controller, string endpointMethod, string queryParams)
-        {
+        {//Potentially replace this with UriHelper
+         //https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.extensions.urihelper?view=aspnetcore-5.0
+
             UriBuilder uriBuilder = new UriBuilder(ApiConfig.BaseAddress);
 
             uriBuilder.Path = $"{controller}/{endpointMethod}";
