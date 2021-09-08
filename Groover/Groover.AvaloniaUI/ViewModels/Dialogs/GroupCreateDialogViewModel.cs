@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
@@ -14,7 +13,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
     public class GroupCreateDialogViewModel : BaseGroupViewModel
     {
         public GroupCreateDialogViewModel(IGroupService groupService, IMapper mapper) 
-            : base("Create group", groupService, mapper, new Group())
+            : base("Create group", groupService, mapper, new GroupViewModel())
         {
             YesButtonText = "Create group";
         }

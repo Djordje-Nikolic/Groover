@@ -17,7 +17,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
     public class ChooseUserDialogViewModel : ReactiveValidationObject
     {
         private IUserService _userService;
-        private List<User> _currentUsers;
+        private List<UserViewModel> _currentUsers;
 
         [Reactive]
         public string TitleText { get; set; }
@@ -49,7 +49,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
         public ReactiveCommand<Unit, int?> NoCommand { get; }
         public ReactiveCommand<string, int?> CheckCommand { get; }
 
-        public ChooseUserDialogViewModel(List<User> currentUsers, IUserService userService)
+        public ChooseUserDialogViewModel(List<UserViewModel> currentUsers, IUserService userService)
         {
             TitleText = "Invite user";
             YesButtonText = "SEND INVITE";
@@ -57,7 +57,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
             UsernameId = null;
 
             _userService = userService;
-            _currentUsers = currentUsers ?? new List<User>();
+            _currentUsers = currentUsers ?? new List<UserViewModel>();
 
             this.ValidationRule(vm => vm.CurrentUsername, username => !string.IsNullOrWhiteSpace(username), "Username can't be empty.");
             this.ValidationRule(vm => vm.UsernameId, userId => userId != null, "Invalid user.");

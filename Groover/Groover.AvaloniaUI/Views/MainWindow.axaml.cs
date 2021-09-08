@@ -25,7 +25,7 @@ namespace Groover.AvaloniaUI.Views
     {
         private AppView _mainView;
         //private ProgressBar _progressBar;
-        private ReactiveCommand<LoginResponse, Unit> LoadingScreenCommand { get; }
+        private ReactiveCommand<UserViewModel, Unit> LoadingScreenCommand { get; }
 
         public MainWindow()
         {
@@ -35,7 +35,7 @@ namespace Groover.AvaloniaUI.Views
 #endif
             //_progressBar = this.FindControl<ProgressBar>("progressBar");
             _mainView = this.FindControl<AppView>("mainView");
-            LoadingScreenCommand = ReactiveCommand.CreateFromTask<LoginResponse>(LoadingScreenAsync);
+            LoadingScreenCommand = ReactiveCommand.CreateFromTask<UserViewModel>(LoadingScreenAsync);
 
             this.WhenActivated(disposables =>
             {
@@ -90,7 +90,7 @@ namespace Groover.AvaloniaUI.Views
                              }
                          }).DisposeWith(disposables);
 
-                         LoadingScreenCommand.Execute(vm.LoginResponse).Subscribe();
+                         LoadingScreenCommand.Execute(vm.LoggedInUser).Subscribe();
                      }
                  })
                 .BindTo(this, x => x._mainView.DataContext)
@@ -106,7 +106,7 @@ namespace Groover.AvaloniaUI.Views
             this.Opened += DoOnOpen;
         }
 
-        private async Task LoadingScreenAsync(LoginResponse loginResponse)
+        private async Task LoadingScreenAsync(UserViewModel userViewModel)
         {
             //_progressBar.IsVisible = true;
             await Task.Delay(350);

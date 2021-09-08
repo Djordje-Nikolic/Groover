@@ -40,7 +40,7 @@
       <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
                     Margin="0,0,0,0">
-        <ItemsRepeater Items="{Binding UserGroups}"
+        <ItemsRepeater Items="{Binding LoggedInUser.UserGroups}"
                        Layout="{DynamicResource VerticalStackLayout}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch">
@@ -165,7 +165,7 @@
         </views:NotificationsView>
       </Popup>
     </StackPanel> 
-    <Border Grid.Row="0" DataContext="{Binding LoginResponse}" Grid.Column="2" MinWidth="164">
+    <Border Grid.Row="0" DataContext="{Binding LoggedInUser}" Grid.Column="2" MinWidth="164">
       <Button Classes="Flat" HorizontalContentAlignment="Left">
         <Grid Margin="4,0,0,4"
               ColumnDefinitions="40,*"
@@ -176,10 +176,10 @@
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center">
             <Ellipse.Fill>
-              <ImageBrush Stretch="UniformToFill" Source="{Binding User.AvatarImage, FallbackValue=null}"></ImageBrush>
+              <ImageBrush Stretch="UniformToFill" Source="{Binding AvatarImage, FallbackValue=null}"></ImageBrush>
             </Ellipse.Fill>
           </Ellipse>
-          <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding User.Username}"
+          <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding Username}"
                VerticalAlignment="Center"
                HorizontalAlignment="Left"
                TextWrapping="NoWrap">
@@ -189,7 +189,7 @@
           <ContextMenu>
             <MenuItem Header="Edit user"
                       Command="{Binding DataContext.EditUserCommand, ElementName=Root}"
-                      CommandParameter="{Binding User}">
+                      CommandParameter="{Binding}">
             </MenuItem>
             <MenuItem Header="Logout"
                       Command="{Binding DataContext.LogoutCommand, ElementName=Root}">
@@ -201,7 +201,7 @@
     <ScrollViewer Grid.Column="2" Grid.Row="1" Grid.RowSpan="2"
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Disabled">
-      <ItemsRepeater Items="{Binding ActiveGroup.GroupUsers}"
+      <ItemsRepeater Items="{Binding ActiveGroup.SortedGroupUsers}"
                      Name="userListBox"
                      Layout="{DynamicResource VerticalStackLayout}" 
                      HorizontalAlignment="Stretch"
@@ -236,7 +236,7 @@
                         <Binding Path="User.IsOnline" FallbackValue="false" Mode="OneWay"></Binding>
                         <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="false">
                           <Binding Path="User.Id" FallbackValue="-1" Mode="OneWay"></Binding>
-                          <Binding Path="DataContext.LoginResponse.User.Id" ElementName="Root" Mode="OneWay"></Binding>
+                          <Binding Path="DataContext.LoggedInUser.Id" ElementName="Root" Mode="OneWay"></Binding>
                         </MultiBinding>
                       </MultiBinding>
                     </Ellipse.IsVisible>
@@ -262,7 +262,7 @@
                     <MenuItem.IsVisible>
                       <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="true">
                         <Binding Path="User.Id" FallbackValue="-1" Mode="OneWay"></Binding>
-                        <Binding Path="DataContext.LoginResponse.User.Id" ElementName="Root" Mode="OneWay"></Binding>
+                        <Binding Path="DataContext.LoggedInUser.Id" ElementName="Root" Mode="OneWay"></Binding>
                       </MultiBinding>
                     </MenuItem.IsVisible>
                   </MenuItem>

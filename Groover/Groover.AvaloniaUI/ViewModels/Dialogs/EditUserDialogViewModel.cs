@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Avalonia.Media.Imaging;
 using Groover.AvaloniaUI.Models;
-using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
@@ -39,7 +38,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
         [Reactive]
         public string NoButtonText { get; set; }
         [Reactive]
-        public User User { get; set; }
+        public UserViewModel User { get; set; }
         [Reactive]
         public string Username { get; set; }
         [Reactive]
@@ -57,7 +56,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
         public EditUserDialogViewModel(string titleText,
             IUserService userService,
             IMapper mapper,
-            User user)
+            UserViewModel user)
         {
             _userService = userService;
             _mapper = mapper;

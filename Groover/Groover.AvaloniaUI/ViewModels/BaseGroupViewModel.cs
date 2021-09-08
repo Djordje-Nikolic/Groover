@@ -37,7 +37,7 @@ namespace Groover.AvaloniaUI.ViewModels
         [Reactive]
         public string NoButtonText { get; set; }
         [Reactive]
-        public Group Group { get; set; }
+        public GroupViewModel Group { get; set; }
         [Reactive]
         public string GroupName { get; set; }
         [Reactive]
@@ -53,7 +53,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public BaseGroupViewModel(string titleText,
             IGroupService groupService,
             IMapper mapper,
-            Group group)
+            GroupViewModel group)
         {
             _groupService = groupService;
             _mapper = mapper;

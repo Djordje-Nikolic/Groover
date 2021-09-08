@@ -14,33 +14,33 @@ namespace Groover.AvaloniaUI.ViewModels
         private IGroupService _groupService;
 
         [Reactive]
-        public User User { get; set; }
+        public UserViewModel User { get; set; }
 
         [Reactive]
-        public UserGroup UserGroup { get; set; }
+        public UserGroupViewModel UserGroup { get; set; }
 
         public ChatViewModel()
         {
 
         }
-        public void InitializeData(User loggedInUser, UserGroup userGroup, IGroupService groupService)
+        public void InitializeData(UserViewModel loggedInUser, UserGroupViewModel userGroup, IGroupService groupService)
         {
             _groupService = groupService;
             User = loggedInUser;
             UserGroup = userGroup;
         }
 
-        internal void UpdateGroupData(Group group)
+        internal void UpdateGroupData(GroupViewModel group)
         {
             throw new NotImplementedException();
         }
 
-        internal void UserLeft(GroupUser gu)
+        internal void UserLeft(GroupUserViewModel gu)
         {
             throw new NotImplementedException();
         }
 
-        internal void UserJoined(GroupUser gu)
+        internal void UserJoined(GroupUserViewModel gu)
         {
             throw new NotImplementedException();
         }
@@ -50,12 +50,12 @@ namespace Groover.AvaloniaUI.ViewModels
             throw new NotImplementedException();
         }
 
-        internal void UserUpdated(User user)
+        internal void UserUpdated(UserViewModel user)
         {
             throw new NotImplementedException();
         }
 
-        internal void UserGroupUpdated(UserGroup userGroup)
+        internal void UserGroupUpdated(UserGroupViewModel userGroup)
         {
             throw new NotImplementedException();
         }

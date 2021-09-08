@@ -9,14 +9,9 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models.DTOs
 {
-    [DataContract]
-    public class UserGroup : ReactiveObject
+    public class UserGroup
     {
-        [DataMember]
-        [Reactive]
         public Group Group { get; set; }
-        [DataMember]
-        [Reactive]
         public string GroupRole { get; set; }
     }
 }

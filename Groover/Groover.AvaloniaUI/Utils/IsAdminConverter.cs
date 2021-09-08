@@ -1,4 +1,5 @@
 ﻿using Avalonia.Data.Converters;
+using Groover.AvaloniaUI.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,7 +13,7 @@ namespace Groover.AvaloniaUI.Utils
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value.ToString() == "Admin")
+            if ((GrooverGroupRole)value == GrooverGroupRole.Admin)
                 return true;
 
             return false;

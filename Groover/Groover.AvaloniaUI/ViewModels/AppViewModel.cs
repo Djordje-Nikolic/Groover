@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Groover.AvaloniaUI.Models;
-using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
 using Groover.AvaloniaUI.Utils;
@@ -20,6 +19,7 @@ using DynamicData.Binding;
 using DynamicData;
 using Groover.AvaloniaUI.ViewModels.Notifications;
 using Avalonia.Threading;
+using Groover.AvaloniaUI.Models.DTOs;
 
 namespace Groover.AvaloniaUI.ViewModels
 {
@@ -41,12 +41,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public Interaction<NotificationViewModel, NotificationViewModel?> ShowNotificationDialog { get; set; } 
         
         [Reactive]
-        public LoginResponse LoginResponse { get; set; }
-
-        
-        private SourceCache<UserGroup, int> _userGroupsCache;
-        private ReadOnlyObservableCollection<UserGroup> _userGroups;
-        public ReadOnlyObservableCollection<UserGroup> UserGroups => _userGroups;
+        public UserViewModel LoggedInUser { get; private set; }
 
         private ReadOnlyObservableCollection<ChatViewModel> _chatViewModels;
         public ReadOnlyObservableCollection<ChatViewModel> ChatViewModels => _chatViewModels;
@@ -54,7 +49,7 @@ namespace Groover.AvaloniaUI.ViewModels
         [ObservableAsProperty]
         public bool IsActiveGroupAdmin { get; set; }
         [ObservableAsProperty]
-        public Group ActiveGroup { get; }
+        public GroupViewModel ActiveGroup { get; }
         [Reactive]
         public ChatViewModel ActiveChatViewModel { get; set; }
 
@@ -63,17 +58,17 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public ReactiveCommand<Unit, Unit> SwitchToHomeCommand { get; }
         public ReactiveCommand<int, Unit> SwitchGroupDisplay { get; }
-        public ReactiveCommand<User, Unit> ChangeRoleCommand { get; }
-        public ReactiveCommand<User, Unit> KickUserCommand { get; }
-        public ReactiveCommand<Group, Unit> InviteUserCommand { get; }
-        public ReactiveCommand<Group, Unit> LeaveGroupCommand { get; }
-        public ReactiveCommand<Group, Unit> DeleteGroupCommand { get; }
-        public ReactiveCommand<Group, Unit> EditGroupCommand { get; }
+        public ReactiveCommand<UserViewModel, Unit> ChangeRoleCommand { get; }
+        public ReactiveCommand<UserViewModel, Unit> KickUserCommand { get; }
+        public ReactiveCommand<GroupViewModel, Unit> InviteUserCommand { get; }
+        public ReactiveCommand<GroupViewModel, Unit> LeaveGroupCommand { get; }
+        public ReactiveCommand<GroupViewModel, Unit> DeleteGroupCommand { get; }
+        public ReactiveCommand<GroupViewModel, Unit> EditGroupCommand { get; }
         public ReactiveCommand<Unit, Unit> CreateGroupCommand { get; }
         public ReactiveCommand<Unit, bool> LogoutCommand { get; }
-        public ReactiveCommand<User, Unit> EditUserCommand { get; }
+        public ReactiveCommand<UserViewModel, Unit> EditUserCommand { get; }
 
-        public AppViewModel(LoginResponse logResp, 
+        public AppViewModel(UserViewModel loggedInUser, 
                             IUserService userService, 
                             IGroupService groupService,
                             IGroupChatService groupChatService,
@@ -83,14 +78,14 @@ namespace Groover.AvaloniaUI.ViewModels
 
             SwitchToHomeCommand = ReactiveCommand.CreateFromTask(SwitchToHome);
             SwitchGroupDisplay = ReactiveCommand.CreateFromTask<int>(SwitchGroup);
-            ChangeRoleCommand = ReactiveCommand.CreateFromTask<User>(ChangeRole);
-            KickUserCommand = ReactiveCommand.CreateFromTask<User>(KickUser);
-            InviteUserCommand = ReactiveCommand.CreateFromTask<Group>(InviteUser);
-            LeaveGroupCommand = ReactiveCommand.CreateFromTask<Group>(LeaveGroup);
-            DeleteGroupCommand = ReactiveCommand.CreateFromTask<Group>(DeleteGroup);
-            EditGroupCommand = ReactiveCommand.CreateFromTask<Group>(EditGroup);
+            ChangeRoleCommand = ReactiveCommand.CreateFromTask<UserViewModel>(ChangeRole);
+            KickUserCommand = ReactiveCommand.CreateFromTask<UserViewModel>(KickUser);
+            InviteUserCommand = ReactiveCommand.CreateFromTask<GroupViewModel>(InviteUser);
+            LeaveGroupCommand = ReactiveCommand.CreateFromTask<GroupViewModel>(LeaveGroup);
+            DeleteGroupCommand = ReactiveCommand.CreateFromTask<GroupViewModel>(DeleteGroup);
+            EditGroupCommand = ReactiveCommand.CreateFromTask<GroupViewModel>(EditGroup);
             CreateGroupCommand = ReactiveCommand.CreateFromTask(CreateGroup);
-            EditUserCommand = ReactiveCommand.CreateFromTask<User>(EditUser);
+            EditUserCommand = ReactiveCommand.CreateFromTask<UserViewModel>(EditUser);
             LogoutCommand = ReactiveCommand.CreateFromTask<bool>(Logout);
 
             _userService = userService;
@@ -110,24 +105,25 @@ namespace Groover.AvaloniaUI.ViewModels
 
             //Set active group isadmin
             this.WhenAnyValue(vm => vm.ActiveChatViewModel.UserGroup.GroupRole)
-                .Select(role => role == "Admin")
+                .Select(role => role == GrooverGroupRole.Admin)
                 .ToPropertyEx(this, x => x.IsActiveGroupAdmin);
 
-            InitializeLoginResponse(logResp);
+            InitializeLoggedInUser(loggedInUser);
         }
 
         public async Task InitializeChatConnections()
         {
             var connection = await this._groupChatService.InitializeConnection();
-            connection.On<UserGroup>("GroupCreated", async (ug) => 
+            connection.On<UserGroup>("GroupCreated", async (userGroup) => 
             {
-                _userGroupsCache.AddOrUpdate(ug);
-                await this._groupChatService.JoinGroup(ug.Group.Id);
+                UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
+                LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
+                await this._groupChatService.JoinGroup(userGroup.Group.Id);
 
                 NotificationsViewModel.AddNotification(new NotificationViewModel()
                 {
                     TitleText = "New group created!",
-                    BodyText = $"Group '{ug.Group.Name}' has been successfully created!"
+                    BodyText = $"Group '{userGroup.Group.Name}' has been successfully created!"
                 });
             });
 
@@ -135,11 +131,11 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (int.TryParse(groupId, out int gId))
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
                         await this._groupChatService.LeaveGroup(ug.Group.Id);
-                        _userGroupsCache.Remove(ug);
+                        LoggedInUser.UserGroupsCache.Remove(ug);
 
                         SwitchToHomeCommand.Execute().Subscribe();
 
@@ -156,13 +152,13 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (group != null)
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == group.Id);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == group.Id);
                     if (ug != null)
                     {
                         ug.Group.Name = group.Name;
                         ug.Group.Description = group.Description;
                         ug.Group.ImageBase64 = group.ImageBase64;
-                        _userGroupsCache.AddOrUpdate(ug);
+                        LoggedInUser.UserGroupsCache.AddOrUpdate(ug);
 
                         var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == group.Id);
                         //cVm.UpdateGroupData(group);
@@ -174,10 +170,11 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (int.TryParse(groupId, out int gId))
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        await Dispatcher.UIThread.InvokeAsync(() => ug.Group.GroupUsers.InsertIntoSorted(gu));
+                        GroupUserViewModel groupUserViewModel = this._mapper.Map<GroupUserViewModel>(gu);
+                        ug.Group.GroupUsersCache.AddOrUpdate(groupUserViewModel);
 
                         var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                         //cVm.UserJoined(gu);
@@ -189,8 +186,8 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (userGroup != null)
                 {
-                    //userGroup.Group.GroupUsers.SortByRole();
-                    _userGroupsCache.AddOrUpdate(userGroup);
+                    UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
+                    LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
                     await this._groupChatService.JoinGroup(userGroup.Group.Id);
 
 
@@ -207,20 +204,20 @@ namespace Groover.AvaloniaUI.ViewModels
                 if (int.TryParse(groupId, out int gId) &&
                     int.TryParse(userId, out int uId))
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        if (uId == LoginResponse.User.Id)
+                        if (uId == LoggedInUser.Id)
                         {
-                            _userGroupsCache.Remove(ug);
+                            LoggedInUser.UserGroupsCache.Remove(ug);
                             await this._groupChatService.LeaveGroup(ug.Group.Id);
                         }
                         else
                         {
-                            var gu = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
+                            var gu = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
                             if (gu != null)
                             {
-                                ug.Group.GroupUsers.Remove(gu);
+                                ug.Group.GroupUsersCache.Remove(gu);
 
                                 var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                                 //cVm.UserLeft(gu);
@@ -233,22 +230,21 @@ namespace Groover.AvaloniaUI.ViewModels
             connection.On<string, string, string>("UserRoleUpdated", async (groupId, userId, newRole) =>
             {
                 if (int.TryParse(groupId, out int gId) &&
-                    int.TryParse(userId, out int uId))
+                    int.TryParse(userId, out int uId) &&
+                    Enum.TryParse(newRole, out GrooverGroupRole newGroupRole))
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        if (uId == LoginResponse.User.Id)
+                        if (uId == LoggedInUser.Id)
                         {
-                            ug.GroupRole = newRole;
+                            ug.GroupRole = newGroupRole;
                         }
 
-                        var gu = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
+                        var gu = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
                         if (gu != null)
                         {
-                            gu.GroupRole = newRole;
-
-                            await Dispatcher.UIThread.InvokeAsync(() => ug.Group.GroupUsers.SortByRole());
+                            gu.GroupRole = newGroupRole;
 
                             var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                             //cVm.UserRoleUpdated(uId, newRole);
@@ -261,9 +257,9 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (user != null)
                 {
-                    LoginResponse.User.Username = user.Username;
-                    LoginResponse.User.Email = user.Email;
-                    LoginResponse.User.AvatarBase64 = user.AvatarBase64;
+                    LoggedInUser.Username = user.Username;
+                    LoggedInUser.Email = user.Email;
+                    LoggedInUser.AvatarBase64 = user.AvatarBase64;
                 }
             });
 
@@ -271,10 +267,10 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (int.TryParse(groupId, out int gId))
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        var tempUser = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == user.Id)?.User;
+                        var tempUser = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == user.Id)?.User;
                         if (tempUser != null)
                         {
                             tempUser.Username = user.Username;
@@ -293,10 +289,10 @@ namespace Groover.AvaloniaUI.ViewModels
                 if (int.TryParse(groupId, out int gId) &&
                     int.TryParse(userId, out int uId))
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        var user = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
+                        var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
                         if (user != null)
                         {
                             user.IsOnline = true;
@@ -311,10 +307,10 @@ namespace Groover.AvaloniaUI.ViewModels
                 if (int.TryParse(groupId, out int gId) &&
                     int.TryParse(userId, out int uId))
                 {
-                    var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        var user = ug.Group.GroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
+                        var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
                         if (user != null)
                         {
                             user.IsOnline = false;
@@ -344,9 +340,10 @@ namespace Groover.AvaloniaUI.ViewModels
                     if (int.TryParse(userId, out int uId) &&
                         !string.IsNullOrWhiteSpace(token))
                     {
-                        if (uId == LoginResponse.User.Id)
+                        if (uId == LoggedInUser.Id)
                         {
-                            NotificationsViewModel.AddNotification(new InviteViewModel(group, token, uId, _groupService));
+                            GroupViewModel groupViewModel = this._mapper.Map<GroupViewModel>(group);
+                            NotificationsViewModel.AddNotification(new InviteViewModel(groupViewModel, token, uId, _groupService));
                         }
                     }
                 }
@@ -356,28 +353,28 @@ namespace Groover.AvaloniaUI.ViewModels
 
             await this._groupChatService.StartConnection();
             
-            foreach (var ug in this.UserGroups)
+            foreach (var ug in LoggedInUser.UserGroups)
             {
                 await this._groupChatService.JoinGroup(ug.Group.Id);
             }
         }
 
-        private void InitializeLoginResponse(LoginResponse logResp)
+        private void InitializeLoggedInUser(UserViewModel loggedInUser)
         {
             //It is assumed that the application is closing
-            if (logResp == null)
+            if (loggedInUser == null)
                 return;
 
-            LoginResponse = logResp;
+            LoggedInUser = loggedInUser;
 
-            this._userGroupsCache = new SourceCache<UserGroup, int>(ug => ug.Group.Id);
-            _userGroupsCache.Connect()
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Bind(out _userGroups)
-                .DisposeMany()
-                .Subscribe();
+            //this._userGroupsCache = new SourceCache<UserGroupViewModel, int>(ug => ug.Group.Id);
+            //_userGroupsCache.Connect()
+            //    .ObserveOn(RxApp.MainThreadScheduler)
+            //    .Bind(out _userGroups)
+            //    .DisposeMany()
+            //    .Subscribe();
 
-            _userGroupsCache.Connect()
+            LoggedInUser.UserGroupsCache.Connect()
                 .TransformWithInlineUpdate(ug => GenerateChatViewModel(ug), (previousViewModel, updatedUserGroup) =>
                 {
                     previousViewModel.UserGroupUpdated(updatedUserGroup);
@@ -387,7 +384,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 .DisposeMany()
                 .Subscribe();
 
-            _userGroupsCache.AddOrUpdate(LoginResponse.User.UserGroups);
+            //_userGroupsCache.AddOrUpdate(LoggedInUser.SortedUserGroups);
         }
 
         //private async Task UpdateLoginResponse()
@@ -406,7 +403,7 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public async Task SwitchGroup(int groupIdToSelect)
         {
-            var selectedUg = UserGroups.FirstOrDefault(ug => ug.Group.Id == groupIdToSelect);
+            var selectedUg = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == groupIdToSelect);
 
             if (selectedUg == null)
                 return;
@@ -424,7 +421,7 @@ namespace Groover.AvaloniaUI.ViewModels
         private List<ChatViewModel> GenerateChatViewModels()
         {
             List<ChatViewModel> chatViewModels = new List<ChatViewModel>();
-            foreach (var userGroup in UserGroups)
+            foreach (var userGroup in LoggedInUser.UserGroups)
             {
                 var viewModel = GenerateChatViewModel(userGroup);
 
@@ -434,19 +431,19 @@ namespace Groover.AvaloniaUI.ViewModels
             return chatViewModels;
         }
 
-        private ChatViewModel GenerateChatViewModel(UserGroup userGroup)
+        private ChatViewModel GenerateChatViewModel(UserGroupViewModel userGroup)
         {
             var viewModel = new ChatViewModel();
 
             //Set callbacks
 
             //Set data
-            viewModel.InitializeData(LoginResponse.User, userGroup, _groupService);
+            viewModel.InitializeData(LoggedInUser, userGroup, _groupService);
 
             return viewModel;
         }
 
-        private async Task EditGroup(Group group)
+        private async Task EditGroup(GroupViewModel group)
         {
             if (ShowGroupEditDialog == null)
                 return;
@@ -584,13 +581,12 @@ namespace Groover.AvaloniaUI.ViewModels
             }
         }
 
-        private async Task ChangeRole(User user)
+        private async Task ChangeRole(UserViewModel user)
         {
             if (ShowGroupRoleDialog == null)
                 return;
 
-            var currentGroupRoleString = ActiveGroup.GroupUsers.Where(gu => gu.User.Id == user.Id).First().GroupRole;
-            var currentGroupRole = (GrooverGroupRole) Enum.Parse(typeof(GrooverGroupRole), currentGroupRoleString);
+            var currentGroupRole = ActiveGroup.SortedGroupUsers.Where(gu => gu.User.Id == user.Id).First().GroupRole;
             var changeRoleVm = new ChangeRoleDialogViewModel(currentGroupRole);
             var chosenNewRole = await ShowGroupRoleDialog.Handle(changeRoleVm);
 
@@ -638,7 +634,7 @@ namespace Groover.AvaloniaUI.ViewModels
             }
         }
 
-        private async Task EditUser(User user)
+        private async Task EditUser(UserViewModel user)
         {
             if (ShowUserEditDialog == null)
                 return;
@@ -766,9 +762,8 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (logoutAccepted)
             {
-                _userGroupsCache.Clear();
                 ActiveChatViewModel = null;
-                LoginResponse = null;
+                LoggedInUser = null;
                 _userService.Logout();
                 await _groupChatService.Reset();
                 return true;
@@ -777,7 +772,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 return false;
         }
 
-        private async Task KickUser(User user)
+        private async Task KickUser(UserViewModel user)
         {
             if (ShowYesNoDialog == null)
                 return;
@@ -828,12 +823,12 @@ namespace Groover.AvaloniaUI.ViewModels
             }
         }
 
-        private async Task InviteUser(Group group)
+        private async Task InviteUser(GroupViewModel group)
         {
             if (ShowUserSearchDialog == null)
                 return;
 
-            var currentUsers = group.GroupUsers.Select(gu => gu.User).ToList();
+            var currentUsers = group.SortedGroupUsers.Select(gu => gu.User).ToList();
             var chooseUserVm = new ChooseUserDialogViewModel(currentUsers, this._userService);
             var chosenUserId = await ShowUserSearchDialog.Handle(chooseUserVm);
 
@@ -880,7 +875,7 @@ namespace Groover.AvaloniaUI.ViewModels
             }
         }
 
-        private async Task LeaveGroup(Group group)
+        private async Task LeaveGroup(GroupViewModel group)
         {
             if (ShowYesNoDialog == null)
                 return;
@@ -890,7 +885,7 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (leaveAccepted)
             {
-                var response = await _groupService.RemoveUserAsync(group.Id, LoginResponse.User.Id);
+                var response = await _groupService.RemoveUserAsync(group.Id, LoggedInUser.Id);
 
                 if (!response.IsSuccessful)
                 {
@@ -931,7 +926,7 @@ namespace Groover.AvaloniaUI.ViewModels
             }
         }
 
-        private async Task DeleteGroup(Group group)
+        private async Task DeleteGroup(GroupViewModel group)
         {
             if (ShowYesNoDialog == null)
                 return;

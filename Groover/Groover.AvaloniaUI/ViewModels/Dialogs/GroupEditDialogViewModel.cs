@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
-using Groover.AvaloniaUI.Models.DTOs;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -25,7 +24,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
     {
         public GroupEditDialogViewModel(IGroupService groupService, 
             IMapper mapper,
-            Group groupToEdit) : base("Edit group", groupService, mapper, groupToEdit)
+            GroupViewModel groupToEdit) : base("Edit group", groupService, mapper, groupToEdit)
         {
             YesButtonText = "Update group";
         }

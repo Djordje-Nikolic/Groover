@@ -20,76 +20,13 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models.DTOs
 {
-    [DataContract]
-    public class Group : ReactiveObject, IDeepCopy<Group>
+    public class Group
     {
-        [Reactive]
-        [DataMember]
         public int Id { get; set; }
-        [Reactive]
-        [DataMember]
         public string Name { get; set; }
-        [Reactive]
-        [DataMember]
         public string Description { get; set; }
+        public ICollection<GroupUser> GroupUsers { get; set; }
 
-        [Reactive]
-        [DataMember]
-        public ObservableCollection<GroupUser> GroupUsers { get; set; }
-
-        [IgnoreDataMember]
-        private byte[] _imageBytes;
-        [DataMember]
-        public string ImageBase64
-        {
-            get
-            {
-                return ImageBytes != null ? Convert.ToBase64String(ImageBytes) : null;
-            }
-            set
-            {
-                ImageBytes = value != null ? Convert.FromBase64String(value) : null;
-            }
-        }
-        [IgnoreDataMember]
-        public byte[] ImageBytes
-        {
-            get { return _imageBytes; }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _imageBytes, value);
-            }
-        }
-
-        [IgnoreDataMember]
-        [ObservableAsProperty]
-        public Bitmap? Image { get; }
-
-        public Group()
-        {
-            this.WhenAnyValue(group => group.ImageBytes)
-                .Select(bytes =>
-                {
-                    if (bytes != null && bytes.Length > 0)
-                    {
-                        using (var ms = new MemoryStream(bytes))
-                        {
-                            return new Bitmap(ms);
-                        }
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                })
-                .ToPropertyEx(this, group => group.Image);
-        }
-
-        public Group DeepCopy(IMapper mapper)
-        {
-            GroupRequest serialized = mapper.Map<GroupRequest>(this);
-            Group copy = mapper.Map<Group>(serialized);
-            return copy;
-        }
+        public string ImageBase64 { get; set; }
     }
 }

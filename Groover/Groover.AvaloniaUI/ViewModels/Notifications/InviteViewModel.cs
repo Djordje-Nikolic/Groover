@@ -19,7 +19,7 @@ namespace Groover.AvaloniaUI.ViewModels.Notifications
         private int _invitedUserId;
 
         [Reactive]
-        public Group Group { get; set; }
+        public GroupViewModel Group { get; set; }
         [Reactive]
         public string GroupName { get; set; }
         [Reactive]
@@ -32,7 +32,7 @@ namespace Groover.AvaloniaUI.ViewModels.Notifications
 
         public ReactiveCommand<Unit, NotificationViewModel?> NoCommand { get; }
 
-        public InviteViewModel(Group group, 
+        public InviteViewModel(GroupViewModel group, 
                                string inviteToken,
                                int invitedUserId,
                                IGroupService groupService) : base()
