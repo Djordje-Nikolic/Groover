@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Avalonia.Media.Imaging;
+using DynamicData;
+using DynamicData.Binding;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Utils;
 using ReactiveUI;
@@ -9,9 +11,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models.DTOs
@@ -63,7 +67,7 @@ namespace Groover.AvaloniaUI.Models.DTOs
 
         public Group()
         {
-            this.WhenAnyValue(user => user.ImageBytes)
+            this.WhenAnyValue(group => group.ImageBytes)
                 .Select(bytes =>
                 {
                     if (bytes != null && bytes.Length > 0)
@@ -78,7 +82,7 @@ namespace Groover.AvaloniaUI.Models.DTOs
                         return null;
                     }
                 })
-                .ToPropertyEx(this, user => user.Image);
+                .ToPropertyEx(this, group => group.Image);
         }
 
         public Group DeepCopy(IMapper mapper)
