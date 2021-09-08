@@ -16,6 +16,8 @@ namespace Groover.AvaloniaUI.ViewModels
 {
     public class WelcomeViewModel : ViewModelBase
     {
+        private readonly IMapper _mapper;
+
         [Reactive]
         public LoginViewModel LoginViewModel { get; private set; }
 
@@ -29,6 +31,8 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public WelcomeViewModel()
         {
+            _mapper = DIContainer.GetRequiredService<IMapper>(Locator.Current);
+
             var loginViewModel = DIContainer.GetRequiredService<LoginViewModel>(Locator.Current);
             var registerViewModel = DIContainer.GetRequiredService<RegisterViewModel>(Locator.Current);
             LoginViewModel = loginViewModel;
@@ -49,12 +53,13 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public AppViewModel GenerateAppViewModel()
         {
-            return new AppViewModel(LoginViewModel?.Response,
-                                                    Locator.Current.GetRequiredService<IUserService>(),
-                                                    Locator.Current.GetRequiredService<IGroupService>(),
-                                                    Locator.Current.GetRequiredService<IGroupChatService>(),
-                                                    Locator.Current.GetRequiredService<IMapper>(),
-                                                    Locator.Current.GetRequiredService<UserConstants>());
+            UserViewModel userViewModel = this._mapper.Map<UserViewModel>(LoginViewModel?.Response?.User);
+            return new AppViewModel(userViewModel,
+                                    DIContainer.GetRequiredService<IUserService>(Locator.Current),
+                                    DIContainer.GetRequiredService<IGroupService>(Locator.Current),
+                                    DIContainer.GetRequiredService<IGroupChatService>(Locator.Current),
+                                    _mapper,
+                                    DIContainer.GetRequiredService<UserConstants>(Locator.Current));
 
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Groover.AvaloniaUI.Models.DTOs;
+using Groover.AvaloniaUI.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,24 +18,20 @@ namespace Groover.AvaloniaUI.Utils
         /// <param name="groupUsers"></param>
         /// <param name="groupRoleComparer"></param>
         /// <param name="ascending"></param>
-        public static void SortByRole(this ObservableCollection<GroupUser> groupUsers, 
-            IComparer<GroupUser> groupRoleComparer = null, 
+        public static void SortByRole(this ObservableCollection<GroupUserViewModel> groupUsers, 
             bool ascending = false)
         {
-            if (groupRoleComparer == null)
-                groupRoleComparer = new GroupRoleComparer();
-
             if (ascending)
             {
                 for (int i = 0; i < groupUsers.Count - 1; i++)
                 {
                     int targetElemInd = i;
-                    GroupUser targetElem = groupUsers[targetElemInd];
+                    GroupUserViewModel targetElem = groupUsers[targetElemInd];
 
                     for (int j = i + 1; j < groupUsers.Count; j++)
                     {
-                        GroupUser currentElem = groupUsers[j];
-                        int compareValue = groupRoleComparer.Compare(targetElem, currentElem);
+                        GroupUserViewModel currentElem = groupUsers[j];
+                        int compareValue = targetElem.CompareTo(currentElem);
                         if (compareValue > 0)
                         {
                             targetElemInd = j;
@@ -54,12 +51,12 @@ namespace Groover.AvaloniaUI.Utils
                 for (int i = 0; i < groupUsers.Count - 1; i++)
                 {
                     int targetElemInd = i;
-                    GroupUser targetElem = groupUsers[targetElemInd];
+                    GroupUserViewModel targetElem = groupUsers[targetElemInd];
 
                     for (int j = i + 1; j < groupUsers.Count; j++)
                     {
-                        GroupUser currentElem = groupUsers[j];
-                        int compareValue = groupRoleComparer.Compare(targetElem, currentElem);
+                        GroupUserViewModel currentElem = groupUsers[j];
+                        int compareValue = targetElem.CompareTo(currentElem);
                         if (compareValue < 0)
                         {
                             targetElemInd = j;
@@ -84,21 +81,17 @@ namespace Groover.AvaloniaUI.Utils
         /// <param name="newGroupUser"></param>
         /// <param name="groupRoleComparer"></param>
         /// <param name="ascending"></param>
-        public static void InsertIntoSorted(this ObservableCollection<GroupUser> groupUsers,
-            GroupUser newGroupUser,
-            IComparer<GroupUser> groupRoleComparer = null,
+        public static void InsertIntoSorted(this ObservableCollection<GroupUserViewModel> groupUsers,
+            GroupUserViewModel newGroupUser,
             bool ascending = false)
         {
-            if (groupRoleComparer == null)
-                groupRoleComparer = new GroupRoleComparer();
-
             if (ascending)
             {
                 int i = 0;
                 int compareValue;
                 do
                 {
-                    compareValue = groupRoleComparer.Compare(newGroupUser, groupUsers[i]);
+                    compareValue = newGroupUser.CompareTo(groupUsers[i]);
                     i++;
                 }
                 while (compareValue < 0 &&
@@ -121,7 +114,7 @@ namespace Groover.AvaloniaUI.Utils
                 int compareValue;
                 do
                 {
-                    compareValue = groupRoleComparer.Compare(newGroupUser, groupUsers[i]);
+                    compareValue = newGroupUser.CompareTo(groupUsers[i]);
                     i++;
                 }
                 while (compareValue > 0 &&
