@@ -54,5 +54,10 @@ namespace Groover.AvaloniaUI.ViewModels
         {
             throw new NotImplementedException();
         }
+
+        internal void UserGroupUpdated(UserGroup userGroup)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

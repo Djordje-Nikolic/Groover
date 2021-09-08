@@ -59,6 +59,7 @@ Groover Group Service Error List:
 8 failed_validation
 9 not_admin
 10 not_member
+11 duplicate_name
 
 Groover Hubs Error List:
 

@@ -19,12 +19,12 @@ using System.Collections.ObjectModel;
 using DynamicData.Binding;
 using DynamicData;
 using Groover.AvaloniaUI.ViewModels.Notifications;
+using Groover.AvaloniaUI.Utils;
 
 namespace Groover.AvaloniaUI.ViewModels
 {
     public class AppViewModel : ViewModelBase
     {
-        private GroupRoleComparer _groupRoleComparer = new GroupRoleComparer();
         private IUserService _userService;
         private IGroupService _groupService;
         private IGroupChatService _groupChatService;
@@ -177,7 +177,7 @@ namespace Groover.AvaloniaUI.ViewModels
                     var ug = UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                     if (ug != null)
                     {
-                        InsertGroupUser(ug.Group.GroupUsers, gu);
+                        ug.Group.GroupUsers.InsertIntoSorted(gu);
 
                         var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                         //cVm.UserJoined(gu);
@@ -189,6 +189,7 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 if (userGroup != null)
                 {
+                    userGroup.Group.GroupUsers.SortByRole();
                     _userGroupsCache.AddOrUpdate(userGroup);
                     await this._groupChatService.JoinGroup(userGroup.Group.Id);
 
@@ -247,7 +248,7 @@ namespace Groover.AvaloniaUI.ViewModels
                         {
                             gu.GroupRole = newRole;
 
-                            SortGroupUsers(ug.Group.GroupUsers);
+                            ug.Group.GroupUsers.SortByRole();
 
                             var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                             //cVm.UserRoleUpdated(uId, newRole);
@@ -322,17 +323,31 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             });
 
-            connection.On<string, Group, string>("UserInvited", (token, group, userId) =>
+            connection.On<byte[], Group, string>("UserInvited", (tokenBytes, group, userId) =>
             {
-                if (int.TryParse(userId, out int uId) &&
-                    !string.IsNullOrWhiteSpace(token))
+                if (tokenBytes != null)
                 {
-                    if (uId == LoginResponse.User.Id)
+                    string token = null;
+                    try
                     {
-                        //Since receiving the token automatically replaces any + with whitespace, this quick and dirty code fixes that
-                        token = token.Replace(' ', '+');
+                        token = Encoding.UTF8.GetString(tokenBytes);
+                    }
+                    catch (Exception e)
+                    {
+                        NotificationsViewModel.AddNotification(new ErrorViewModel(e.GetType().ToString())
+                        {
+                            TitleText = "Bad invite token received",
+                            BodyText = e.Message
+                        });
+                    }
 
-                        NotificationsViewModel.AddNotification(new InviteViewModel(group, token, uId, _groupService));
+                    if (int.TryParse(userId, out int uId) &&
+                        !string.IsNullOrWhiteSpace(token))
+                    {
+                        if (uId == LoginResponse.User.Id)
+                        {
+                            NotificationsViewModel.AddNotification(new InviteViewModel(group, token, uId, _groupService));
+                        }
                     }
                 }
             });
@@ -359,13 +374,17 @@ namespace Groover.AvaloniaUI.ViewModels
             _userGroupsCache.Connect()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _userGroups)
+                .DisposeMany()
                 .Subscribe();
 
-            UserGroups.ToObservableChangeSet()
-                .Transform(ug => /*Gets triggered on updates as well, 
-                                  * this is a problem*/GenerateChatViewModel(ug))
+            _userGroupsCache.Connect()
+                .TransformWithInlineUpdate(ug => GenerateChatViewModel(ug), (previousViewModel, updatedUserGroup) =>
+                {
+                    previousViewModel.UserGroupUpdated(updatedUserGroup);
+                })
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _chatViewModels)
+                .DisposeMany()
                 .Subscribe();
 
             _userGroupsCache.AddOrUpdate(LoginResponse.User.UserGroups);
@@ -392,7 +411,7 @@ namespace Groover.AvaloniaUI.ViewModels
             if (selectedUg == null)
                 return;
 
-            SortGroupUsers(selectedUg.Group.GroupUsers);
+            selectedUg.Group.GroupUsers.SortByRole();
 
             ActiveChatViewModel = this.ChatViewModels.FirstOrDefault(vm => vm.UserGroup.Group == selectedUg.Group);
         }
@@ -956,122 +975,5 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-
-        #region GroupUsers methods
-        /// <summary>
-        /// This method sorts a collection of GroupUsers by their roles using a comparer in the class. The algortihm used is
-        /// inplace insertion sort.
-        /// </summary>
-        /// <param name="groupUsers"></param>
-        private void SortGroupUsers(ObservableCollection<GroupUser> groupUsers, bool ascending = false)
-        {
-            if (ascending)
-            {
-                for (int i = 0; i < groupUsers.Count - 1; i++)
-                {
-                    int targetElemInd = i;
-                    GroupUser targetElem = groupUsers[targetElemInd];
-
-                    for (int j = i + 1; j < groupUsers.Count; j++)
-                    {
-                        GroupUser currentElem = groupUsers[j];
-                        int compareValue = _groupRoleComparer.Compare(targetElem, currentElem);
-                        if (compareValue > 0)
-                        {
-                            targetElemInd = j;
-                            targetElem = currentElem;
-                        }
-                    }
-
-                    if (targetElemInd != i)
-                    {
-                        groupUsers.Move(targetElemInd, i);
-                        groupUsers.Move(i + 1, targetElemInd);
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < groupUsers.Count - 1; i++)
-                {
-                    int targetElemInd = i;
-                    GroupUser targetElem = groupUsers[targetElemInd];
-
-                    for (int j = i + 1; j < groupUsers.Count; j++)
-                    {
-                        GroupUser currentElem = groupUsers[j];
-                        int compareValue = _groupRoleComparer.Compare(targetElem, currentElem);
-                        if (compareValue < 0)
-                        {
-                            targetElemInd = j;
-                            targetElem = currentElem;
-                        }
-                    }
-
-                    if (targetElemInd != i)
-                    {
-                        groupUsers.Move(targetElemInd, i);
-                        groupUsers.Move(i + 1, targetElemInd);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// This method will assume that the supplied collection is already sorted using the class comparer, and will insert
-        /// the new group user accordingly.
-        /// </summary>
-        /// <param name="groupUsers"></param>
-        /// <param name="newGroupUser"></param>
-        private void InsertGroupUser(ObservableCollection<GroupUser> groupUsers, GroupUser newGroupUser, bool ascending = false)
-        {
-            if (ascending)
-            {
-                int i = 0;
-                int compareValue;
-                do
-                {
-                    compareValue = _groupRoleComparer.Compare(newGroupUser, groupUsers[i]);
-                    i++;
-                }
-                while (compareValue < 0 &&
-                       i < groupUsers.Count);
-
-
-                //Found the spot
-                if (compareValue >= 0)
-                {
-                    groupUsers.Insert(i - 1, newGroupUser);
-                }
-                else //Spot is at the end of the collection
-                {
-                    groupUsers.Insert(i, newGroupUser);
-                }
-            }
-            else
-            {
-                int i = 0;
-                int compareValue;
-                do
-                {
-                    compareValue = _groupRoleComparer.Compare(newGroupUser, groupUsers[i]);
-                    i++;
-                }
-                while (compareValue > 0 &&
-                       i < groupUsers.Count);
-
-
-                //Found the spot
-                if (compareValue <= 0)
-                {
-                    groupUsers.Insert(i - 1, newGroupUser);
-                }
-                else //Spot is at the end of the collection
-                {
-                    groupUsers.Insert(i, newGroupUser);
-                }
-            }
-        }
-        #endregion
     }
 }
