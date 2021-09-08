@@ -72,7 +72,7 @@ namespace Groover.AvaloniaUI.Services
         {
             HttpRequestMessage message = new HttpRequestMessage(httpMethod, string.Empty);
 
-            var queryParams = BuildQuery(queryParameters);
+            var queryParams = await BuildQuery(queryParameters);
             var response = await _apiService.SendAsync(message, controller, endpointMethod, queryParams);
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -103,25 +103,11 @@ namespace Groover.AvaloniaUI.Services
             return parsedResponse;
         }
 
-        private string BuildQuery(IDictionary<string, string> queryParams)
+        private async Task<string> BuildQuery(IDictionary<string, string> queryParams)
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            var query = await new FormUrlEncodedContent(queryParams).ReadAsStringAsync();
 
-            if (queryParams.Count == 0)
-                return string.Empty;
-
-            var lastPair = queryParams.Last();
-            foreach (var keyValuePair in queryParams)
-            {
-                stringBuilder.Append($"{keyValuePair.Key}={keyValuePair.Value}");
-
-                if (!keyValuePair.Equals(lastPair))
-                {
-                    stringBuilder.Append("&");
-                }
-            }
-
-            return stringBuilder.ToString();
+            return query;
         }
     }
 }

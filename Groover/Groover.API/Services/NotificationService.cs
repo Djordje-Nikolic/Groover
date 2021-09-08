@@ -48,7 +48,8 @@ namespace Groover.API.Services
         public async Task UserInvitedAsync(string token, GroupLiteResponse group, string userId)
         {
             string userGroupName = GroupChatHub.GenerateUserGroupName(userId);
-            await _hubContext.Clients.Group(userGroupName).SendAsync("UserInvited", token, group, userId);
+            byte[] tokenBytes = Encoding.UTF8.GetBytes(token);
+            await _hubContext.Clients.Group(userGroupName).SendAsync("UserInvited", tokenBytes, group, userId);
         }
 
         public async Task UserRoleUpdatedAsync(string groupId, string userId, string newRole)

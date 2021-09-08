@@ -97,16 +97,21 @@ namespace Groover.AvaloniaUI.Services
 
         private Uri MakeUri(Controller controller, string endpointMethod)
         {
-            string uri = $"{controller}/{endpointMethod}";
+            UriBuilder uriBuilder = new UriBuilder(ApiConfig.BaseAddress);
 
-            return new Uri(uri, UriKind.Relative);
+            uriBuilder.Path = $"{controller}/{endpointMethod}";
+
+            return uriBuilder.Uri;
         }
 
         private Uri MakeUri(Controller controller, string endpointMethod, string queryParams)
         {
-            string uri = $"{controller}/{endpointMethod}?{queryParams}";
+            UriBuilder uriBuilder = new UriBuilder(ApiConfig.BaseAddress);
 
-            return new Uri(uri, UriKind.Relative);
+            uriBuilder.Path = $"{controller}/{endpointMethod}";
+            uriBuilder.Query = queryParams;
+
+            return uriBuilder.Uri;
         }
 
         private void InitializeHttpClient()
