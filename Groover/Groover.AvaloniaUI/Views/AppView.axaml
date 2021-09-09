@@ -201,13 +201,12 @@
     <ScrollViewer Grid.Column="2" Grid.Row="1" Grid.RowSpan="2"
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Disabled">
-      <ItemsRepeater Items="{Binding ActiveGroup.SortedGroupUsers}"
-                     Name="userListBox"
-                     Layout="{DynamicResource VerticalStackLayout}" 
+      <ItemsControl Items="{Binding ActiveGroup.SortedGroupUsers}"
+                     Name="userListBox" 
                      HorizontalAlignment="Stretch"
                      VerticalAlignment="Stretch"
                      Margin="0,5,0,5">
-        <ItemsRepeater.ItemTemplate>
+        <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Button Classes="Flat" HorizontalContentAlignment="Left" 
                     ToolTip.Tip="{Binding GroupRole}">
@@ -270,8 +269,8 @@
               </Button.ContextMenu>
             </Button>           
           </DataTemplate>
-        </ItemsRepeater.ItemTemplate>
-      </ItemsRepeater>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
     </ScrollViewer>
   </Grid>
 </UserControl>
