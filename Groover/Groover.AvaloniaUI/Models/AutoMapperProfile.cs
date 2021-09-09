@@ -36,11 +36,8 @@ namespace Groover.AvaloniaUI.Models
                     var mapper = context.Mapper;
                     if (src.UserGroups != null)
                     {
-                        foreach (var userGroup in src.UserGroups)
-                        {
-                            UserGroupViewModel userGroupViewModel = mapper.Map<UserGroupViewModel>(userGroup);
-                            dest.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-                        }
+                        ICollection<UserGroupViewModel> userGroupViewModels = mapper.Map<ICollection<UserGroupViewModel>>(src.UserGroups);
+                        dest.UserGroupsCache.AddOrUpdate(userGroupViewModels);
                     }
                 });
             CreateMap<Group, GroupViewModel>()
@@ -50,11 +47,8 @@ namespace Groover.AvaloniaUI.Models
                     var mapper = context.Mapper;
                     if (src.GroupUsers != null)
                     {
-                        foreach (var groupUser in src.GroupUsers)
-                        {
-                            GroupUserViewModel groupUsersViewModel = mapper.Map<GroupUserViewModel>(groupUser);
-                            dest.GroupUsersCache.AddOrUpdate(groupUsersViewModel);
-                        }
+                        ICollection<GroupUserViewModel> groupUserViewModels = mapper.Map<ICollection<GroupUserViewModel>>(src.GroupUsers);
+                        dest.GroupUsersCache.AddOrUpdate(groupUserViewModels);
                     }
                 });
 
@@ -65,12 +59,7 @@ namespace Groover.AvaloniaUI.Models
                     var mapper = context.Mapper;
                     if (src.UserGroups != null)
                     {
-                        dest.UserGroups = new List<UserGroup>();
-                        foreach (var userGroupViewModel in src.UserGroups)
-                        {
-                            UserGroup userGroup = mapper.Map<UserGroup>(userGroupViewModel);
-                            dest.UserGroups.Add(userGroup);
-                        }
+                        dest.UserGroups = mapper.Map<ICollection<UserGroup>>(src.UserGroups);
                     }
                 });
             CreateMap<GroupViewModel, Group>()
@@ -80,12 +69,7 @@ namespace Groover.AvaloniaUI.Models
                     var mapper = context.Mapper;
                     if (src.SortedGroupUsers != null)
                     {
-                        dest.GroupUsers = new List<GroupUser>();
-                        foreach (var groupUserViewModel in src.SortedGroupUsers)
-                        {
-                            GroupUser groupUser = mapper.Map<GroupUser>(groupUserViewModel);
-                            dest.GroupUsers.Add(groupUser);
-                        }
+                        dest.GroupUsers = mapper.Map<ICollection<GroupUser>>(src.SortedGroupUsers);
                     }
                 });
 
@@ -96,11 +80,8 @@ namespace Groover.AvaloniaUI.Models
                     var mapper = context.Mapper;
                     if (src.UserGroups != null)
                     {
-                        foreach (var userGroup in src.UserGroups)
-                        {
-                            UserGroupViewModel userGroupViewModel = mapper.Map<UserGroupViewModel>(userGroup);
-                            dest.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-                        }
+                        ICollection<UserGroupViewModel> userGroupViewModels = mapper.Map<ICollection<UserGroupViewModel>>(src.UserGroups);
+                        dest.UserGroupsCache.AddOrUpdate(userGroupViewModels);
                     }
                 });
             CreateMap<GroupResponse, GroupViewModel>()
@@ -110,11 +91,8 @@ namespace Groover.AvaloniaUI.Models
                     var mapper = context.Mapper;
                     if (src.GroupUsers != null)
                     {
-                        foreach (var groupUser in src.GroupUsers)
-                        {
-                            GroupUserViewModel groupUsersViewModel = mapper.Map<GroupUserViewModel>(groupUser);
-                            dest.GroupUsersCache.AddOrUpdate(groupUsersViewModel);
-                        }
+                        ICollection<GroupUserViewModel> groupUserViewModels = mapper.Map<ICollection<GroupUserViewModel>>(src.GroupUsers);
+                        dest.GroupUsersCache.AddOrUpdate(groupUserViewModels);
                     }
                 });
         }
