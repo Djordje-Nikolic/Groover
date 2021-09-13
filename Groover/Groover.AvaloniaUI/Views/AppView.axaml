@@ -63,21 +63,49 @@
                         assist:ButtonAssist.CornerRadius="50">
                   <Button.ContextMenu>
                     <ContextMenu>
-                      <MenuItem Header="Invite user"
-                                Command="{Binding DataContext.InviteUserCommand, ElementName=Root}"
-                                CommandParameter="{Binding Group}"
-                                IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
-                      <MenuItem Header="Edit group"
-                                Command="{Binding DataContext.EditGroupCommand, ElementName=Root}"
-                                CommandParameter="{Binding Group}"
-                                IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"/>
-                      <MenuItem Header="Leave group"
-                                Command="{Binding DataContext.LeaveGroupCommand, ElementName=Root}"
-                                CommandParameter="{Binding Group}"></MenuItem>
-                      <MenuItem Header="Delete group"
-                                Command="{Binding DataContext.DeleteGroupCommand, ElementName=Root}"
-                                CommandParameter="{Binding Group}"
-                                IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}"></MenuItem>
+                      <ContextMenu.Template>
+                        <ControlTemplate TargetType="ContextMenu">
+                          <styles:Card Padding="2" Margin="0">
+                            <StackPanel>
+                              <StackPanel.Styles>
+                                <Style Selector="Button">
+                                  <Setter Property="Padding" Value="2,2,2,2"></Setter>
+                                  <Setter Property="Margin" Value="0,2,0,2"></Setter>
+                                  <Setter Property="assist:ButtonAssist.CornerRadius" Value="2"></Setter>
+                                </Style>
+                                <Style Selector="Button > TextBlock">
+                                  <Setter Property="FontSize" Value="13"></Setter>
+                                  <Setter Property="FontWeight" Value="Normal"></Setter>
+                                  <Setter Property="Foreground" Value="{StaticResource ThemeBackgroundBrush}"></Setter>
+                                </Style>
+                              </StackPanel.Styles>
+                              <Button   Classes="Flat"
+                                        Command="{Binding DataContext.InviteUserCommand, ElementName=Root}"
+                                        CommandParameter="{Binding Group}"
+                                        IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}">
+                                <TextBlock>Invite user</TextBlock>
+                              </Button>
+                              <Button   Classes="Flat"
+                                        Command="{Binding DataContext.EditGroupCommand, ElementName=Root}"
+                                        CommandParameter="{Binding Group}"
+                                        IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}">
+                                <TextBlock>Edit group</TextBlock>
+                              </Button>
+                              <Button   Classes="Flat"
+                                        Command="{Binding DataContext.LeaveGroupCommand, ElementName=Root}"
+                                        CommandParameter="{Binding Group}">
+                                <TextBlock>Leave group</TextBlock>
+                              </Button>
+                              <Button   Classes="Flat"
+                                        Command="{Binding DataContext.DeleteGroupCommand, ElementName=Root}"
+                                        CommandParameter="{Binding Group}"
+                                        IsEnabled="{Binding GroupRole, Converter={StaticResource isAdminConverter}}">
+                                <TextBlock>Delete group</TextBlock>
+                              </Button>
+                            </StackPanel>
+                          </styles:Card>
+                        </ControlTemplate>
+                      </ContextMenu.Template>
                     </ContextMenu>
                   </Button.ContextMenu>
                   <Ellipse Height="50" Width="50"
@@ -187,13 +215,35 @@
         </Grid>
         <Button.ContextMenu>
           <ContextMenu>
-            <MenuItem Header="Edit user"
-                      Command="{Binding DataContext.EditUserCommand, ElementName=Root}"
-                      CommandParameter="{Binding}">
-            </MenuItem>
-            <MenuItem Header="Logout"
-                      Command="{Binding DataContext.LogoutCommand, ElementName=Root}">
-            </MenuItem>
+            <ContextMenu.Template>
+              <ControlTemplate TargetType="ContextMenu">
+                <styles:Card Padding="2" Margin="0">
+                  <StackPanel>
+                    <StackPanel.Styles>
+                      <Style Selector="Button">
+                        <Setter Property="Padding" Value="2,2,2,2"></Setter>
+                        <Setter Property="Margin" Value="0,2,0,2"></Setter>
+                        <Setter Property="assist:ButtonAssist.CornerRadius" Value="2"></Setter>
+                      </Style>
+                      <Style Selector="Button > TextBlock">
+                        <Setter Property="FontSize" Value="13"></Setter>
+                        <Setter Property="FontWeight" Value="Normal"></Setter>
+                        <Setter Property="Foreground" Value="{StaticResource ThemeBackgroundBrush}"></Setter>
+                      </Style>
+                    </StackPanel.Styles>
+                    <Button   Classes="Flat"
+                              Command="{Binding DataContext.EditUserCommand, ElementName=Root}"
+                              CommandParameter="{Binding}">
+                      <TextBlock>Edit user</TextBlock>
+                    </Button>
+                    <Button   Classes="Flat"
+                              Command="{Binding DataContext.LogoutCommand, ElementName=Root}">
+                      <TextBlock>Logout</TextBlock>
+                    </Button>
+                  </StackPanel>
+                </styles:Card>
+              </ControlTemplate>
+            </ContextMenu.Template>
           </ContextMenu>
         </Button.ContextMenu>
       </Button>
@@ -249,22 +299,44 @@
               </Grid>
               <Button.ContextMenu>
                 <ContextMenu>
-                  <MenuItem Header="Change role"
-                            Command="{Binding DataContext.ChangeRoleCommand, ElementName=Root}"
-                            CommandParameter="{Binding User}"
-                            IsEnabled="{Binding DataContext.IsActiveGroupAdmin, ElementName=Root}">
-                  </MenuItem>
-                  <MenuItem Header="Kick user"
-                            Command="{Binding DataContext.KickUserCommand, ElementName=Root}"
-                            CommandParameter="{Binding User}"
-                            IsEnabled="{Binding DataContext.IsActiveGroupAdmin, ElementName=Root}">
-                    <MenuItem.IsVisible>
-                      <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="true">
-                        <Binding Path="User.Id" FallbackValue="-1" Mode="OneWay"></Binding>
-                        <Binding Path="DataContext.LoggedInUser.Id" ElementName="Root" Mode="OneWay"></Binding>
-                      </MultiBinding>
-                    </MenuItem.IsVisible>
-                  </MenuItem>
+                  <ContextMenu.Template>
+                    <ControlTemplate TargetType="ContextMenu">
+                      <styles:Card Padding="2" Margin="0">
+                        <StackPanel>
+                          <StackPanel.Styles>
+                            <Style Selector="Button">
+                              <Setter Property="Padding" Value="2,2,2,2"></Setter>
+                              <Setter Property="Margin" Value="0,2,0,2"></Setter>
+                              <Setter Property="assist:ButtonAssist.CornerRadius" Value="2"></Setter>
+                            </Style>
+                            <Style Selector="Button > TextBlock">
+                              <Setter Property="FontSize" Value="13"></Setter>
+                              <Setter Property="FontWeight" Value="Normal"></Setter>
+                              <Setter Property="Foreground" Value="{StaticResource ThemeBackgroundBrush}"></Setter>
+                            </Style>
+                          </StackPanel.Styles>
+                          <Button   Classes="Flat"
+                                    Command="{Binding DataContext.ChangeRoleCommand, ElementName=Root}"
+                                    CommandParameter="{Binding User}"
+                                    IsEnabled="{Binding DataContext.IsActiveGroupAdmin, ElementName=Root}">
+                            <TextBlock>Change role</TextBlock>
+                          </Button>
+                          <Button   Classes="Flat"
+                                    Command="{Binding DataContext.KickUserCommand, ElementName=Root}"
+                                    CommandParameter="{Binding User}"
+                                    IsEnabled="{Binding DataContext.IsActiveGroupAdmin, ElementName=Root}">
+                            <TextBlock>Kick user</TextBlock>
+                            <Button.IsVisible>
+                              <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="true">
+                                <Binding Path="User.Id" FallbackValue="-1" Mode="OneWay"></Binding>
+                                <Binding Path="DataContext.LoggedInUser.Id" ElementName="Root" Mode="OneWay"></Binding>
+                              </MultiBinding>
+                            </Button.IsVisible>
+                          </Button>
+                        </StackPanel>
+                      </styles:Card>
+                    </ControlTemplate>
+                  </ContextMenu.Template>
                 </ContextMenu>
               </Button.ContextMenu>
             </Button>           
