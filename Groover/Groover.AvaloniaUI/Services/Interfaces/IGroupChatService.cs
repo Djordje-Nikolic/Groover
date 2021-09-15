@@ -15,8 +15,8 @@ namespace Groover.AvaloniaUI.Services.Interfaces
         ConnectionHandlersWrapper HandlersWrapper { get; }
         Task<HubConnection> InitializeConnection();
         Task StartConnection();
-        Task JoinGroup(int groupId);
-        Task LeaveGroup(int groupId);
+        Task ConnectToGroup(int groupId);
+        Task DisconnectFromGroup(int groupId);
         Task NotifyConnection(int groupId, int userToNotifyId, int retryOnUnauthorized = 1);
         Task Reset();
     }
