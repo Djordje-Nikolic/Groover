@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Groover.AvaloniaUI.Services.Interfaces;
+using Groover.AvaloniaUI.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Groover.AvaloniaUI.Services
@@ -11,7 +12,21 @@ namespace Groover.AvaloniaUI.Services
     public class GroupChatService : IGroupChatService, IDisposable, IAsyncDisposable
     {
         public HashSet<int> ConnectedGroups { get; private set; }
-        public HubConnection Connection { get; private set; }
+
+        private HubConnection _connection;
+        public HubConnection Connection 
+        {
+            get 
+            {
+                return _connection;
+            }
+            private set
+            {
+                _connection = value;
+                HandlersWrapper.SetConnection(value);
+            }
+        }
+        public ConnectionHandlersWrapper HandlersWrapper { get; }
 
         private IApiService _apiService;
         private bool disposedValue;
@@ -20,10 +35,14 @@ namespace Groover.AvaloniaUI.Services
         {
             _apiService = apiService;
             ConnectedGroups = new HashSet<int>();
+            HandlersWrapper = new ConnectionHandlersWrapper();
         }
 
         public async Task<HubConnection> InitializeConnection()
         {
+            if (Connection != null)
+                await Reset();
+
             Connection = new HubConnectionBuilder()
                 .WithAutomaticReconnect()
                 .WithUrl(_apiService.ApiConfig.GroupChatHubAddress, options =>
@@ -38,14 +57,6 @@ namespace Groover.AvaloniaUI.Services
             Connection.Reconnected += Connection_Reconnected;
 
             return Connection;
-        }
-
-        private async Task Connection_Reconnected(string arg)
-        {
-            foreach (var groupId in ConnectedGroups)
-            {
-                await Connection.InvokeAsync("OpenGroupConnection", groupId.ToString());
-            }
         }
 
         public async Task StartConnection() => await Connection.StartAsync();
@@ -69,7 +80,6 @@ namespace Groover.AvaloniaUI.Services
                     throw;
             }
         }
-
         public async Task LeaveGroup(int groupId)
         {
             if (ConnectedGroups.Remove(groupId) == true)
@@ -114,9 +124,17 @@ namespace Groover.AvaloniaUI.Services
         {
             ConnectedGroups.Clear();
             await Connection.StopAsync();
+            HandlersWrapper.CleanUpHandlers();
             await Connection.DisposeAsync();
         }
 
+        private async Task Connection_Reconnected(string arg)
+        {
+            foreach (var groupId in ConnectedGroups)
+            {
+                await Connection.InvokeAsync("OpenGroupConnection", groupId.ToString());
+            }
+        }
         private async Task ReconnectOnTokenFail()
         {
             await Connection.StopAsync();
