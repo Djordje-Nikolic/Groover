@@ -114,242 +114,18 @@ namespace Groover.AvaloniaUI.ViewModels
         public async Task InitializeChatConnections()
         {
             var connection = await this._groupChatService.InitializeConnection();
-            connection.On<UserGroup>("GroupCreated", async (userGroup) => 
-            {
-                UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
-                LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-                await this._groupChatService.JoinGroup(userGroup.Group.Id);
-
-                NotificationsViewModel.AddNotification(new NotificationViewModel()
-                {
-                    TitleText = "New group created!",
-                    BodyText = $"Group '{userGroup.Group.Name}' has been successfully created!"
-                });
-            });
-
-            connection.On<string>("GroupDeleted", async (groupId) =>
-            {
-                if (int.TryParse(groupId, out int gId))
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
-                    if (ug != null)
-                    {
-                        await this._groupChatService.LeaveGroup(ug.Group.Id);
-                        LoggedInUser.UserGroupsCache.Remove(ug);
-
-                        SwitchToHomeCommand.Execute().Subscribe();
-
-                        NotificationsViewModel.AddNotification(new NotificationViewModel()
-                        {
-                            TitleText = "A group has been deleted",
-                            BodyText = $"Group '{ug.Group.Name}' has been deleted."
-                        });
-                    }
-                }
-            });
-
-            connection.On<Group>("GroupUpdated", (group) =>
-            {
-                if (group != null)
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == group.Id);
-                    if (ug != null)
-                    {
-                        ug.Group.Name = group.Name;
-                        ug.Group.Description = group.Description;
-                        ug.Group.ImageBase64 = group.ImageBase64;
-                        LoggedInUser.UserGroupsCache.AddOrUpdate(ug);
-
-                        var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == group.Id);
-                        //cVm.UpdateGroupData(group);
-                    }
-                }
-            });
-
-            connection.On<string, GroupUser>("UserJoined", async (groupId, gu) =>
-            {
-                if (int.TryParse(groupId, out int gId))
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
-                    if (ug != null)
-                    {
-                        GroupUserViewModel groupUserViewModel = this._mapper.Map<GroupUserViewModel>(gu);
-                        ug.Group.GroupUsersCache.AddOrUpdate(groupUserViewModel);
-
-                        var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
-                        //cVm.UserJoined(gu);
-                    }
-                }
-            });
-
-            connection.On<UserGroup>("LoggedInUserJoined", async (userGroup) =>
-            {
-                if (userGroup != null)
-                {
-                    UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
-                    LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-                    await this._groupChatService.JoinGroup(userGroup.Group.Id);
-
-
-                    NotificationsViewModel.AddNotification(new NotificationViewModel()
-                    {
-                        TitleText = "You have joined a group!",
-                        BodyText = $"You have joined '{userGroup.Group.Name}'!"
-                    });
-                }
-            });
-
-            connection.On<string, string>("UserLeft", async (groupId, userId) =>
-            {
-                if (int.TryParse(groupId, out int gId) &&
-                    int.TryParse(userId, out int uId))
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
-                    if (ug != null)
-                    {
-                        if (uId == LoggedInUser.Id)
-                        {
-                            LoggedInUser.UserGroupsCache.Remove(ug);
-                            await this._groupChatService.LeaveGroup(ug.Group.Id);
-                        }
-                        else
-                        {
-                            var gu = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
-                            if (gu != null)
-                            {
-                                ug.Group.GroupUsersCache.Remove(gu);
-
-                                var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
-                                //cVm.UserLeft(gu);
-                            }
-                        }
-                    }
-                }
-            });
-
-            connection.On<string, string, string>("UserRoleUpdated", async (groupId, userId, newRole) =>
-            {
-                if (int.TryParse(groupId, out int gId) &&
-                    int.TryParse(userId, out int uId) &&
-                    Enum.TryParse(newRole, out GrooverGroupRole newGroupRole))
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
-                    if (ug != null)
-                    {
-                        if (uId == LoggedInUser.Id)
-                        {
-                            ug.GroupRole = newGroupRole;
-                        }
-
-                        var gu = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
-                        if (gu != null)
-                        {
-                            gu.GroupRole = newGroupRole;
-
-                            var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
-                            //cVm.UserRoleUpdated(uId, newRole);
-                        }
-                    }
-                }
-            });
-
-            connection.On<User>("LoggedInUserUpdated", (user) =>
-            {
-                if (user != null)
-                {
-                    LoggedInUser.Username = user.Username;
-                    LoggedInUser.Email = user.Email;
-                    LoggedInUser.AvatarBase64 = user.AvatarBase64;
-                }
-            });
-
-            connection.On<string, User>("UserUpdated", (groupId, user) =>
-            {
-                if (int.TryParse(groupId, out int gId))
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
-                    if (ug != null)
-                    {
-                        var tempUser = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == user.Id)?.User;
-                        if (tempUser != null)
-                        {
-                            tempUser.Username = user.Username;
-                            tempUser.Email = user.Email;
-                            tempUser.AvatarBase64 = tempUser.AvatarBase64;
-
-                            var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
-                            //cVm.UserUpdated(user);
-                        }
-                    }
-                }
-            });
-
-            connection.On<string, string>("ConnectedToGroup", async (groupId, userId) =>
-            {
-                if (int.TryParse(groupId, out int gId) &&
-                    int.TryParse(userId, out int uId))
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
-                    if (ug != null)
-                    {
-                        var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
-                        if (user != null)
-                        {
-                            user.IsOnline = true;
-                            await _groupChatService.NotifyConnection(gId, uId);
-                        }
-                    }
-                }
-            });
-
-            connection.On<string, string>("DisconnectedFromGroup", (groupId, userId) =>
-            {
-                if (int.TryParse(groupId, out int gId) &&
-                    int.TryParse(userId, out int uId))
-                {
-                    var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
-                    if (ug != null)
-                    {
-                        var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
-                        if (user != null)
-                        {
-                            user.IsOnline = false;
-                        }
-                    }
-                }
-            });
-
-            connection.On<byte[], Group, string>("UserInvited", (tokenBytes, group, userId) =>
-            {
-                if (tokenBytes != null)
-                {
-                    string token = null;
-                    try
-                    {
-                        token = Encoding.UTF8.GetString(tokenBytes);
-                    }
-                    catch (Exception e)
-                    {
-                        NotificationsViewModel.AddNotification(new ErrorViewModel(e.GetType().ToString())
-                        {
-                            TitleText = "Bad invite token received",
-                            BodyText = e.Message
-                        });
-                    }
-
-                    if (int.TryParse(userId, out int uId) &&
-                        !string.IsNullOrWhiteSpace(token))
-                    {
-                        if (uId == LoggedInUser.Id)
-                        {
-                            GroupViewModel groupViewModel = this._mapper.Map<GroupViewModel>(group);
-                            NotificationsViewModel.AddNotification(new InviteViewModel(groupViewModel, token, uId, _groupService));
-                        }
-                    }
-                }
-            });
-
-            //Do the rest of callbacks
+            connection.On<UserGroup>("GroupCreated", OnGroupCreated);
+            connection.On<string>("GroupDeleted", OnGroupDeleted);
+            connection.On<Group>("GroupUpdated", OnGroupUpdated);
+            connection.On<string, GroupUser>("UserJoined", OnUserJoined);
+            connection.On<UserGroup>("LoggedInUserJoined", OnLoggedInUserJoined);
+            connection.On<string, string>("UserLeft", OnUserLeft);
+            connection.On<string, string, string>("UserRoleUpdated", OnUserRoleUpdated);
+            connection.On<User>("LoggedInUserUpdated", OnLoggedInUserUpdated);
+            connection.On<string, User>("UserUpdated", OnUserUpdated);
+            connection.On<string, string>("ConnectedToGroup", OnConnectedToGroup);
+            connection.On<string, string>("DisconnectedFromGroup", OnDisconnectedFromGroup);
+            connection.On<byte[], Group, string>("UserInvited", OnUserInvited);
 
             await this._groupChatService.StartConnection();
             
@@ -358,6 +134,232 @@ namespace Groover.AvaloniaUI.ViewModels
                 await this._groupChatService.JoinGroup(ug.Group.Id);
             }
         }
+
+        #region Chat Service Callbacks
+        public async Task OnGroupCreated(UserGroup userGroup)
+        {
+            UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
+            LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
+            await this._groupChatService.JoinGroup(userGroup.Group.Id);
+
+            NotificationsViewModel.AddNotification(new NotificationViewModel()
+            {
+                TitleText = "New group created!",
+                BodyText = $"Group '{userGroup.Group.Name}' has been successfully created!"
+            });
+        }
+        public async Task OnGroupDeleted(string groupId)
+        {
+            if (int.TryParse(groupId, out int gId))
+            {
+                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                if (ug != null)
+                {
+                    await this._groupChatService.LeaveGroup(ug.Group.Id);
+                    LoggedInUser.UserGroupsCache.Remove(ug);
+
+                    SwitchToHomeCommand.Execute().Subscribe();
+
+                    NotificationsViewModel.AddNotification(new NotificationViewModel()
+                    {
+                        TitleText = "A group has been deleted",
+                        BodyText = $"Group '{ug.Group.Name}' has been deleted."
+                    });
+                }
+            }
+        }
+        public void OnGroupUpdated(Group group)
+        {
+            if (group != null)
+            {
+                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == group.Id);
+                if (ug != null)
+                {
+                    ug.Group.Name = group.Name;
+                    ug.Group.Description = group.Description;
+                    ug.Group.ImageBase64 = group.ImageBase64;
+                    LoggedInUser.UserGroupsCache.AddOrUpdate(ug);
+
+                    var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == group.Id);
+                    //cVm.UpdateGroupData(group);
+                }
+            }
+        }
+        public void OnUserJoined(string groupId, GroupUser groupUser)
+        {
+            if (int.TryParse(groupId, out int gId))
+            {
+                var userGroup = LoggedInUser.UserGroups.FirstOrDefault(userGroup => userGroup.Group.Id == gId);
+                if (userGroup != null)
+                {
+                    GroupUserViewModel groupUserViewModel = this._mapper.Map<GroupUserViewModel>(groupUser);
+                    userGroup.Group.GroupUsersCache.AddOrUpdate(groupUserViewModel);
+
+                    var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                    //cVm.UserJoined(gu);
+                }
+            }
+        }
+        public async Task OnLoggedInUserJoined(UserGroup userGroup)
+        {
+            if (userGroup != null)
+            {
+                UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
+                LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
+                await this._groupChatService.JoinGroup(userGroup.Group.Id);
+
+
+                NotificationsViewModel.AddNotification(new NotificationViewModel()
+                {
+                    TitleText = "You have joined a group!",
+                    BodyText = $"You have joined '{userGroup.Group.Name}'!"
+                });
+            }
+        }
+        public async Task OnUserLeft(string groupId, string userId)
+        {
+            if (int.TryParse(groupId, out int gId) &&
+                int.TryParse(userId, out int uId))
+            {
+                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                if (ug != null)
+                {
+                    if (uId == LoggedInUser.Id)
+                    {
+                        LoggedInUser.UserGroupsCache.Remove(ug);
+                        await this._groupChatService.LeaveGroup(ug.Group.Id);
+                    }
+                    else
+                    {
+                        var gu = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
+                        if (gu != null)
+                        {
+                            ug.Group.GroupUsersCache.Remove(gu);
+
+                            var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                            //cVm.UserLeft(gu);
+                        }
+                    }
+                }
+            }
+        }
+        public void OnUserRoleUpdated(string groupId, string userId, string newRole)
+        {
+            if (int.TryParse(groupId, out int gId) &&
+                int.TryParse(userId, out int uId) &&
+                Enum.TryParse(newRole, out GrooverGroupRole newGroupRole))
+            {
+                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                if (ug != null)
+                {
+                    if (uId == LoggedInUser.Id)
+                    {
+                        ug.GroupRole = newGroupRole;
+                    }
+
+                    var gu = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
+                    if (gu != null)
+                    {
+                        gu.GroupRole = newGroupRole;
+
+                        var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                        //cVm.UserRoleUpdated(uId, newRole);
+                    }
+                }
+            }
+        }
+        public void OnLoggedInUserUpdated(User user)
+        {
+            if (user != null)
+            {
+                LoggedInUser.Username = user.Username;
+                LoggedInUser.Email = user.Email;
+                LoggedInUser.AvatarBase64 = user.AvatarBase64;
+            }
+        }
+        public void OnUserUpdated(string groupId, User user)
+        {
+            if (int.TryParse(groupId, out int gId))
+            {
+                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                if (ug != null)
+                {
+                    var tempUser = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == user.Id)?.User;
+                    if (tempUser != null)
+                    {
+                        tempUser.Username = user.Username;
+                        tempUser.Email = user.Email;
+                        tempUser.AvatarBase64 = tempUser.AvatarBase64;
+
+                        var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
+                        //cVm.UserUpdated(user);
+                    }
+                }
+            }
+        }
+        public async Task OnConnectedToGroup(string groupId, string userId)
+        {
+            if (int.TryParse(groupId, out int gId) &&
+                int.TryParse(userId, out int uId))
+            {
+                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                if (ug != null)
+                {
+                    var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
+                    if (user != null)
+                    {
+                        user.IsOnline = true;
+                        await _groupChatService.NotifyConnection(gId, uId);
+                    }
+                }
+            }
+        }
+        public void OnDisconnectedFromGroup(string groupId, string userId)
+        {
+            if (int.TryParse(groupId, out int gId) &&
+                int.TryParse(userId, out int uId))
+            {
+                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                if (ug != null)
+                {
+                    var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
+                    if (user != null)
+                    {
+                        user.IsOnline = false;
+                    }
+                }
+            }
+        }
+        public void OnUserInvited(byte[] tokenBytes, Group group, string userId)
+        {
+            if (tokenBytes != null)
+            {
+                string token = null;
+                try
+                {
+                    token = Encoding.UTF8.GetString(tokenBytes);
+                }
+                catch (Exception e)
+                {
+                    NotificationsViewModel.AddNotification(new ErrorViewModel(e.GetType().ToString())
+                    {
+                        TitleText = "Bad invite token received",
+                        BodyText = e.Message
+                    });
+                }
+
+                if (int.TryParse(userId, out int uId) &&
+                    !string.IsNullOrWhiteSpace(token))
+                {
+                    if (uId == LoggedInUser.Id)
+                    {
+                        GroupViewModel groupViewModel = this._mapper.Map<GroupViewModel>(group);
+                        NotificationsViewModel.AddNotification(new InviteViewModel(groupViewModel, token, uId, _groupService));
+                    }
+                }
+            }
+        }
+        #endregion
 
         private void InitializeLoggedInUser(UserViewModel loggedInUser)
         {
