@@ -61,7 +61,7 @@ namespace Groover.AvaloniaUI.Services
 
         public async Task StartConnection() => await Connection.StartAsync();
 
-        public async Task JoinGroup(int groupId)
+        public async Task ConnectToGroup(int groupId)
         {
             ConnectedGroups.Add(groupId);
 
@@ -80,7 +80,7 @@ namespace Groover.AvaloniaUI.Services
                     throw;
             }
         }
-        public async Task LeaveGroup(int groupId)
+        public async Task DisconnectFromGroup(int groupId)
         {
             if (ConnectedGroups.Remove(groupId) == true)
             {
@@ -122,10 +122,25 @@ namespace Groover.AvaloniaUI.Services
         
         public async Task Reset()
         {
+            if (Connection != null)
+            {
+                HandlersWrapper.CleanUpHandlers();
+
+                if (Connection.State == HubConnectionState.Connected)
+                {
+                    foreach (var groupId in ConnectedGroups)
+                    {
+                        await DisconnectFromGroup(groupId);
+                    }
+
+                    await Connection.StopAsync();
+                }
+
+                await Connection.DisposeAsync();
+            }
+
             ConnectedGroups.Clear();
-            await Connection.StopAsync();
-            HandlersWrapper.CleanUpHandlers();
-            await Connection.DisposeAsync();
+            Connection = null;
         }
 
         private async Task Connection_Reconnected(string arg)

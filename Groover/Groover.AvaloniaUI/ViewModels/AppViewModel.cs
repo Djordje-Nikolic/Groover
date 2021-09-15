@@ -132,16 +132,21 @@ namespace Groover.AvaloniaUI.ViewModels
             
             foreach (var ug in LoggedInUser.UserGroups)
             {
-                await this._groupChatService.JoinGroup(ug.Group.Id);
+                await this._groupChatService.ConnectToGroup(ug.Group.Id);
             }
         }
 
+        public async Task Cleanup()
+        {
+            await _groupChatService.Reset();
+        }
+
         #region Chat Service Callbacks
-        public async Task OnGroupCreated(UserGroup userGroup)
+        private async Task OnGroupCreated(UserGroup userGroup)
         {
             UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
             LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-            await this._groupChatService.JoinGroup(userGroup.Group.Id);
+            await this._groupChatService.ConnectToGroup(userGroup.Group.Id);
 
             NotificationsViewModel.AddNotification(new NotificationViewModel()
             {
@@ -149,14 +154,14 @@ namespace Groover.AvaloniaUI.ViewModels
                 BodyText = $"Group '{userGroup.Group.Name}' has been successfully created!"
             });
         }
-        public async Task OnGroupDeleted(string groupId)
+        private async Task OnGroupDeleted(string groupId)
         {
             if (int.TryParse(groupId, out int gId))
             {
                 var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                 if (ug != null)
                 {
-                    await this._groupChatService.LeaveGroup(ug.Group.Id);
+                    await this._groupChatService.DisconnectFromGroup(ug.Group.Id);
                     LoggedInUser.UserGroupsCache.Remove(ug);
 
                     SwitchToHomeCommand.Execute().Subscribe();
@@ -169,7 +174,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public void OnGroupUpdated(Group group)
+        private void OnGroupUpdated(Group group)
         {
             if (group != null)
             {
@@ -186,7 +191,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public void OnUserJoined(string groupId, GroupUser groupUser)
+        private void OnUserJoined(string groupId, GroupUser groupUser)
         {
             if (int.TryParse(groupId, out int gId))
             {
@@ -201,14 +206,13 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public async Task OnLoggedInUserJoined(UserGroup userGroup)
+        private async Task OnLoggedInUserJoined(UserGroup userGroup)
         {
             if (userGroup != null)
             {
                 UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
                 LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-                await this._groupChatService.JoinGroup(userGroup.Group.Id);
-
+                await this._groupChatService.ConnectToGroup(userGroup.Group.Id);
 
                 NotificationsViewModel.AddNotification(new NotificationViewModel()
                 {
@@ -217,7 +221,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 });
             }
         }
-        public async Task OnUserLeft(string groupId, string userId)
+        private async Task OnUserLeft(string groupId, string userId)
         {
             if (int.TryParse(groupId, out int gId) &&
                 int.TryParse(userId, out int uId))
@@ -228,7 +232,7 @@ namespace Groover.AvaloniaUI.ViewModels
                     if (uId == LoggedInUser.Id)
                     {
                         LoggedInUser.UserGroupsCache.Remove(ug);
-                        await this._groupChatService.LeaveGroup(ug.Group.Id);
+                        await this._groupChatService.DisconnectFromGroup(ug.Group.Id);
                     }
                     else
                     {
@@ -244,7 +248,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public void OnUserRoleUpdated(string groupId, string userId, string newRole)
+        private void OnUserRoleUpdated(string groupId, string userId, string newRole)
         {
             if (int.TryParse(groupId, out int gId) &&
                 int.TryParse(userId, out int uId) &&
@@ -256,12 +260,14 @@ namespace Groover.AvaloniaUI.ViewModels
                     if (uId == LoggedInUser.Id)
                     {
                         ug.GroupRole = newGroupRole;
+                        LoggedInUser.UserGroupsCache.AddOrUpdate(ug);
                     }
 
                     var gu = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId);
                     if (gu != null)
                     {
                         gu.GroupRole = newGroupRole;
+                        ug.Group.GroupUsersCache.AddOrUpdate(gu);
 
                         var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                         //cVm.UserRoleUpdated(uId, newRole);
@@ -269,7 +275,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public void OnLoggedInUserUpdated(User user)
+        private void OnLoggedInUserUpdated(User user)
         {
             if (user != null)
             {
@@ -278,19 +284,23 @@ namespace Groover.AvaloniaUI.ViewModels
                 LoggedInUser.AvatarBase64 = user.AvatarBase64;
             }
         }
-        public void OnUserUpdated(string groupId, User user)
+        private void OnUserUpdated(string groupId, User user)
         {
             if (int.TryParse(groupId, out int gId))
             {
                 var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                 if (ug != null)
                 {
-                    var tempUser = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == user.Id)?.User;
-                    if (tempUser != null)
+                    var groupUser = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == user.Id);
+                    if (groupUser != null)
                     {
+                        var tempUser = groupUser.User;
+
                         tempUser.Username = user.Username;
                         tempUser.Email = user.Email;
-                        tempUser.AvatarBase64 = tempUser.AvatarBase64;
+                        tempUser.AvatarBase64 = user.AvatarBase64;
+
+                        ug.Group.GroupUsersCache.AddOrUpdate(groupUser);
 
                         var cVm = ChatViewModels.First(vm => vm.UserGroup.Group.Id == gId);
                         //cVm.UserUpdated(user);
@@ -298,7 +308,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public async Task OnConnectedToGroup(string groupId, string userId)
+        private async Task OnConnectedToGroup(string groupId, string userId)
         {
             if (int.TryParse(groupId, out int gId) &&
                 int.TryParse(userId, out int uId))
@@ -315,7 +325,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public void OnDisconnectedFromGroup(string groupId, string userId)
+        private void OnDisconnectedFromGroup(string groupId, string userId)
         {
             if (int.TryParse(groupId, out int gId) &&
                 int.TryParse(userId, out int uId))
@@ -331,7 +341,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 }
             }
         }
-        public void OnUserInvited(byte[] tokenBytes, Group group, string userId)
+        private void OnUserInvited(byte[] tokenBytes, Group group, string userId)
         {
             if (tokenBytes != null)
             {
@@ -759,7 +769,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 ActiveChatViewModel = null;
                 LoggedInUser = null;
                 _userService.Logout();
-                await _groupChatService.Reset();
+                await Cleanup();
                 return true;
             }
             else

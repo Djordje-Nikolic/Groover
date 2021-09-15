@@ -23,6 +23,7 @@ namespace Groover.AvaloniaUI.Views
 {
     public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
+        private bool appViewModelCleanedUp = false;
         private AppView _mainView;
         //private ProgressBar _progressBar;
         private ReactiveCommand<UserViewModel, Unit> LoadingScreenCommand { get; }
@@ -101,9 +102,35 @@ namespace Groover.AvaloniaUI.Views
                 .Where(val => val != null && val == true)
                 .Subscribe(val => this.Close())
                 .DisposeWith(disposables);
+
+
             });
 
+            this.Closing += async (s, e) =>
+            {
+                if (!appViewModelCleanedUp)
+                {
+                    e.Cancel = true;
+                    await Task.Yield();
+
+                    await DoOnClosing(s, e);
+                }
+            };
             this.Opened += DoOnOpen;
+        }
+
+        private async Task DoOnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            AppViewModel? appViewModel = (AppViewModel?)this._mainView?.DataContext;
+
+            if (appViewModel != null)
+            {
+                await appViewModel.Cleanup();
+            }
+
+            appViewModelCleanedUp = true;
+            var window = (ReactiveWindow<MainWindowViewModel>?)sender;
+            window?.Close();
         }
 
         private async Task LoadingScreenAsync(UserViewModel userViewModel)
