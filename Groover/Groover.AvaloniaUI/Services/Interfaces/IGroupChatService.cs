@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using Groover.AvaloniaUI.Utils;
+using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace Groover.AvaloniaUI.Services.Interfaces
     {
         HashSet<int> ConnectedGroups { get; }
         HubConnection Connection { get; }
+        ConnectionHandlersWrapper HandlersWrapper { get; }
         Task<HubConnection> InitializeConnection();
         Task StartConnection();
         Task JoinGroup(int groupId);

@@ -113,19 +113,20 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public async Task InitializeChatConnections()
         {
-            var connection = await this._groupChatService.InitializeConnection();
-            connection.On<UserGroup>("GroupCreated", OnGroupCreated);
-            connection.On<string>("GroupDeleted", OnGroupDeleted);
-            connection.On<Group>("GroupUpdated", OnGroupUpdated);
-            connection.On<string, GroupUser>("UserJoined", OnUserJoined);
-            connection.On<UserGroup>("LoggedInUserJoined", OnLoggedInUserJoined);
-            connection.On<string, string>("UserLeft", OnUserLeft);
-            connection.On<string, string, string>("UserRoleUpdated", OnUserRoleUpdated);
-            connection.On<User>("LoggedInUserUpdated", OnLoggedInUserUpdated);
-            connection.On<string, User>("UserUpdated", OnUserUpdated);
-            connection.On<string, string>("ConnectedToGroup", OnConnectedToGroup);
-            connection.On<string, string>("DisconnectedFromGroup", OnDisconnectedFromGroup);
-            connection.On<byte[], Group, string>("UserInvited", OnUserInvited);
+            await this._groupChatService.InitializeConnection();
+            var handlersWrapper = _groupChatService.HandlersWrapper;
+            handlersWrapper.GroupCreated(OnGroupCreated);
+            handlersWrapper.GroupDeleted(OnGroupDeleted);
+            handlersWrapper.GroupUpdated(OnGroupUpdated);
+            handlersWrapper.UserJoined(OnUserJoined);
+            handlersWrapper.LoggedInUserJoined(OnLoggedInUserJoined);
+            handlersWrapper.UserLeft(OnUserLeft);
+            handlersWrapper.UserRoleUpdated(OnUserRoleUpdated);
+            handlersWrapper.LoggedInUserUpdated(OnLoggedInUserUpdated);
+            handlersWrapper.UserUpdated(OnUserUpdated);
+            handlersWrapper.ConnectedToGroup(OnConnectedToGroup);
+            handlersWrapper.DisconnectedFromGroup(OnDisconnectedFromGroup);
+            handlersWrapper.UserInvited(OnUserInvited);
 
             await this._groupChatService.StartConnection();
             
@@ -369,13 +370,6 @@ namespace Groover.AvaloniaUI.ViewModels
 
             LoggedInUser = loggedInUser;
 
-            //this._userGroupsCache = new SourceCache<UserGroupViewModel, int>(ug => ug.Group.Id);
-            //_userGroupsCache.Connect()
-            //    .ObserveOn(RxApp.MainThreadScheduler)
-            //    .Bind(out _userGroups)
-            //    .DisposeMany()
-            //    .Subscribe();
-
             LoggedInUser.UserGroupsCache.Connect()
                 .TransformWithInlineUpdate(ug => GenerateChatViewModel(ug), (previousViewModel, updatedUserGroup) =>
                 {
@@ -385,8 +379,6 @@ namespace Groover.AvaloniaUI.ViewModels
                 .Bind(out _chatViewModels)
                 .DisposeMany()
                 .Subscribe();
-
-            //_userGroupsCache.AddOrUpdate(LoggedInUser.SortedUserGroups);
         }
 
         //private async Task UpdateLoginResponse()
