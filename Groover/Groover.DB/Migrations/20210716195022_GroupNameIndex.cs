@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Groover.DB.Migrations
+namespace Groover.IdentityDB.Migrations
 {
     public partial class GroupNameIndex : Migration
     {

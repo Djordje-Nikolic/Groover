@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Groover.API", "Groover.API\Groover.API.csproj", "{3D367EF0-C645-4516-AB4B-17E6F01F1FE2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Groover.DB", "Groover.DB\Groover.DB.csproj", "{482A5CD5-E32C-4612-AA76-F80F4657AC94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Groover.IdentityDB", "Groover.DB\Groover.IdentityDB.csproj", "{482A5CD5-E32C-4612-AA76-F80F4657AC94}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Groover.BL", "Groover.BL\Groover.BL.csproj", "{812686B2-D259-4015-8AA5-28FCE501105C}"
 EndProject
