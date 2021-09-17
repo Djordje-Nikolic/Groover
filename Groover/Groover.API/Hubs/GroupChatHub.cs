@@ -3,7 +3,7 @@ using Groover.API.Services.Interfaces;
 using Groover.BL.Handlers.Requirements;
 using Groover.BL.Models.Exceptions;
 using Groover.BL.Services.Interfaces;
-using Groover.DB.MySqlDb.Entities;
+using Groover.IdentityDB.MySqlDb.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System;
@@ -53,6 +53,7 @@ namespace Groover.API.Hubs
             await Clients.Group(groupId).SendAsync("ConnectedToGroup", groupId, userId);
         }
 
+        //TODO: The "who is online and who isnt" feature doesnt work with multiple connections per user (find a solution eventually)
         public async Task CloseGroupConnection(string groupId)
         {
             var claims = Context.User ?? throw new HubException("Unauthorized: invalid_claims");

@@ -1,4 +1,4 @@
-﻿using Groover.DB.MySqlDb.Entities;
+﻿using Groover.IdentityDB.MySqlDb.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Groover.DB.MySqlDb
+namespace Groover.IdentityDB.MySqlDb
 {
     public class GrooverDbContext : IdentityDbContext<User, Role, int>
     {

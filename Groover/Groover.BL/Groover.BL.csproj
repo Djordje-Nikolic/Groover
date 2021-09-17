@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Groover.DB\Groover.DB.csproj" />
+    <ProjectReference Include="..\Groover.DB\Groover.IdentityDB.csproj" />
   </ItemGroup>
 
 </Project>

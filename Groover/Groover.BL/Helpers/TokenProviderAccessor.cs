@@ -1,4 +1,4 @@
-﻿using Groover.DB.MySqlDb.Entities;
+﻿using Groover.IdentityDB.MySqlDb.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Groover.DB.MySqlDb.Entities
+namespace Groover.IdentityDB.MySqlDb.Entities
 {
     [Index(nameof(Token), IsUnique = true)]
     public class RefreshToken

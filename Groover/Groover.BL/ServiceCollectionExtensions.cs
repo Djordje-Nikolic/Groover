@@ -1,5 +1,5 @@
-﻿using Groover.DB.MySqlDb;
-using Groover.DB.MySqlDb.Entities;
+﻿using Groover.IdentityDB.MySqlDb;
+using Groover.IdentityDB.MySqlDb.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +22,7 @@ namespace Groover.BL
             services.AddDbContextPool<GrooverDbContext>((serviceProvider, options) =>
                         options.UseMySql(connectionString, 
                         ServerVersion.AutoDetect(connectionString), 
-                        options => options.MigrationsAssembly("Groover.DB")));
+                        options => options.MigrationsAssembly("Groover.IdentityDB")));
 
             services.AddIdentity<User, Role>()
                     .AddEntityFrameworkStores<GrooverDbContext>()
