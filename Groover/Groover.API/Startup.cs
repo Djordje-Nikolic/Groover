@@ -49,6 +49,9 @@ namespace Groover.API
             services.AddIdentityDatabase(identityConnectionString);
             AutoMigrator.ApplyMigrations(identityConnectionString);
 
+            IConfigurationSection chatDbConfigSection = Configuration.GetSection("ChatDbConfiguration");
+            services.AddChatDatabase(chatDbConfigSection);
+
             AddJwt(services);
 
             AddEmailService(services);

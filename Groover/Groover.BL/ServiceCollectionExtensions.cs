@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 using Groover.BL.CustomTokenProviders;
 using Groover.BL.Utils;
 using Groover.BL.Helpers;
+using Microsoft.Extensions.Configuration;
+using Groover.ChatDB;
+using Groover.ChatDB.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Groover.BL
 {
@@ -43,6 +47,36 @@ namespace Groover.BL
 
             services.Configure<IdentityOptions>(options => IdentityOptionsCustomizer.Customize(options));
             services.Configure<PasswordHasherOptions>(options => { });
+
+            return services;
+        }
+
+        public static IServiceCollection AddChatDatabase(this IServiceCollection services, IConfigurationSection configurationSection)
+        {
+            //Init config
+            var chatDbConfiguration = configurationSection
+                .Get<IChatDbConfiguration>();
+            services.AddSingleton(chatDbConfiguration);
+
+            //Init cluster factory
+            services.AddSingleton<IChatDbClusterFactory, ChatDbClusterFactory>(factory =>
+            {
+                var clusterFactory = new ChatDbClusterFactory();
+                clusterFactory.AddLoggerProvider(factory.GetService<ILoggerProvider>());
+                return clusterFactory;
+            });
+
+            //Init cluster
+            services.AddSingleton<IChatDbCluster>(factory =>
+            {
+                var clusterFactory = factory.GetRequiredService<IChatDbClusterFactory>();
+                return clusterFactory.CreateInstance(factory.GetRequiredService<IChatDbConfiguration>());
+            });
+
+            //Init session and repositories
+            services.AddSingleton<IGroupChatSession, GroupChatSession>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<ITrackRepository, TrackRepository>();
 
             return services;
         }
