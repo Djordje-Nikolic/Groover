@@ -1,32 +1,33 @@
-CREATE KEYSPACE groupChat WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 3};
+CREATE KEYSPACE groupChat WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
 
-CREATE TABLE groupChat.messages (
-	messageId bigint,
+USE groupChat;
+
+CREATE TABLE messages (
+	messageId timeuuid,
 	senderId bigint,
 	groupId bigint,
-	createAt date,
 	type text,
 	content text,
 	image blob,
-	trackId bigint,
+	trackId timeuuid,
 	trackName text,
-	trackDuration int,
+	trackDuration smallint,
 	PRIMARY KEY (groupId, messageId)
 ) WITH CLUSTERING ORDER BY (messageId DESC);
 
-CREATE TABLE groupChat.tracksMetadata (
-	trackId bigint,
+CREATE TABLE tracksMetadata (
+	trackId timeuuid,
 	groupId bigint,
 	name text,
-	duration int,
+	duration smallint,
 	format text,
-	createdAt date,
 	hash text,
+	chunkCount int,
 	PRIMARY KEY (groupId, trackId)
 ) WITH CLUSTERING ORDER BY (trackId DESC);
 
-CREATE TABLE groupChat.tracksChunks (
-	trackId bigint,
+CREATE TABLE tracksChunks (
+	trackId timeuuid,
 	chunkOrder int,
 	chunk blob,
 	PRIMARY KEY (trackId, chunkOrder)
