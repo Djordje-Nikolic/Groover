@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Groover.ChatDB.Models
 {
     [Table("tracksMetadata")]
-    public class Track
+    public class Track : BaseCassandraModel
     {
         [Column("trackId")]
         [ClusteringKey(ClusteringSortOrder = Cassandra.Mapping.SortOrder.Descending)]
@@ -32,6 +32,9 @@ namespace Groover.ChatDB.Models
         public string Hash { get; set; }
 
         [Column("chunkCount")]
-        public int ChunkCount { get; set; }
+        internal int ChunkCount { get; set; }
+
+        [Ignore]
+        public byte[] TrackBytes { get; set; }
     }
 }

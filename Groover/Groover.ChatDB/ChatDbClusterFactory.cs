@@ -25,7 +25,7 @@ namespace Groover.ChatDB
                 .AddContactPoint(configuration.ContactPointAddress)
                 .Build();
 
-            return new ChatDbCluster(cluster);
+            return new ChatDbCluster(cluster, configuration);
         }
     }
 }

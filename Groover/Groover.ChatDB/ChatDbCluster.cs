@@ -8,15 +8,18 @@ using System.Threading.Tasks;
 
 namespace Groover.ChatDB
 {
-    public class ChatDbCluster : IChatDbCluster
+    internal class ChatDbCluster : IChatDbCluster
     {
+        public readonly IChatDbConfiguration Configuration;
+
         private bool disposedValue;
         private readonly ICluster _cluster;
 
         public ICluster Cluster { get => _cluster; }
 
-        internal ChatDbCluster(ICluster cluster)
+        internal ChatDbCluster(ICluster cluster, IChatDbConfiguration configuration)
         {
+            Configuration = configuration;
             _cluster = cluster;
         }
 

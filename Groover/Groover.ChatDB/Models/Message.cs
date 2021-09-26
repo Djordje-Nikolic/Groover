@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Groover.ChatDB.Models
 {
     [Table("messages")]
-    public class Message
+    public class Message : BaseCassandraModel
     {
         [Column("messageId")]
         [ClusteringKey(ClusteringSortOrder = Cassandra.Mapping.SortOrder.Descending)]

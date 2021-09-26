@@ -11,5 +11,6 @@ namespace Groover.ChatDB
     {
         public string ContactPointAddress { get; set; }
         public string GroupChatKeySpace { get; set; }
+        public int BytesPerTrackChunk { get; set; }
     }
 }
