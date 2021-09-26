@@ -9,5 +9,6 @@ namespace Groover.ChatDB.Interfaces
     public interface IChatDbCluster : IDisposable, IAsyncDisposable
     {
         public Cassandra.ICluster Cluster { get; }
+        public IChatDbConfiguration Configuration { get; }
     }
 }

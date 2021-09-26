@@ -10,15 +10,16 @@ namespace Groover.ChatDB
 {
     public class GroupChatSession : IGroupChatSession
     {
-        private IChatDbCluster _groupChatCluster;
+        private readonly IChatDbCluster _groupChatCluster;
         private readonly ISession _session;
 
         public ISession Session { get => _session; }
+        public IChatDbConfiguration Configuration { get => _groupChatCluster.Configuration; }
 
-        public GroupChatSession(IChatDbCluster cluster, IChatDbConfiguration configuration)
+        public GroupChatSession(IChatDbCluster cluster)
         {
             _groupChatCluster = cluster;
-            _session = cluster.Cluster.Connect(configuration.GroupChatKeySpace);
+            _session = cluster.Cluster.Connect(cluster.Configuration.GroupChatKeySpace);
         }
     }
 }

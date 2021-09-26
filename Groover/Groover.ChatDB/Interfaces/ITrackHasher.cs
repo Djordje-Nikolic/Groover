@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Groover.ChatDB.Interfaces
 {
-    public interface IGroupChatSession
+    internal interface ITrackHasher
     {
-        public Cassandra.ISession Session { get; }
-        public IChatDbConfiguration Configuration { get; }
+        string GenerateHash(byte[] trackBytes);
+        bool ValidateHash(byte[] trackBytes, string hash);
     }
 }
