@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 
 namespace Groover.ChatDB.Interfaces
 {
-    public interface IMessageRepository : IModelGetter<Message>
+    public interface IMessageRepository
     {
-        Message Add(Message message);
-        bool Delete(TimeUuid messageId);
-        bool Delete(Message message);
-        Message Update(Message message);
-        Message Get(TimeUuid messageId);
+        Task<Message> AddAsync(Message message);
+        Task DeleteAsync(TimeUuid messageId);
+        Task DeleteAsync(Message message);
+        Task<Message> UpdateAsync(Message message);
+        Task<Message> GetAsync(TimeUuid messageId);
+        Task<ICollection<Message>> GetAsync(int groupId);
+        Task<ICollection<Message>> GetAsync(int groupId, PageParams pageParams);
     }
 }
