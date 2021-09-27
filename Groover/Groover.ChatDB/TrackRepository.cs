@@ -16,17 +16,20 @@ namespace Groover.ChatDB
         private readonly IGroupChatSession _groupChatSession;
         private readonly ITrackSplitter _trackSplitter;
         private readonly ITrackHasher _trackHasher;
+        private readonly IModelGetter<Track> _modelGetter;
         private ISession _session { get => _groupChatSession.Session; }
         private int _bytesPerChunk { get => _groupChatSession.Configuration.BytesPerTrackChunk; }
 
         internal TrackRepository(IGroupChatSession session,
                                IMapper mapper,
                                ITrackSplitter trackSplitter,
-                               ITrackHasher trackHasher) : this(session)
+                               ITrackHasher trackHasher,
+                               IModelGetter<Track> modelGetter) : this(session)
         {
-            _mapper = mapper;
-            _trackSplitter = trackSplitter;
-            _trackHasher = trackHasher;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _trackSplitter = trackSplitter ?? throw new ArgumentNullException(nameof(trackSplitter));
+            _trackHasher = trackHasher ?? throw new ArgumentNullException(nameof(trackHasher));
+            _modelGetter = modelGetter ?? throw new ArgumentNullException(nameof(modelGetter));
         }
 
         public TrackRepository(IGroupChatSession session)
@@ -35,6 +38,7 @@ namespace Groover.ChatDB
             _mapper = new Cassandra.Mapping.Mapper(_session);
             _trackSplitter = new TrackSplitter(_bytesPerChunk);
             _trackHasher = new MD5TrackHasher();
+            _modelGetter = new ModelGetter<Track>(_mapper);
         }
 
         public async Task<Track> AddAsync(Track track)
@@ -107,6 +111,26 @@ namespace Groover.ChatDB
             }
 
             return true;
+        }
+
+        public async Task<ICollection<Track>> GetAsync(int groupId)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAsync(groupId, "groupId");
+
+            return results;
+        }
+
+        public async Task<ICollection<Track>> GetAsync(int groupId, PageParams pageParams)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAsync(groupId, "groupId", pageParams);
+
+            return results;
         }
 
         private async Task DeleteChunksAsync(TimeUuid trackId)
