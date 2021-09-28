@@ -14,9 +14,12 @@ namespace Groover.ChatDB.Interfaces
         Task DeleteAsync(TimeUuid trackId);
         Task DeleteAsync(Track track);
         Task<Track> UpdateAsync(Track track);
+        Task<Track> GetAsync(string trackId);
         Task<Track> GetAsync(TimeUuid trackId);
-        Task<ICollection<Track>> GetAsync(int groupId);
-        Task<ICollection<Track>> GetAsync(int groupId, PageParams pageParams);
+        Task<ICollection<Track>> GetByGroupAsync(int groupId);
+        Task<ICollection<Track>> GetByGroupAsync(int groupId, PageParams pageParams);
+        Task<ICollection<Track>> GetAfterAsync(int groupId, DateTime afterDateTime);
+        Task<ICollection<Track>> GetAfterAsync(int groupId, DateTime afterDateTime, PageParams pageParams);
         Task<bool> LoadAsync(Track track, bool checkHash = false);
     }
 }

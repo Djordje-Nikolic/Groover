@@ -81,9 +81,79 @@ namespace Groover.ChatDB
             await _mapper.DeleteAsync<Track>(track);
         }
 
+        public async Task<Track> GetAsync(string trackId)
+        {
+            if (string.IsNullOrWhiteSpace(trackId))
+                throw new ArgumentNullException(nameof(trackId));
+
+            try
+            {
+                TimeUuid messageTimeUuid = TimeUuid.Parse(trackId);
+
+                return await GetAsync(messageTimeUuid);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("Argument is not a valid TimeUuid format.", nameof(trackId), e);
+            }
+        }
+
         public async Task<Track> GetAsync(TimeUuid trackId)
         {
             return await _mapper.SingleOrDefaultAsync<Track>("WHERE trackId = ?", trackId);
+        }
+
+        //public async Task<Track> GetAsync(Message message)
+        //{
+        //    if (message == null)
+        //        throw new ArgumentNullException(nameof(message));
+
+        //    if (message.Type != MessageType.Track)
+        //        throw new ArgumentException("This message is not of a valid type.", nameof(message));
+
+        //    TimeUuid trackId = message.TrackId ?? throw new ArgumentException("TrackId is undefined for this message.", nameof(message));
+
+        //    return await GetAsync(trackId);
+        //}
+
+        public async Task<ICollection<Track>> GetByGroupAsync(int groupId)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAsync(groupId, "groupId");
+
+            return results;
+        }
+
+        public async Task<ICollection<Track>> GetByGroupAsync(int groupId, PageParams pageParams)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAsync(groupId, "groupId", pageParams);
+
+            return results;
+        }
+
+        public async Task<ICollection<Track>> GetAfterAsync(int groupId, DateTime afterDateTime)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAfterAsync(groupId, "groupId", afterDateTime, "trackId");
+
+            return results;
+        }
+
+        public async Task<ICollection<Track>> GetAfterAsync(int groupId, DateTime afterDateTime, PageParams pageParams)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAfterAsync(groupId, "groupId", afterDateTime, "trackId", pageParams);
+
+            return results;
         }
 
         public async Task<Track> UpdateAsync(Track track)
@@ -111,26 +181,6 @@ namespace Groover.ChatDB
             }
 
             return true;
-        }
-
-        public async Task<ICollection<Track>> GetAsync(int groupId)
-        {
-            if (groupId < 0)
-                throw new ArgumentOutOfRangeException(nameof(groupId));
-
-            var results = await _modelGetter.GetAsync(groupId, "groupId");
-
-            return results;
-        }
-
-        public async Task<ICollection<Track>> GetAsync(int groupId, PageParams pageParams)
-        {
-            if (groupId < 0)
-                throw new ArgumentOutOfRangeException(nameof(groupId));
-
-            var results = await _modelGetter.GetAsync(groupId, "groupId", pageParams);
-
-            return results;
         }
 
         private async Task DeleteChunksAsync(TimeUuid trackId)

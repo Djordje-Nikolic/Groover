@@ -11,5 +11,7 @@ namespace Groover.ChatDB.Interfaces
     {
         public Task<ICollection<T>> GetAsync(object columnValue, string columnName);
         public Task<ICollection<T>> GetAsync(object columnValue, string columnName, PageParams pageParams);
+        public Task<ICollection<T>> GetAfterAsync(object columnValue, string columnName, DateTime afterDateTime, string timeUuidColumnName);
+        public Task<ICollection<T>> GetAfterAsync(object columnValue, string columnName, DateTime afterDateTime, string timeUuidColumnName, PageParams pageParams);
     }
 }
