@@ -13,7 +13,14 @@ namespace Groover.ChatDB
         private readonly IMapper _mapper;
         private readonly IGroupChatSession _groupChatSession;
         private readonly IModelGetter<Message> _modelGetter;
+
         private ISession _session { get => _groupChatSession.Session; }
+
+        internal MessageRepository(IGroupChatSession groupChatSession,
+                                   IModelGetter<Message> modelGetter) : this(groupChatSession)
+        {
+            _modelGetter = modelGetter;
+        }
 
         public MessageRepository(IGroupChatSession session)
         {
@@ -22,44 +29,111 @@ namespace Groover.ChatDB
             _modelGetter = new ModelGetter<Message>(_mapper);
         }
 
-        public Task<Message> AddAsync(Message message)
+        public async Task<Message> AddAsync(Message message)
         {
-            throw new NotImplementedException();
+            //Validate
+            Validate(message);
+
+            //Generate new TimeUuid
+            message.Id = TimeUuid.NewId(DateTime.UtcNow);
+
+            await _mapper.InsertAsync(message);
+            return message;
         }
 
-        public Task DeleteAsync(TimeUuid messageId)
+        public async Task DeleteAsync(TimeUuid messageId)
         {
-            throw new NotImplementedException();
+            await _mapper.DeleteAsync<Message>("WHERE messageId = ?", messageId);
         }
 
-        public Task DeleteAsync(Message message)
+        public async Task DeleteAsync(Message message)
         {
-            throw new NotImplementedException();
+            await _mapper.DeleteAsync<Message>(message);
         }
 
-        public Task<Message> GetAsync(TimeUuid messageId)
+        public async Task<Message> GetAsync(string messageId)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(messageId))
+                throw new ArgumentNullException(nameof(messageId));
+
+            try
+            {
+                TimeUuid messageTimeUuid = TimeUuid.Parse(messageId);
+
+                return await GetAsync(messageTimeUuid);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("Argument is not a valid TimeUuid format.", nameof(messageId), e);
+            }
         }
 
-        public Task<ICollection<Message>> GetAsync(int groupId)
+        public async Task<Message> GetAsync(TimeUuid messageId)
         {
-            throw new NotImplementedException();
+            return await _mapper.SingleOrDefaultAsync<Message>("WHERE messageId = ?", messageId);
         }
 
-        public Task<ICollection<Message>> GetAsync(int groupId, PageParams pageParams)
+        public async Task<ICollection<Message>> GetByGroupAsync(int groupId)
         {
-            throw new NotImplementedException();
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAsync(groupId, "groupId");
+
+            return results;
         }
 
-        public Task<Message> UpdateAsync(Message message)
+        public async Task<ICollection<Message>> GetByGroupAsync(int groupId, PageParams pageParams)
         {
-            throw new NotImplementedException();
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAsync(groupId, "groupId", pageParams);
+
+            return results;
+        }
+
+        public async Task<ICollection<Message>> GetAfterAsync(int groupId, DateTime afterDateTime)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAfterAsync(groupId, "groupId", afterDateTime, "messageId");
+
+            return results;
+        }
+
+        public async Task<ICollection<Message>> GetAfterAsync(int groupId, DateTime afterDateTime, PageParams pageParams)
+        {
+            if (groupId < 0)
+                throw new ArgumentOutOfRangeException(nameof(groupId));
+
+            var results = await _modelGetter.GetAfterAsync(groupId, "groupId", afterDateTime, "messageId", pageParams);
+
+            return results;
+        }
+
+        public async Task<Message> UpdateAsync(Message message)
+        {
+            Validate(message);
+
+            await _mapper.UpdateAsync<Message>(message);
+            return await GetAsync(message.Id);
         }
 
         private void Validate(Message message)
         {
+            if (message.SenderId < 1)
+                throw new ArgumentOutOfRangeException(nameof(message.SenderId));
 
+            if (message.GroupId < 1)
+                throw new ArgumentOutOfRangeException(nameof(message.GroupId));
+
+            if (message.Type == null)
+                throw new ArgumentException("MessageType cannot be undefined.", nameof(message.Type));
+
+            if (message.Image != null && message.Image.Length > _groupChatSession.Configuration.MaximumImageSizeInBytes)
+                throw new ArgumentException($"Image size exceeded maximum allowed bytes: {_groupChatSession.Configuration.MaximumImageSizeInBytes}", nameof(message.Image));
         }
     }
 }

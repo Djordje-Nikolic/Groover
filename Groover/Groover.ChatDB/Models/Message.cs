@@ -65,5 +65,20 @@ namespace Groover.ChatDB.Models
             }
         }
 
+        public Message(string timeUuId)
+        {
+            if (string.IsNullOrWhiteSpace(timeUuId))
+                throw new ArgumentNullException(nameof(timeUuId));
+
+            try
+            {
+                this.Id = TimeUuid.Parse(timeUuId);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("Argument is not a valid TimeUuid format.", nameof(timeUuId), e);
+            }
+        }
+
     }
 }
