@@ -65,7 +65,7 @@ namespace Groover.ChatDB.Models
             }
         }
 
-        public Message(string timeUuId)
+        public void SetId(string timeUuId)
         {
             if (string.IsNullOrWhiteSpace(timeUuId))
                 throw new ArgumentNullException(nameof(timeUuId));
@@ -80,5 +80,19 @@ namespace Groover.ChatDB.Models
             }
         }
 
+        public void SetTrackId(string timeUuId)
+        {
+            if (string.IsNullOrWhiteSpace(timeUuId))
+                throw new ArgumentNullException(nameof(timeUuId));
+
+            try
+            {
+                this.TrackId = TimeUuid.Parse(timeUuId);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("Argument is not a valid TimeUuid format.", nameof(timeUuId), e);
+            }
+        }
     }
 }
