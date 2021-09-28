@@ -38,7 +38,7 @@ namespace Groover.ChatDB.Models
         public string TrackName { get; set; }
 
         [Column("trackDuration")]
-        public short TrackDuration { get; set; }
+        public short? TrackDuration { get; set; }
 
         [Ignore]
         public MessageType? Type

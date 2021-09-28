@@ -1,20 +1,16 @@
-﻿using Groover.IdentityDB.MySqlDb;
-using Groover.IdentityDB.MySqlDb.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Groover.BL.CustomTokenProviders;
-using Groover.BL.Utils;
+﻿using Groover.BL.CustomTokenProviders;
 using Groover.BL.Helpers;
-using Microsoft.Extensions.Configuration;
+using Groover.BL.Utils;
 using Groover.ChatDB;
 using Groover.ChatDB.Interfaces;
+using Groover.IdentityDB.MySqlDb;
+using Groover.IdentityDB.MySqlDb.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Groover.BL
 {
@@ -59,24 +55,32 @@ namespace Groover.BL
             services.AddSingleton(chatDbConfiguration);
 
             //Init cluster factory
-            services.AddSingleton<IChatDbClusterFactory, ChatDbClusterFactory>(factory =>
+            services.AddSingleton<IChatDbClusterFactory, ChatDbClusterFactory>(serviceProvider =>
             {
                 var clusterFactory = new ChatDbClusterFactory();
-                clusterFactory.AddLoggerProvider(factory.GetService<ILoggerProvider>());
+                var loggerProvider = serviceProvider.GetService<ILoggerProvider>();
+                clusterFactory.AddLoggerProvider(loggerProvider);
                 return clusterFactory;
             });
 
             //Init cluster
-            services.AddSingleton<IChatDbCluster>(factory =>
+            services.AddSingleton<IChatDbCluster>(serviceProvider =>
             {
-                var clusterFactory = factory.GetRequiredService<IChatDbClusterFactory>();
-                return clusterFactory.CreateInstance(factory.GetRequiredService<IChatDbConfiguration>());
+                var clusterFactory = serviceProvider.GetRequiredService<IChatDbClusterFactory>();
+                var chatConfig = serviceProvider.GetRequiredService<IChatDbConfiguration>();
+                return clusterFactory.CreateInstance(chatConfig);
             });
 
             //Init session and repositories
             services.AddSingleton<IGroupChatSession, GroupChatSession>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<ITrackRepository, TrackRepository>();
+            services.AddScoped<IGroupChatRepository, GroupChatRepository>(serviceProvider =>
+            {
+                var trackRepository = serviceProvider.GetRequiredService<ITrackRepository>();
+                var messageRepository = serviceProvider.GetRequiredService<IMessageRepository>();
+                return new GroupChatRepository(trackRepository, messageRepository);
+            });
 
             return services;
         }

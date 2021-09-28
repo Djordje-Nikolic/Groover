@@ -10,16 +10,17 @@ namespace Groover.ChatDB
 {
     internal class ChatDbCluster : IChatDbCluster
     {
-        public readonly IChatDbConfiguration Configuration;
+        private readonly IChatDbConfiguration _configuration;
 
         private bool disposedValue;
         private readonly ICluster _cluster;
 
         public ICluster Cluster { get => _cluster; }
+        public IChatDbConfiguration Configuration { get => _configuration; } 
 
         internal ChatDbCluster(ICluster cluster, IChatDbConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
             _cluster = cluster;
         }
 
