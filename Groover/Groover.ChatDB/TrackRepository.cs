@@ -103,19 +103,6 @@ namespace Groover.ChatDB
             return await _mapper.SingleOrDefaultAsync<Track>("WHERE trackId = ?", trackId);
         }
 
-        //public async Task<Track> GetAsync(Message message)
-        //{
-        //    if (message == null)
-        //        throw new ArgumentNullException(nameof(message));
-
-        //    if (message.Type != MessageType.Track)
-        //        throw new ArgumentException("This message is not of a valid type.", nameof(message));
-
-        //    TimeUuid trackId = message.TrackId ?? throw new ArgumentException("TrackId is undefined for this message.", nameof(message));
-
-        //    return await GetAsync(trackId);
-        //}
-
         public async Task<ICollection<Track>> GetByGroupAsync(int groupId)
         {
             if (groupId < 0)
