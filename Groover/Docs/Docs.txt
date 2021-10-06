@@ -1,0 +1,2 @@
+Audio processing on the backend:
+Using Xabe.FFpmeg cross-platform wrapper. Free for personal use, 200$ annual commercial license. Used for proof of concept, change eventually.

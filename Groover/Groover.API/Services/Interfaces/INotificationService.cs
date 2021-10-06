@@ -18,5 +18,6 @@ namespace Groover.API.Services.Interfaces
         Task UserLeftGroupAsync(string groupId, string userId);
         Task UserRoleUpdatedAsync(string groupId, string userId, string newRole);
         Task UserUpdatedAsync(UserDataResponse user, List<string> groupIds);
+        Task GroupMessageAddedAsync(FullMessageResponse notificationData);
     }
 }

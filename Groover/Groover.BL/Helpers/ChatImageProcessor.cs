@@ -1,9 +1,9 @@
 ﻿using Groover.BL.Models;
+using Groover.BL.Models.Chat;
 using Groover.BL.Models.Exceptions;
-using Microsoft.AspNetCore.Http;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,35 +11,13 @@ using System.Threading.Tasks;
 
 namespace Groover.BL.Helpers
 {
-    public class ImageProcessor : IImageProcessor
+    public class ChatImageProcessor : IChatImageProcessor
     {
-        private ImageConfiguration _config;
+        private ChatImageConfiguration _config;
 
-        public ImageProcessor(ImageConfiguration config)
+        public ChatImageProcessor(ChatImageConfiguration config)
         {
             _config = config;
-        }
-
-        public async Task<byte[]> ProcessAsync(IFormFile imageFile, bool failOnNull = false)
-        {
-            if (imageFile == null)
-            {
-                if (failOnNull)
-                    throw new BadRequestException("Image undefined", "bad_format");
-
-                return null;
-            }
-
-            var uploadedFileName = imageFile.FileName;
-            var extension = Path.GetExtension(uploadedFileName).ToLowerInvariant().Trim('.');
-            if (!_config.AllowedExtensionsList.Contains(extension))
-                throw new BadRequestException("Extension is not allowed.", "Extension is not allowed.", errorCode: "invalid_extension", errorValue: _config.AllowedExtensions);
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                await imageFile.CopyToAsync(ms);
-                return await CheckAsync(ms);
-            }
         }
 
         public async Task<byte[]> CheckAsync(MemoryStream ms)
@@ -47,7 +25,7 @@ namespace Groover.BL.Helpers
             try
             {
                 byte[] imgBytes = ms.ToArray();
-                Image image = Image.FromStream(ms);
+                Image image = await Image.LoadAsync(ms);
 
                 if (imgBytes.Length > _config.MaxSizeInBytes)
                     throw new BadRequestException("File too big.", "File too big.", "too_big", errorValue: _config.MaxSizeInBytes.ToString());
@@ -86,39 +64,6 @@ namespace Groover.BL.Helpers
             {
                 return await CheckAsync(ms);
             }
-        }
-
-        public string GetDefaultGroupImage() => _config.DefaultGroupImagePath;
-        public string GetDefaultUserImage() => _config.DefaultUserImagePath;
-
-        public async Task<string> SaveImageAsync(byte[] imageBytes)
-        {
-            if (imageBytes == null || imageBytes.Length == 0)
-                throw new ArgumentNullException();
-
-            var path = GenerateUniqueFileName();
-            await File.WriteAllBytesAsync(path, imageBytes);
-
-            return path;
-        }
-
-        public void DeleteImage(string path)
-        {
-            if (File.Exists(path))
-                File.Delete(path);
-        }
-
-        private string GenerateUniqueFileName()
-        {
-            string path;
-            do
-            {
-                var randomFileName = Path.GetRandomFileName();
-                path = Path.Combine(_config.ImagesDirectoryPath, randomFileName);
-            }
-            while (File.Exists(path));
-
-            return path;
         }
     }
 }

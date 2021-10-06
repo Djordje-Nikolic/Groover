@@ -17,7 +17,7 @@ namespace Groover.ChatDB.Models
 
         [Column("groupId")]
         [PartitionKey]
-        public long GroupId { get; set; }
+        public int GroupId { get; set; }
 
         [Column("name")]
         public string Name { get; set; }
@@ -27,6 +27,12 @@ namespace Groover.ChatDB.Models
 
         [Column("format")]
         public string Format { get; set; }
+
+        [Column("bitrate")]
+        public int Bitrate { get; set; }
+
+        [Column("extension")]
+        public string Extension { get; set; }
 
         [Column("hash")]
         public string Hash { get; set; }

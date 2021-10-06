@@ -61,6 +61,21 @@ Groover Group Service Error List:
 10 not_member
 11 duplicate_name
 
+Groover GroupChat Service Error List:
+
+1 bad_id
+2 bad_uuid
+3 internal
+4 
+5 undefined
+6 not_found
+7 bad_message_format
+8 not_found_group
+9 not_found_user
+10 bad_track_format
+11 too_big
+12 bad_extension
+
 Groover Hubs Error List:
 
 1 not_a_member

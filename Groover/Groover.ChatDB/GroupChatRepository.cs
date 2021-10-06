@@ -74,7 +74,7 @@ namespace Groover.ChatDB
             }
             catch (Exception e)
             {
-                throw new ArgumentException("Error occured while adding the message.", nameof(message), e);
+                throw new Exception("Error occured while adding the message.", e);
             }
 
             return addedMessage;
@@ -104,7 +104,7 @@ namespace Groover.ChatDB
             }
             catch (Exception e)
             {
-                throw new ArgumentException("Error occured while adding the message.", nameof(message), e);
+                throw new Exception("Error occured while adding the message.", e);
             }
 
             return addedMessage;
@@ -125,12 +125,13 @@ namespace Groover.ChatDB
             }
             catch (Exception e)
             {
-                throw new ArgumentException("Error occured while adding the track.", nameof(track), e);
+                throw new Exception("Error occured while adding the track.", e);
             }
 
             message.TrackId = addedTrack.Id;
             message.TrackName = addedTrack.Name;
             message.TrackDuration = addedTrack.Duration;
+            message.TrackExtension = addedTrack.Extension;
 
             try
             {
@@ -151,7 +152,7 @@ namespace Groover.ChatDB
             }
             catch (Exception e)
             {
-                throw new ArgumentException("Error occured while adding the message.", nameof(message), e);
+                throw new Exception("Error occured while adding the message.", e);
             }
 
             return addedMessage;

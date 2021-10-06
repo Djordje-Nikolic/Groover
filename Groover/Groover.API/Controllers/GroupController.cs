@@ -88,7 +88,7 @@ namespace Groover.API.Controllers
 
             GroupDTO groupDTO = _autoMapper.Map<GroupDTO>(createGroupRequest);
             GroupDTO createdDTO = await _groupService.CreateGroupAsync(groupDTO, userId.Value);
-            _logger.LogInformation($"Successfully create a group by name {createGroupRequest.Name}.");
+            _logger.LogInformation($"Successfully created a group by name {createGroupRequest.Name}.");
 
             var response = _autoMapper.Map<GroupResponse>(createdDTO);
             GroupUserDTO ugData = (await _userService.GetUserAsync(userId.Value))
