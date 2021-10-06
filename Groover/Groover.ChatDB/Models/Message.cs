@@ -16,11 +16,14 @@ namespace Groover.ChatDB.Models
         public TimeUuid Id { get; set; }
 
         [Column("senderId")]
-        public long SenderId { get; set; }
+        public int SenderId { get; set; }
 
         [Column("groupId")]
         [PartitionKey]
-        public long GroupId { get; set; }
+        public int GroupId { get; set; }
+
+        [Column("createdAt")]
+        public DateTimeOffset CreatedAt {get; set;}
 
         [Column("type")]
         public string type { get; set; }
@@ -39,6 +42,9 @@ namespace Groover.ChatDB.Models
 
         [Column("trackDuration")]
         public short? TrackDuration { get; set; }
+
+        [Column("trackExtension")]
+        public string TrackExtension { get; set; }
 
         [Ignore]
         public MessageType? Type

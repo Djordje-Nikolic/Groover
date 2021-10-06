@@ -26,6 +26,7 @@ using Groover.API.Hubs;
 using System.Threading.Tasks;
 using Groover.API.Services;
 using Groover.API.Services.Interfaces;
+using Groover.BL.Models.Chat;
 
 namespace Groover.API
 {
@@ -56,6 +57,7 @@ namespace Groover.API
 
             AddEmailService(services);
             AddImageProcessing(services);
+            AddAudioProcessing(services);
 
             services.AddSignalR(options =>
             {
@@ -64,6 +66,7 @@ namespace Groover.API
             });
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<IGroupChatService, GroupChatService>();
             services.AddScoped<INotificationService, NotificationService>();
 
             services.AddSwaggerGen(c =>
@@ -156,11 +159,28 @@ namespace Groover.API
 
         private IServiceCollection AddImageProcessing(IServiceCollection services)
         {
-            var imageConfig = Configuration
-                .GetSection("ImageConfiguration")
-                .Get<ImageConfiguration>();
-            services.AddSingleton(imageConfig);
-            services.AddSingleton<IImageProcessor, ImageProcessor>();
+            var avatarImageConfig = Configuration
+                .GetSection("AvatarImageConfiguration")
+                .Get<AvatarImageConfiguration>();
+            services.AddSingleton(avatarImageConfig);
+            services.AddSingleton<IAvatarImageProcessor, AvatarImageProcessor>();
+
+            var chatImageConfig = Configuration
+                .GetSection("ChatImageConfiguration")
+                .Get<ChatImageConfiguration>();
+            services.AddSingleton(chatImageConfig);
+            services.AddSingleton<IChatImageProcessor, ChatImageProcessor>();
+
+            return services;
+        }
+
+        private IServiceCollection AddAudioProcessing(IServiceCollection services)
+        {
+            var audioConfig = Configuration
+                .GetSection("AudioConfiguration")
+                .Get<AudioConfiguration>();
+            services.AddSingleton(audioConfig);
+            services.AddSingleton<ITrackProcessor, TrackProcessor>();
 
             return services;
         }

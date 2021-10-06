@@ -79,5 +79,12 @@ namespace Groover.API.Services
         {
             await _hubContext.Clients.Group(groupId).SendAsync("GroupDeleted", groupId);
         }
+
+        public async Task GroupMessageAddedAsync(FullMessageResponse message)
+        {
+            string groupId = message.GroupId.ToString();
+
+            await _hubContext.Clients.Group(groupId).SendAsync("GroupMessageAdded", message);
+        }
     }
 }

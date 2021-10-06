@@ -33,7 +33,7 @@ namespace Groover.BL.Services
         private readonly ILogger<UserService> _logger;
         private readonly IMapper _mapper;
         private readonly IEmailSender _emailSender;
-        private readonly IImageProcessor _imageProcessor;
+        private readonly IAvatarImageProcessor _imageProcessor;
 
         public UserService(GrooverDbContext context,
             SignInManager<User> signInManager,
@@ -41,7 +41,7 @@ namespace Groover.BL.Services
             IConfiguration config,
             IMapper mapper,
             IEmailSender emailSender,
-            IImageProcessor imageProcessor,
+            IAvatarImageProcessor imageProcessor,
             ILogger<UserService> logger)
         {
             this._context = context;

@@ -4,23 +4,27 @@ USE groupChat;
 
 CREATE TABLE messages (
 	messageId timeuuid,
-	senderId bigint,
-	groupId bigint,
+	senderId int,
+	groupId int,
+	createdAt timestamp,
 	type text,
 	content text,
 	image blob,
 	trackId timeuuid,
 	trackName text,
 	trackDuration smallint,
+	trackExtension text,
 	PRIMARY KEY (groupId, messageId)
 ) WITH CLUSTERING ORDER BY (messageId DESC);
 
 CREATE TABLE tracksMetadata (
 	trackId timeuuid,
-	groupId bigint,
+	groupId int,
 	name text,
 	duration smallint,
 	format text,
+	extension text,
+	bitrate int,
 	hash text,
 	chunkCount int,
 	PRIMARY KEY (groupId, trackId)

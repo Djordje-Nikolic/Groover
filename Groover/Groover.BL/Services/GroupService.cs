@@ -32,14 +32,14 @@ namespace Groover.BL.Services
         private readonly IUserTwoFactorTokenProvider<User> _inviteTokenProvider;
         private readonly IEmailSender _emailSender;
         private readonly UserManager<User> _userManager;
-        private readonly IImageProcessor _imageProcessor;
+        private readonly IAvatarImageProcessor _imageProcessor;
 
         public GroupService(GrooverDbContext context,
             IMapper mapper,
             ITokenProviderAccessor<User> tokenProviderAccessor,
             ILogger<GroupService> logger,
             IEmailSender emailSender,
-            IImageProcessor imageProcessor,
+            IAvatarImageProcessor imageProcessor,
             UserManager<User> userManager)
         {
             this._tokenProviderAccessor = tokenProviderAccessor;
@@ -57,7 +57,7 @@ namespace Groover.BL.Services
             if (groupDTO == null)
                 throw new BadRequestException("Group data undefined.","undefined");
             if (userId <= 0)
-                throw new BadRequestException("Invalid user id.", "bad_id");
+                throw new BadRequestException("Invalid group id.", "bad_id");
 
             DTOValidator<GroupDTO> validator = new DTOValidator<GroupDTO>();
             validator.Validate(groupDTO);
@@ -347,7 +347,7 @@ namespace Groover.BL.Services
             group.Description = groupNew.Description;
 
             var imageBytes = await this._imageProcessor.CheckAsync(groupDTO.Image);
-            if (imageBytes != group.Image)
+            if (imageBytes != group.Image)  //This is probably always gonna be different, as this doesnt do a deep comparison
             {
                 if (!string.IsNullOrWhiteSpace(group.ImagePath) &&
                     group.ImagePath != _imageProcessor.GetDefaultGroupImage())

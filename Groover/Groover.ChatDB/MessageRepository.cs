@@ -35,7 +35,8 @@ namespace Groover.ChatDB
             Validate(message);
 
             //Generate new TimeUuid
-            message.Id = TimeUuid.NewId(DateTime.UtcNow);
+            message.CreatedAt = DateTime.UtcNow;
+            message.Id = TimeUuid.NewId(message.CreatedAt);
 
             await _mapper.InsertAsync(message);
             return message;

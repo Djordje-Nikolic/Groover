@@ -2,6 +2,7 @@
 using Groover.API.Models.Requests;
 using Groover.API.Models.Responses;
 using Groover.API.Utils;
+using Groover.BL.Models.Chat.DTOs;
 using Groover.BL.Models.DTOs;
 using System;
 using System.Collections.Generic;
@@ -57,6 +58,20 @@ namespace Groover.API.Models
                     options.MapFrom(s => !string.IsNullOrWhiteSpace(s.ImageBase64) ? Convert.FromBase64String(s.ImageBase64) : null)); ;
             CreateMap<ConfirmEmailRequest, ConfirmEmailDTO>();
             CreateMap<RefreshTokenDTO, RefreshTokenResponse>();
+
+            CreateMap<ImageMessageRequest, ImageMessageDTO>()
+                .ForMember(d => d.Image, options =>
+                    options.MapFrom(s => !string.IsNullOrWhiteSpace(s.Image) ? Convert.FromBase64String(s.Image) : null));
+            CreateMap<TextMessageRequest, TextMessageRequest>();
+            CreateMap<TrackMessageRequest, TrackMessageDTO>();
+            CreateMap<FullMessageDTO, FullMessageResponse>()
+                .ForMember(d => d.Type, options =>
+                    options.MapFrom(s => s.Type.ToString()))
+                .ForMember(d => d.Image, options =>
+                    options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null));
+
+            CreateMap(typeof(PagedDataDTO<>), typeof(PagedResponse<>));
+            CreateMap<PageParamsDTO, PageParamsResponse>();
         }
     }
 }
