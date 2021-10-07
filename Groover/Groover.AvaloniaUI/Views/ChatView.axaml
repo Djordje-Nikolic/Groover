@@ -6,7 +6,6 @@
              x:Class="Groover.AvaloniaUI.Views.ChatView">
   <Border BorderThickness="3" BorderBrush="Aqua">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-      <Image Source="{Binding UserGroup.Group.Image}"></Image>
       <TextBlock Text="{Binding UserGroup.Group.Name}"></TextBlock>
     </StackPanel>
   </Border>

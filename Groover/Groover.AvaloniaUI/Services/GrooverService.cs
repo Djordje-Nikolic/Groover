@@ -22,16 +22,15 @@ namespace Groover.AvaloniaUI.Services
             _apiService = apiService;
         }
 
-        public async Task<TResponse> SendRequestAsync<TRequest, TResponse>(
-            TRequest request,
+        public async Task<TResponse> SendRequestAsync<TResponse>(
+            HttpContent content,
             HttpMethod httpMethod,
             Controller controller,
-            string endpointMethod, 
+            string endpointMethod,
             int retryOnUnauthorized = DefaultRetryOnUnauthorizedAttempts) where TResponse : BaseResponse, new()
         {
             HttpRequestMessage message = new HttpRequestMessage(httpMethod, string.Empty);
-            var json = JsonConvert.SerializeObject(request);
-            message.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            message.Content = content;
 
             var response = await _apiService.SendAsync(message, controller, endpointMethod);
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -57,10 +56,24 @@ namespace Groover.AvaloniaUI.Services
                 parsedResponse.StatusCode == HttpStatusCode.Unauthorized)
             {
                 await _apiService.RefreshTokenAsync();
-                await SendRequestAsync<TRequest, TResponse>(request, httpMethod, controller, endpointMethod, retryOnUnauthorized - 1);
+                parsedResponse = await SendRequestAsync<TResponse>(content, httpMethod, controller, endpointMethod, retryOnUnauthorized - 1);
             }
 
+            response.Dispose();
             return parsedResponse;
+        }
+
+        public async Task<TResponse> SendRequestAsync<TRequest, TResponse>(
+            TRequest request,
+            HttpMethod httpMethod,
+            Controller controller,
+            string endpointMethod, 
+            int retryOnUnauthorized = DefaultRetryOnUnauthorizedAttempts) where TResponse : BaseResponse, new()
+        {          
+            var json = JsonConvert.SerializeObject(request);
+            HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            return await this.SendRequestAsync<TResponse>(content, httpMethod, controller, endpointMethod, retryOnUnauthorized);
         }
 
         public async Task<TResponse> SendRequestAsync<TResponse>(
@@ -97,9 +110,10 @@ namespace Groover.AvaloniaUI.Services
                 parsedResponse.StatusCode == HttpStatusCode.Unauthorized)
             {
                 await _apiService.RefreshTokenAsync();
-                await SendRequestAsync<TResponse>(queryParameters, httpMethod, controller, endpointMethod, retryOnUnauthorized - 1);
+                parsedResponse = await SendRequestAsync<TResponse>(queryParameters, httpMethod, controller, endpointMethod, retryOnUnauthorized - 1);
             }
 
+            response.Dispose();
             return parsedResponse;
         }
 

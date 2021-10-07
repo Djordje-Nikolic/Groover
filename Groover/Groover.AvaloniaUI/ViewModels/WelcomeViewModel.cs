@@ -57,7 +57,7 @@ namespace Groover.AvaloniaUI.ViewModels
             return new AppViewModel(userViewModel,
                                     DIContainer.GetRequiredService<IUserService>(Locator.Current),
                                     DIContainer.GetRequiredService<IGroupService>(Locator.Current),
-                                    DIContainer.GetRequiredService<IGroupChatService>(Locator.Current),
+                                    DIContainer.GetRequiredService<IChatHubService>(Locator.Current),
                                     _mapper,
                                     DIContainer.GetRequiredService<UserConstants>(Locator.Current));
 

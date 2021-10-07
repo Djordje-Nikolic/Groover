@@ -19,6 +19,7 @@ namespace Groover.AvaloniaUI.Utils
 
         public void CleanUpHandlers()
         {
+            _connection.Remove("GroupMessageAdded");
             _connection.Remove("GroupCreated");
             _connection.Remove("GroupDeleted");
             _connection.Remove("GroupUpdated");
@@ -33,6 +34,8 @@ namespace Groover.AvaloniaUI.Utils
             _connection.Remove("DisconnectedFromGroup");
         }
 
+        public void GroupMessageAdded(Action<Message> handler) => _connection.On<Message>("GroupMessageAdded", handler);
+        public void GroupMessageAdded(Func<Message, Task> handler) => _connection.On<Message>("GroupMessageAdded", handler);
         public void GroupCreated(Action<UserGroup> handler) => _connection.On<UserGroup>("GroupCreated", handler);
         public void GroupCreated(Func<UserGroup, Task> handler) => _connection.On<UserGroup>("GroupCreated", handler);
         public void GroupDeleted(Action<string> handler) => _connection.On<string>("GroupDeleted", handler);

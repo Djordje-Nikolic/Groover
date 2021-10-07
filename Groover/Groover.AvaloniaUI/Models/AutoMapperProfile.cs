@@ -95,6 +95,8 @@ namespace Groover.AvaloniaUI.Models
                         dest.GroupUsersCache.AddOrUpdate(groupUserViewModels);
                     }
                 });
+
+            CreateMap<TrackResponse, Track>();
         }
     }
 }

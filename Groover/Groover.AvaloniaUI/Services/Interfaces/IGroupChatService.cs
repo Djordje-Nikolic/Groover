@@ -1,5 +1,6 @@
-﻿using Groover.AvaloniaUI.Utils;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Groover.AvaloniaUI.Models.DTOs;
+using Groover.AvaloniaUI.Models.Requests;
+using Groover.AvaloniaUI.Models.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +11,10 @@ namespace Groover.AvaloniaUI.Services.Interfaces
 {
     public interface IGroupChatService
     {
-        HashSet<int> ConnectedGroups { get; }
-        HubConnection Connection { get; }
-        ConnectionHandlersWrapper HandlersWrapper { get; }
-        Task<HubConnection> InitializeConnection();
-        Task StartConnection();
-        Task ConnectToGroup(int groupId);
-        Task DisconnectFromGroup(int groupId);
-        Task NotifyConnection(int groupId, int userToNotifyId, int retryOnUnauthorized = 1);
-        Task Reset();
+        Task<PagedResponse<ICollection<Message>>> GetMessagesAsync(int groupId, DateTime afterDateTime, PageParams pageParams);
+        Task<PagedResponse<ICollection<Message>>> GetMessagesAsync(int groupId, PageParams pageParams);
+        Task<BaseResponse> SendImageMessageAsync(ImageMessageRequest imageMessageRequest);
+        Task<BaseResponse> SendTextMessageAsync(TextMessageRequest textMessageRequest);
+        Task<BaseResponse> SendTrackMessageAsync(TrackMessageRequest trackMessageRequest, string pathToFile);
     }
 }

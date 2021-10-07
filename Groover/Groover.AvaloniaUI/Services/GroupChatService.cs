@@ -1,206 +1,76 @@
-﻿using System;
+﻿using Groover.AvaloniaUI.Models.DTOs;
+using Groover.AvaloniaUI.Models.Requests;
+using Groover.AvaloniaUI.Models.Responses;
+using Groover.AvaloniaUI.Services.Interfaces;
+using Microsoft.AspNetCore.StaticFiles;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Groover.AvaloniaUI.Services.Interfaces;
-using Groover.AvaloniaUI.Utils;
-using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Groover.AvaloniaUI.Services
 {
-    public class GroupChatService : IGroupChatService, IDisposable, IAsyncDisposable
+    public class GroupChatService : GrooverService, IGroupChatService
     {
-        public HashSet<int> ConnectedGroups { get; private set; }
-
-        private HubConnection _connection;
-        public HubConnection Connection 
+        private readonly Controller _controller;
+        private readonly FileExtensionContentTypeProvider _mimeContentTypeProvider;
+        public GroupChatService(IApiService apiService) : base(apiService)
         {
-            get 
-            {
-                return _connection;
-            }
-            private set
-            {
-                _connection = value;
-                HandlersWrapper.SetConnection(value);
-            }
-        }
-        public ConnectionHandlersWrapper HandlersWrapper { get; }
-
-        private IApiService _apiService;
-        private bool disposedValue;
-
-        public GroupChatService(IApiService apiService)
-        {
-            _apiService = apiService;
-            ConnectedGroups = new HashSet<int>();
-            HandlersWrapper = new ConnectionHandlersWrapper();
+            _mimeContentTypeProvider = new FileExtensionContentTypeProvider();
+            _controller = Controller.GroupChat;
         }
 
-        public async Task<HubConnection> InitializeConnection()
+        public async Task<PagedResponse<ICollection<Message>>> GetMessagesAsync(int groupId, PageParams pageParams)
         {
-            if (Connection != null)
-                await Reset();
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add("groupId", groupId.ToString());
+            queryParams.Add("pageSize", pageParams.PageSize.ToString());
+            queryParams.Add("pagingState", pageParams.PagingState.ToString());
+            return await this.SendRequestAsync<PagedResponse<ICollection<Message>>>(queryParams, HttpMethod.Get, _controller, "getMessages");
+        }
 
-            Connection = new HubConnectionBuilder()
-                .WithAutomaticReconnect()
-                .WithUrl(_apiService.ApiConfig.GroupChatHubAddress, options =>
+        public async Task<PagedResponse<ICollection<Message>>> GetMessagesAsync(int groupId, DateTime afterDateTime, PageParams pageParams)
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add("groupId", groupId.ToString());
+            queryParams.Add("pageSize", pageParams.PageSize.ToString());
+            queryParams.Add("pagingState", pageParams.PagingState.ToString());
+            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString("dd/MM/yyyy HH:mm:ss"));
+            return await this.SendRequestAsync<PagedResponse<ICollection<Message>>>(queryParams, HttpMethod.Get, _controller, "getMessages");
+        }
+
+        public async Task<BaseResponse> SendTextMessageAsync(TextMessageRequest textMessageRequest)
+        {
+            return await this.SendRequestAsync<TextMessageRequest, BaseResponse>(textMessageRequest, HttpMethod.Post, _controller, "sendTextMessage");
+        }
+
+        public async Task<BaseResponse> SendImageMessageAsync(ImageMessageRequest imageMessageRequest)
+        {
+            return await this.SendRequestAsync<ImageMessageRequest, BaseResponse>(imageMessageRequest, HttpMethod.Post, _controller, "sendImageMessage");
+        }
+
+        public async Task<BaseResponse> SendTrackMessageAsync(TrackMessageRequest trackMessageRequest, string pathToFile)
+        {
+            using (var multipartContent = new MultipartFormDataContent())
+            {
+                var jsonRequest = JsonConvert.SerializeObject(trackMessageRequest);
+                var messageDataContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+                multipartContent.Add(messageDataContent, "messageData");
+
+                var fileContent = new StreamContent(File.OpenRead(pathToFile));
+                if (!_mimeContentTypeProvider.TryGetContentType(Path.GetFileName(pathToFile), out string contentType))
                 {
-                    options.AccessTokenProvider = () => Task.FromResult(_apiService.GetAccessToken());
-                })
-                .Build();
-
-            Connection.On<string>("ForceTokenRefresh",  
-                async (userId) => await this._apiService.RefreshTokenAsync());
-
-            Connection.Reconnected += Connection_Reconnected;
-
-            return Connection;
-        }
-
-        public async Task StartConnection() => await Connection.StartAsync();
-
-        public async Task ConnectToGroup(int groupId)
-        {
-            ConnectedGroups.Add(groupId);
-
-            try
-            {
-                await Connection.InvokeAsync("OpenGroupConnection", groupId.ToString());
-            }
-            catch (Exception e)
-            {
-                //Modify this 
-                if (e.Message.Contains("Unauthorized"))
-                {
-                    await ReconnectOnTokenFail();
+                    contentType = "application/octet-stream";
                 }
-                else
-                    throw;
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+                multipartContent.Add(fileContent, "trackFile");
+
+                return await this.SendRequestAsync<BaseResponse>(multipartContent, HttpMethod.Post, _controller, "sendTrackMessage");
             }
         }
-        public async Task DisconnectFromGroup(int groupId)
-        {
-            if (ConnectedGroups.Remove(groupId) == true)
-            {
-                try
-                {
-                    await Connection.InvokeAsync("CloseGroupConnection", groupId.ToString());
-                }
-                catch (Exception e)
-                {
-                    //Modify this 
-                    if (e.Message.Contains("Unauthorized"))
-                    {
-                        await ReconnectOnTokenFail();
-                    }
-                    else
-                        throw;
-                }
-            }
-        }
-
-        public async Task NotifyConnection(int groupId, int userToNotifyId, int retryOnUnauthorized = 1)
-        {
-            try
-            {
-                await Connection.InvokeAsync("NotifyConnection", groupId.ToString(), userToNotifyId.ToString());
-            }
-            catch (Exception e)
-            {
-                //Modify this 
-                if (e.Message.Contains("Unauthorized"))
-                {
-                    await ReconnectOnTokenFail();
-                    await NotifyConnection(groupId, userToNotifyId, retryOnUnauthorized - 1);
-                }
-                else
-                    throw;
-            }
-        }
-        
-        public async Task Reset()
-        {
-            if (Connection != null)
-            {
-                HandlersWrapper.CleanUpHandlers();
-
-                if (Connection.State == HubConnectionState.Connected)
-                {
-                    foreach (var groupId in ConnectedGroups)
-                    {
-                        await DisconnectFromGroup(groupId);
-                    }
-
-                    await Connection.StopAsync();
-                }
-
-                await Connection.DisposeAsync();
-            }
-
-            ConnectedGroups.Clear();
-            Connection = null;
-        }
-
-        private async Task Connection_Reconnected(string arg)
-        {
-            foreach (var groupId in ConnectedGroups)
-            {
-                await Connection.InvokeAsync("OpenGroupConnection", groupId.ToString());
-            }
-        }
-        private async Task ReconnectOnTokenFail()
-        {
-            await Connection.StopAsync();
-            await _apiService.RefreshTokenAsync();
-            await Connection.StartAsync();
-
-            foreach (var groupId in ConnectedGroups)
-            {
-                await Connection.InvokeAsync("OpenGroupConnection", groupId.ToString());
-            }
-        }
-
-        //Add wrappers for all calls to hub and if they fail with unathorized, attempt to refresh token
-
-        #region Dispose
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                    ConnectedGroups.Clear();
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~GroupChatService()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await Reset();
-            Dispose(disposing: true);
-        }
-        #endregion Dispose
-
     }
 }

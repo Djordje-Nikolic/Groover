@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Groover.API.Hubs.Interfaces;
 using Groover.API.Models.Requests;
 using Groover.API.Models.Responses;
 using Groover.API.Services.Interfaces;
