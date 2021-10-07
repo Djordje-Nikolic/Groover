@@ -24,6 +24,7 @@ CREATE TABLE tracksMetadata (
 	duration smallint,
 	format text,
 	extension text,
+	mimeType text,
 	bitrate int,
 	hash text,
 	chunkCount int,

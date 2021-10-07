@@ -52,6 +52,7 @@ namespace Groover.BL.Helpers
                     trackMetadata.Extension = extension;
                     trackMetadata.Bitrate = track.Bitrate;
                     trackMetadata.TrackBytes = ms.ToArray();
+                    trackMetadata.ContentType = mimeType;
 
                     return trackMetadata;
                 }

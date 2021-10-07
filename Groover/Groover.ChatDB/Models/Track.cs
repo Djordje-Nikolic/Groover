@@ -34,6 +34,9 @@ namespace Groover.ChatDB.Models
         [Column("extension")]
         public string Extension { get; set; }
 
+        [Column("mimeType")]
+        public string ContentType { get; set; }
+
         [Column("hash")]
         public string Hash { get; set; }
 

@@ -12,6 +12,7 @@ using Groover.BL.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -34,18 +35,64 @@ namespace Groover.API.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IMapper _mapper;
         private readonly ILogger<GroupChatController> _logger;
+        private readonly LinkGenerator _linkGenerator;
 
         public GroupChatController(IGroupChatService groupChatService,
                                INotificationService notificationService,
                                IAuthorizationService authorizationService,
                                IMapper autoMapper,
-                               ILogger<GroupChatController> logger)
+                               ILogger<GroupChatController> logger,
+                               LinkGenerator linkGenerator)
         {
             _groupChatService = groupChatService;
             _notificationService = notificationService;
             _authorizationService = authorizationService;
             _mapper = autoMapper;
             _logger = logger;
+            _linkGenerator = linkGenerator;
+        }
+
+        //Member
+        [HttpGet("getTrackBytes")]
+        public async Task<IActionResult> GetTrackBytes(int groupId, string trackId)
+        {
+            if (!await IsGroupMemberAsync(groupId))
+            {
+                throw new UnauthorizedException($"User is not a member of the group {groupId}.", "not_member");
+            }
+
+            _logger.LogInformation($"Attempting to fetch track bytes: Group ID: {groupId} Track ID: {trackId}");
+
+            TrackDTO trackDTO = await _groupChatService.GetLoadedTrackAsync(groupId, trackId);
+
+            _logger.LogInformation($"Successfully fetched track bytes: Group ID: {groupId} Track ID: {trackId}");
+
+            return File(trackDTO.TrackBytes, trackDTO.ContentType, $"{trackDTO.Name}.{trackDTO.Extension}");
+        }
+
+        //Member
+        [HttpGet("getTrack")]
+        public async Task<IActionResult> GetTrack(int groupId, string trackId)
+        {
+            if (!await IsGroupMemberAsync(groupId))
+            {
+                throw new UnauthorizedException($"User is not a member of the group {groupId}.", "not_member");
+            }
+
+            _logger.LogInformation($"Attempting to fetch track metadata: Group ID: {groupId} Track ID: {trackId}");
+
+            TrackDTO trackDTO = await _groupChatService.GetTrackMetadataAsync(groupId, trackId);
+            TrackResponse trackResponse = _mapper.Map<TrackResponse>(trackDTO);
+            trackResponse.TrackFileLink = new Link()
+            {
+                Href = _linkGenerator.GetUriByAction(HttpContext, nameof(GetTrackBytes), values: new { groupId, trackId }),
+                Rel = "trackBytes",
+                Method = "GET"
+            };
+
+            _logger.LogInformation($"Successfully fetched track metadata: Group ID: {groupId} Track ID: {trackId}");
+
+            return Ok(trackResponse);
         }
 
         //Member
@@ -67,6 +114,8 @@ namespace Groover.API.Controllers
 
             PagedDataDTO<ICollection<FullMessageDTO>> pagedData = await _groupChatService.GetAllMessagesAsync(groupId, pageParamsDTO);
             var responseData = _mapper.Map<PagedResponse<ICollection<FullMessageResponse>>>(pagedData);
+
+            _logger.LogInformation($"Successfully fetched messages. Group ID: {groupId} Page Size: {pageSize} Paging State: {pagingState} Next Paging State: {pagedData.PageParams.NextPagingState}");
 
             return Ok(responseData);
         }
@@ -90,6 +139,8 @@ namespace Groover.API.Controllers
 
             PagedDataDTO<ICollection<FullMessageDTO>> pagedData = await _groupChatService.GetMessagesAsync(groupId, createdAfter, pageParamsDTO);
             var responseData = _mapper.Map<PagedResponse<ICollection<FullMessageResponse>>>(pagedData);
+
+            _logger.LogInformation($"Successfully fetched messages after a certain UTC time. Group ID: {groupId} Page Size: {pageSize} Paging State: {pagingState} Next Paging State: {pagedData.PageParams.NextPagingState} After: {createdAfter}");
 
             return Ok(responseData);
         }
