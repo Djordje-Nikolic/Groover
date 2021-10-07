@@ -16,7 +16,8 @@ namespace Groover.AvaloniaUI.Services
     public enum Controller
     {
         User,
-        Group
+        Group,
+        GroupChat
     }
 
     public class ApiService : IApiService
@@ -83,6 +84,8 @@ namespace Groover.AvaloniaUI.Services
                 if (!string.IsNullOrWhiteSpace(parsedResponse.Token))
                     SetAccessToken(parsedResponse.Token);
             }
+
+            response.Dispose();
         }
 
         public void RemoveAccessToken()

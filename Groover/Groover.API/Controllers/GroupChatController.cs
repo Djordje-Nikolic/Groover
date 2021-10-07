@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
@@ -30,6 +31,7 @@ namespace Groover.API.Controllers
     [Authorize]
     public class GroupChatController : ControllerBase
     {
+        private const string ExpectedDateTimeFormat = "d/MM/yyyy HH:mm:ss";
         private readonly IGroupChatService _groupChatService;
         private readonly INotificationService _notificationService;
         private readonly IAuthorizationService _authorizationService;
@@ -122,7 +124,7 @@ namespace Groover.API.Controllers
 
         //Member
         [HttpGet("getMessages")]
-        public async Task<IActionResult> GetMessages(int groupId, int pageSize, string pagingState, DateTime createdAfter)
+        public async Task<IActionResult> GetMessages(int groupId, int pageSize, string pagingState, string createdAfter)
         {
             if (!await IsGroupMemberAsync(groupId))
             {
@@ -137,7 +139,13 @@ namespace Groover.API.Controllers
                 PagingState = pagingState
             };
 
-            PagedDataDTO<ICollection<FullMessageDTO>> pagedData = await _groupChatService.GetMessagesAsync(groupId, createdAfter, pageParamsDTO);
+            if (!DateTime.TryParseExact(createdAfter, ExpectedDateTimeFormat, 
+                CultureInfo.InvariantCulture, 
+                DateTimeStyles.AssumeUniversal, 
+                out DateTime createdAfterDT))
+                throw new BadRequestException("Invalid date time value for the expected format specified.", "Invalid date time value for the expected format specified.", "bad_datetime_format", ExpectedDateTimeFormat);
+
+            PagedDataDTO<ICollection<FullMessageDTO>> pagedData = await _groupChatService.GetMessagesAsync(groupId, createdAfterDT, pageParamsDTO);
             var responseData = _mapper.Map<PagedResponse<ICollection<FullMessageResponse>>>(pagedData);
 
             _logger.LogInformation($"Successfully fetched messages after a certain UTC time. Group ID: {groupId} Page Size: {pageSize} Paging State: {pagingState} Next Paging State: {pagedData.PageParams.NextPagingState} After: {createdAfter}");

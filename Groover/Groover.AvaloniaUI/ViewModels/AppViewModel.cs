@@ -27,7 +27,7 @@ namespace Groover.AvaloniaUI.ViewModels
     {
         private IUserService _userService;
         private IGroupService _groupService;
-        private IGroupChatService _groupChatService;
+        private IChatHubService _groupChatService;
         private IMapper _mapper;
         private readonly UserConstants _userParams;
 
@@ -71,7 +71,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public AppViewModel(UserViewModel loggedInUser, 
                             IUserService userService, 
                             IGroupService groupService,
-                            IGroupChatService groupChatService,
+                            IChatHubService groupChatService,
                             IMapper mapper,
                             UserConstants userParameters)
         {
@@ -127,6 +127,7 @@ namespace Groover.AvaloniaUI.ViewModels
             handlersWrapper.ConnectedToGroup(OnConnectedToGroup);
             handlersWrapper.DisconnectedFromGroup(OnDisconnectedFromGroup);
             handlersWrapper.UserInvited(OnUserInvited);
+            handlersWrapper.GroupMessageAdded(OnGroupMessageAdded);
 
             await this._groupChatService.StartConnection();
             
@@ -142,6 +143,11 @@ namespace Groover.AvaloniaUI.ViewModels
         }
 
         #region Chat Service Callbacks
+        private async Task OnGroupMessageAdded(Message message)
+        {
+            //Find chatviewmodel by message.GroupId and invoke
+            throw new NotImplementedException();
+        }
         private async Task OnGroupCreated(UserGroup userGroup)
         {
             UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
@@ -374,7 +380,6 @@ namespace Groover.AvaloniaUI.ViewModels
 
         private void InitializeLoggedInUser(UserViewModel loggedInUser)
         {
-            //It is assumed that the application is closing
             if (loggedInUser == null)
                 return;
 
@@ -383,7 +388,9 @@ namespace Groover.AvaloniaUI.ViewModels
             LoggedInUser.UserGroupsCache.Connect()
                 .TransformWithInlineUpdate(ug => GenerateChatViewModel(ug), (previousViewModel, updatedUserGroup) =>
                 {
-                    previousViewModel.UserGroupUpdated(updatedUserGroup);
+                    //If all objects are linked properly, this shouldnt be necessary
+                    //previousViewModel.UserGroup = updatedUserGroup;
+                    //previousViewModel.UserGroupUpdated(updatedUserGroup);
                 })
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _chatViewModels)
@@ -420,19 +427,6 @@ namespace Groover.AvaloniaUI.ViewModels
         public async Task SwitchToHome()
         {
             ActiveChatViewModel = null;
-        }
-
-        private List<ChatViewModel> GenerateChatViewModels()
-        {
-            List<ChatViewModel> chatViewModels = new List<ChatViewModel>();
-            foreach (var userGroup in LoggedInUser.UserGroups)
-            {
-                var viewModel = GenerateChatViewModel(userGroup);
-
-                chatViewModels.Add(viewModel);
-            }
-
-            return chatViewModels;
         }
 
         private ChatViewModel GenerateChatViewModel(UserGroupViewModel userGroup)
