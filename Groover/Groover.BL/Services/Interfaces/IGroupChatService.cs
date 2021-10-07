@@ -15,6 +15,7 @@ namespace Groover.BL.Services.Interfaces
         Task<FullMessageDTO> AddTrackMessageAsync(TrackMessageDTO trackMessageDTO, IFormFile trackFile);
         Task<PagedDataDTO<ICollection<FullMessageDTO>>> GetAllMessagesAsync(int groupId, PageParamsDTO pageParamsDTO);
         Task<PagedDataDTO<ICollection<FullMessageDTO>>> GetMessagesAsync(int groupId, DateTime dateTimeAfter, PageParamsDTO pageParamsDTO);
-        Task<TrackDTO> GetTrackAsync(int groupId, string trackUuId);
+        Task<TrackDTO> GetLoadedTrackAsync(int groupId, string trackUuId);
+        Task<TrackDTO> GetTrackMetadataAsync(int groupId, string trackUuId);
     }
 }

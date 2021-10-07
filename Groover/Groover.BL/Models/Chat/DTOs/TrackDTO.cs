@@ -25,6 +25,9 @@ namespace Groover.BL.Models.Chat.DTOs
         public string Format { get; set; }
 
         [Required(AllowEmptyStrings = false)]
+        public string ContentType { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string Extension { get; set; }
 
         public string Hash { get; set; }

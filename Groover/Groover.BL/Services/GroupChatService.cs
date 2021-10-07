@@ -167,7 +167,7 @@ namespace Groover.BL.Services
             }
         }
 
-        public async Task<TrackDTO> GetTrackAsync(int groupId, string trackUuId)
+        public async Task<TrackDTO> GetTrackMetadataAsync(int groupId, string trackUuId)
         {
             if (groupId <= 0)
                 throw new BadRequestException($"Invalid group id: {groupId}.", "bad_id");
@@ -186,11 +186,46 @@ namespace Groover.BL.Services
                 if (track == null)
                     throw new NotFoundException("Track with that id does not exist.", "not_found");
 
+                TrackDTO trackDTO = _mapper.Map<TrackDTO>(track);
+
+                _logger.LogInformation($"Successfully fetched a track from a group. Track UUID: {trackDTO.Id} Group ID: {groupId}");
+
+                return trackDTO;
+            }
+            catch (ArgumentException e)
+            {
+                throw new BadRequestException($"Track UUID is invalid: {e.Message}", "bad_uuid", e);
+            }
+            catch (Exception e)
+            {
+                throw new GrooverException($"Unknown error occured: {e.Message}.", "internal", e);
+            }
+        }
+
+        public async Task<TrackDTO> GetLoadedTrackAsync(int groupId, string trackUuId)
+        {
+            if (groupId <= 0)
+                throw new BadRequestException($"Invalid group id: {groupId}.", "bad_id");
+            if (string.IsNullOrWhiteSpace(trackUuId))
+                throw new BadRequestException("Track UUID can't be null or empty.", "bad_uuid");
+
+            GroupDTO group = await _groupService.GetGroupAsync(groupId);
+            if (group == null)
+                throw new NotFoundException($"Group doesn't exist. Group ID: {groupId}", "not_found_group");
+
+            try
+            {
+                _logger.LogInformation($"Attempting to fetch a loaded track from a group. Track UUID: {trackUuId} Group ID: {groupId}");
+
+                Track track = await _trackRepository.GetAsync(trackUuId);
+                if (track == null)
+                    throw new NotFoundException("Track with that id does not exist.", "not_found");
+
                 await _trackRepository.LoadAsync(track, false);
 
                 TrackDTO trackDTO = _mapper.Map<TrackDTO>(track);
 
-                _logger.LogInformation($"Successfully fetched a track from a group. Track UUID: {trackDTO.Id} Group ID: {groupId}");
+                _logger.LogInformation($"Successfully fetched a loaded track from a group. Track UUID: {trackDTO.Id} Group ID: {groupId}");
 
                 return trackDTO;
             }
