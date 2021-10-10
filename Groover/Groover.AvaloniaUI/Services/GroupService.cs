@@ -15,7 +15,7 @@ namespace Groover.AvaloniaUI.Services
     {
         private readonly Controller _controller;
 
-        public GroupService(IApiService apiService) : base(apiService)
+        public GroupService(IApiService apiService, ICacheWrapper cacheWrapper) : base(apiService, cacheWrapper)
         {
             _controller = Controller.Group;
         }

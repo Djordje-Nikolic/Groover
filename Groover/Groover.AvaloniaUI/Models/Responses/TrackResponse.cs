@@ -26,6 +26,8 @@ namespace Groover.AvaloniaUI.Models.Responses
 
         public Link TrackFileLink { get; set; }
 
-        public byte[] TrackBytes { get; set; }
+        public FileResponse TrackFileResponse { get; set; }
+
+        public bool IsComplete => IsSuccessful && (TrackFileResponse?.IsSuccessful ?? false);
     }
 }

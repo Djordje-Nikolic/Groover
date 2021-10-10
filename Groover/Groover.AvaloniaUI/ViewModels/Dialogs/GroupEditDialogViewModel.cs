@@ -20,7 +20,7 @@ using Groover.AvaloniaUI.Models.Requests;
 
 namespace Groover.AvaloniaUI.ViewModels.Dialogs
 {
-    public class GroupEditDialogViewModel : BaseGroupViewModel
+    public class GroupEditDialogViewModel : GroupViewModelBase
     {
         public GroupEditDialogViewModel(IGroupService groupService, 
             IMapper mapper,

@@ -46,6 +46,14 @@ namespace Groover.AvaloniaUI.Services
             return response;
         }
 
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage message,
+            HttpCompletionOption completionOption = HttpCompletionOption.ResponseHeadersRead)
+        {
+            var response = await _httpClient.SendAsync(message, completionOption);
+
+            return response;
+        }
+
         public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage message, 
             Controller controller, 
             string endpointMethod, 

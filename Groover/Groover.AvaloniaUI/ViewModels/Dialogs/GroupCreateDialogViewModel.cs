@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.ViewModels.Dialogs
 {
-    public class GroupCreateDialogViewModel : BaseGroupViewModel
+    public class GroupCreateDialogViewModel : GroupViewModelBase
     {
         public GroupCreateDialogViewModel(IGroupService groupService, IMapper mapper) 
             : base("Create group", groupService, mapper, new GroupViewModel())

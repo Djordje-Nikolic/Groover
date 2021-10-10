@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Views.Dialogs
 {
-    public class GroupDialogView : ReactiveWindow<BaseGroupViewModel>
+    public class GroupDialogView : ReactiveWindow<GroupViewModelBase>
     {
         private ProgressBar _progressBar;
         private TextBlock _imageError;

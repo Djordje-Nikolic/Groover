@@ -18,7 +18,7 @@ namespace Groover.AvaloniaUI.ViewModels
         //Change this to return some ViewModel if necessary
         public Interaction<NotificationViewModel, NotificationViewModel?> ShowNotificationDialog { get; set; }
         public Interaction<WelcomeViewModel, WelcomeDialogResult?> ShowWelcomeDialog { get; set; }
-        public Interaction<BaseGroupViewModel, GroupResponse?> ShowGroupEditDialog { get; set; }
+        public Interaction<GroupViewModelBase, GroupResponse?> ShowGroupEditDialog { get; set; }
         public Interaction<EditUserDialogViewModel, UserResponse?> ShowUserEditDialog { get; set; }
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
@@ -34,7 +34,7 @@ namespace Groover.AvaloniaUI.ViewModels
             ShowWelcomeDialog = new Interaction<WelcomeViewModel, WelcomeDialogResult?>();
             ShowGroupRoleDialog = new Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?>();
             ShowUserSearchDialog = new Interaction<ChooseUserDialogViewModel, int?>();
-            ShowGroupEditDialog = new Interaction<BaseGroupViewModel, GroupResponse?>();
+            ShowGroupEditDialog = new Interaction<GroupViewModelBase, GroupResponse?>();
             ShowUserEditDialog = new Interaction<EditUserDialogViewModel, UserResponse?>();
             ShowNotificationDialog = new Interaction<NotificationViewModel, NotificationViewModel?>();
 

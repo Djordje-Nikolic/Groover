@@ -29,22 +29,31 @@ namespace Groover.AvaloniaUI
             var imageConfig = new ImageConstants(ConfigurationManager.GetSection("imageSettings") as NameValueCollection);
             services.RegisterConstant<ImageConstants>(imageConfig);
 
+            var cacheConfig = new CacheConfiguration(ConfigurationManager.GetSection("cacheSettings") as NameValueCollection);
+            services.RegisterConstant<ICacheConfiguration>(cacheConfig);
+
             services.RegisterLazySingleton<IApiService>(() => new ApiService(
                 resolver.GetRequiredService<IApiConfiguration>()));
 
             services.RegisterLazySingleton<IChatHubService>(() => new ChatHubService(
                 resolver.GetRequiredService<IApiService>()));
 
+            services.RegisterLazySingleton<ICacheWrapper>(() => new CacheWrapper(
+                resolver.GetRequiredService<ICacheConfiguration>()));
+
             //Make into singleton?
             services.Register<IGroupService>(() => new GroupService(
-                resolver.GetRequiredService<IApiService>()));
+                resolver.GetRequiredService<IApiService>(),
+                resolver.GetRequiredService<ICacheWrapper>()));
 
             services.Register<IGroupChatService>(() => new GroupChatService(
-                resolver.GetRequiredService<IApiService>()));
+                resolver.GetRequiredService<IApiService>(),
+                resolver.GetRequiredService<ICacheWrapper>()));
 
             //Make into singleton?
             services.Register<IUserService>(() => new UserService(
-                resolver.GetRequiredService<IApiService>()));
+                resolver.GetRequiredService<IApiService>(),
+                resolver.GetRequiredService<ICacheWrapper>()));
 
             var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
             services.Register<IMapper>(() => new Mapper(config));
