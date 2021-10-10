@@ -329,5 +329,66 @@ namespace Groover.BL.Services
             }
         }
 
+        public async Task<ICollection<FullMessageDTO>> GetAllMessagesAsync(int groupId)
+        {
+            if (groupId <= 0)
+                throw new BadRequestException($"Invalid group id: {groupId}.", "bad_id");
+
+            GroupDTO group = await _groupService.GetGroupAsync(groupId);
+            if (group == null)
+                throw new NotFoundException($"Group doesn't exist. Group ID: {groupId}", "not_found_group");
+
+            try
+            {
+                _logger.LogInformation($"Attempting to fetch all messages from a group: " +
+                    $"Group ID: {groupId} ");
+
+                ICollection<Message> messages = await _messageRepository.GetByGroupAsync(groupId);
+
+                ICollection<FullMessageDTO> messageDTOs = _mapper.Map<ICollection<FullMessageDTO>>(messages);
+
+                _logger.LogInformation($"Successfully fetched messages from a group:" +
+                    $"Group ID: {groupId} " +
+                    $"Number of returned messages: {messageDTOs.Count}");
+
+                return messageDTOs;
+            }
+            catch (Exception e)
+            {
+                throw new GrooverException($"Unknown error occured: {e.Message}.", "internal", e);
+            }
+        }
+
+        public async Task<ICollection<FullMessageDTO>> GetMessagesAsync(int groupId, DateTime dateTimeAfter)
+        {
+            if (groupId <= 0)
+                throw new BadRequestException($"Invalid group id: {groupId}.", "bad_id");
+
+            GroupDTO group = await _groupService.GetGroupAsync(groupId);
+            if (group == null)
+                throw new NotFoundException($"Group doesn't exist. Group ID: {groupId}", "not_found_group");
+
+            try
+            {
+                _logger.LogInformation($"Attempting to fetch all messages from a group, after a certain point in time: " +
+                    $"Group ID: {groupId} " +
+                    $"After DateTime: {dateTimeAfter}");
+
+                ICollection<Message> messages = await _messageRepository.GetAfterAsync(groupId, dateTimeAfter);
+
+                ICollection<FullMessageDTO> messageDTOs = _mapper.Map<ICollection<FullMessageDTO>>(messages);
+
+                _logger.LogInformation($"Successfully fetched messages from a group:" +
+                    $"Group ID: {groupId} " +
+                    $"After DateTime: {dateTimeAfter}" +
+                    $"Number of returned messages: {messageDTOs.Count}");
+
+                return messageDTOs;
+            }
+            catch (Exception e)
+            {
+                throw new GrooverException($"Unknown error occured: {e.Message}.", "internal", e);
+            }
+        }
     }
 }

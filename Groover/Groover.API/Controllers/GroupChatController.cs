@@ -99,14 +99,35 @@ namespace Groover.API.Controllers
 
         //Member
         [HttpGet("getMessages")]
-        public async Task<IActionResult> GetMessages(int groupId, int pageSize, string pagingState)
+        public async Task<IActionResult> GetMessages(int groupId)
         {
             if (!await IsGroupMemberAsync(groupId))
             {
                 throw new UnauthorizedException($"User is not a member of the group {groupId}.", "not_member");
             }
 
-            _logger.LogInformation($"Attempting to fetch messages. Group ID: {groupId} Page Size: {pageSize} Paging State: {pagingState}");
+            _logger.LogInformation($"Attempting to fetch all messages. Group ID: {groupId}");
+
+            ICollection<FullMessageDTO> messages = await _groupChatService.GetAllMessagesAsync(groupId);
+            var responseData = _mapper.Map<ICollection<FullMessageResponse>>(messages);
+
+            _logger.LogInformation($"Successfully fetched all messages. Group ID: {groupId}");
+
+            var response = new CollectionResponse<FullMessageResponse>();
+            response.Items = responseData;
+            return Ok(response);
+        }
+
+        //Member
+        [HttpGet("getMessages")]
+        public async Task<IActionResult> GetMessages(int groupId, int pageSize, string? pagingState)
+        {
+            if (!await IsGroupMemberAsync(groupId))
+            {
+                throw new UnauthorizedException($"User is not a member of the group {groupId}.", "not_member");
+            }
+
+            _logger.LogInformation($"Attempting to fetch messages. Group ID: {groupId} Page Size: {pageSize} Paging State: {pagingState ?? string.Empty}");
 
             PageParamsDTO pageParamsDTO = new PageParamsDTO()
             {
@@ -124,14 +145,41 @@ namespace Groover.API.Controllers
 
         //Member
         [HttpGet("getMessages")]
-        public async Task<IActionResult> GetMessages(int groupId, int pageSize, string pagingState, string createdAfter)
+        public async Task<IActionResult> GetMessages(int groupId, string createdAfter)
         {
             if (!await IsGroupMemberAsync(groupId))
             {
                 throw new UnauthorizedException($"User is not a member of the group {groupId}.", "not_member");
             }
 
-            _logger.LogInformation($"Attempting to fetch messages after a certain UTC time. Group ID: {groupId} Page Size: {pageSize} Paging State: {pagingState} After: {createdAfter}");
+            _logger.LogInformation($"Attempting to fetch messages after a certain UTC time. Group ID: {groupId} After: {createdAfter}");
+
+            if (!DateTime.TryParseExact(createdAfter, ExpectedDateTimeFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal,
+                out DateTime createdAfterDT))
+                throw new BadRequestException("Invalid date time value for the expected format specified.", "Invalid date time value for the expected format specified.", "bad_datetime_format", ExpectedDateTimeFormat);
+
+            ICollection<FullMessageDTO> messages = await _groupChatService.GetMessagesAsync(groupId, createdAfterDT);
+            var responseData = _mapper.Map<ICollection<FullMessageResponse>>(messages);
+
+            _logger.LogInformation($"Successfully fetched messages after a certain UTC time. Group ID: {groupId} After: {createdAfter}");
+
+            var response = new CollectionResponse<FullMessageResponse>();
+            response.Items = responseData;
+            return Ok(response);
+        }
+
+        //Member
+        [HttpGet("getMessages")]
+        public async Task<IActionResult> GetMessages(int groupId, int pageSize, string? pagingState, string createdAfter)
+        {
+            if (!await IsGroupMemberAsync(groupId))
+            {
+                throw new UnauthorizedException($"User is not a member of the group {groupId}.", "not_member");
+            }
+
+            _logger.LogInformation($"Attempting to fetch messages after a certain UTC time. Group ID: {groupId} Page Size: {pageSize} Paging State: {pagingState ?? string.Empty} After: {createdAfter}");
 
             PageParamsDTO pageParamsDTO = new PageParamsDTO()
             {

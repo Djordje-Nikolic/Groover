@@ -17,5 +17,7 @@ namespace Groover.BL.Services.Interfaces
         Task<PagedDataDTO<ICollection<FullMessageDTO>>> GetMessagesAsync(int groupId, DateTime dateTimeAfter, PageParamsDTO pageParamsDTO);
         Task<TrackDTO> GetLoadedTrackAsync(int groupId, string trackUuId);
         Task<TrackDTO> GetTrackMetadataAsync(int groupId, string trackUuId);
+        Task<ICollection<FullMessageDTO>> GetAllMessagesAsync(int groupId);
+        Task<ICollection<FullMessageDTO>> GetMessagesAsync(int groupId, DateTime createdAfterDT);
     }
 }
