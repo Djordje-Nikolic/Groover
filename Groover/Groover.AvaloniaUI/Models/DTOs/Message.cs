@@ -15,6 +15,7 @@ namespace Groover.AvaloniaUI.Models.DTOs
 
     public class Message
     {
+        public const string DateTimeFormat = "dd/MM/yyyy HH:mm:ss";
         public string Id { get; set; }
         public string Type { get; set; }
         public string CreatedAt { get; set; }

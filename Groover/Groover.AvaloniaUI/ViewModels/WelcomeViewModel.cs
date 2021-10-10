@@ -58,6 +58,7 @@ namespace Groover.AvaloniaUI.ViewModels
                                     DIContainer.GetRequiredService<IUserService>(Locator.Current),
                                     DIContainer.GetRequiredService<IGroupService>(Locator.Current),
                                     DIContainer.GetRequiredService<IChatHubService>(Locator.Current),
+                                    DIContainer.GetRequiredService<IGroupChatService>(Locator.Current),
                                     _mapper,
                                     DIContainer.GetRequiredService<UserConstants>(Locator.Current));
 

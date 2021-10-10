@@ -6,6 +6,7 @@ using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -97,6 +98,13 @@ namespace Groover.AvaloniaUI.Models
                 });
 
             CreateMap<TrackResponse, Track>();
+            //CreateMap<Message, MessageViewModel>()
+            //    .ForMember(d => d.CreatedAt, options => options.MapFrom(
+            //        src => DateTime.ParseExact(src.CreatedAt, Message.DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToLocalTime()))
+            //    .ForMember(d => d.Type, options => options.MapFrom(
+            //        src => Enum.Parse(typeof(MessageType), src.Type)))
+            //    .ForMember(d => d.Image, options => options.MapFrom(
+            //        src => string.IsNullOrWhiteSpace(src.Image) ? null : Convert.FromBase64String(src.Image)));
         }
     }
 }

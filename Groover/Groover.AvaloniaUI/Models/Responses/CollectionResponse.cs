@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models.Responses
 {
-    public class PageParams
+    public class CollectionResponse<T> : BaseResponse
     {
-        public int PageSize { get; set; }
-        public string PagingState { get; set; }
-        public string NextPagingState { get; set; }
+        public ICollection<T> Items { get; set; }
     }
 }

@@ -20,7 +20,7 @@ using Splat;
 
 namespace Groover.AvaloniaUI.ViewModels
 {
-    public abstract class BaseGroupViewModel : ReactiveValidationObject
+    public abstract class GroupViewModelBase : ReactiveValidationObject
     {
         protected IGroupService _groupService;
         protected IMapper _mapper;
@@ -50,7 +50,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public ReactiveCommand<Unit, Unit> ChooseImage { get; }
         public ReactiveCommand<Unit, Unit> ClearImage { get; }
 
-        public BaseGroupViewModel(string titleText,
+        public GroupViewModelBase(string titleText,
             IGroupService groupService,
             IMapper mapper,
             GroupViewModel group)

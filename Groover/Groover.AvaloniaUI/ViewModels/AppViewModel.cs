@@ -27,13 +27,14 @@ namespace Groover.AvaloniaUI.ViewModels
     {
         private IUserService _userService;
         private IGroupService _groupService;
-        private IChatHubService _groupChatService;
+        private IGroupChatService _groupChatService;
+        private IChatHubService _chatHubService;
         private IMapper _mapper;
         private readonly UserConstants _userParams;
 
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
-        public Interaction<BaseGroupViewModel, GroupResponse?> ShowGroupEditDialog { get; set; }
+        public Interaction<GroupViewModelBase, GroupResponse?> ShowGroupEditDialog { get; set; }
         public Interaction<EditUserDialogViewModel, UserResponse?> ShowUserEditDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
 
@@ -71,7 +72,8 @@ namespace Groover.AvaloniaUI.ViewModels
         public AppViewModel(UserViewModel loggedInUser, 
                             IUserService userService, 
                             IGroupService groupService,
-                            IChatHubService groupChatService,
+                            IChatHubService chatHubService,
+                            IGroupChatService groupChatService,
                             IMapper mapper,
                             UserConstants userParameters)
         {
@@ -90,6 +92,7 @@ namespace Groover.AvaloniaUI.ViewModels
 
             _userService = userService;
             _groupService = groupService;
+            _chatHubService = chatHubService;
             _groupChatService = groupChatService;
             _mapper = mapper;
             _userParams = userParameters;
@@ -113,8 +116,8 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public async Task InitializeChatConnections()
         {
-            await this._groupChatService.InitializeConnection();
-            var handlersWrapper = _groupChatService.HandlersWrapper;
+            await this._chatHubService.InitializeConnection();
+            var handlersWrapper = _chatHubService.HandlersWrapper;
             handlersWrapper.GroupCreated(OnGroupCreated);
             handlersWrapper.GroupDeleted(OnGroupDeleted);
             handlersWrapper.GroupUpdated(OnGroupUpdated);
@@ -129,30 +132,32 @@ namespace Groover.AvaloniaUI.ViewModels
             handlersWrapper.UserInvited(OnUserInvited);
             handlersWrapper.GroupMessageAdded(OnGroupMessageAdded);
 
-            await this._groupChatService.StartConnection();
+            await this._chatHubService.StartConnection();
             
             foreach (var ug in LoggedInUser.UserGroups)
             {
-                await this._groupChatService.ConnectToGroup(ug.Group.Id);
+                await this._chatHubService.ConnectToGroup(ug.Group.Id);
             }
         }
 
         public async Task Cleanup()
         {
-            await _groupChatService.Reset();
+            await _chatHubService.Reset();
         }
 
         #region Chat Service Callbacks
-        private async Task OnGroupMessageAdded(Message message)
+        private void OnGroupMessageAdded(Message message)
         {
-            //Find chatviewmodel by message.GroupId and invoke
-            throw new NotImplementedException();
+            var cvm = ChatViewModels.FirstOrDefault(cvm => cvm.UserGroup.Group.Id == message.GroupId);
+
+            if (cvm != null)
+                cvm.AddNewMessage(message);
         }
         private async Task OnGroupCreated(UserGroup userGroup)
         {
             UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
             LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-            await this._groupChatService.ConnectToGroup(userGroup.Group.Id);
+            await this._chatHubService.ConnectToGroup(userGroup.Group.Id);
 
             NotificationsViewModel.AddNotification(new NotificationViewModel()
             {
@@ -167,7 +172,7 @@ namespace Groover.AvaloniaUI.ViewModels
                 var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                 if (ug != null)
                 {
-                    await this._groupChatService.DisconnectFromGroup(ug.Group.Id);
+                    await this._chatHubService.DisconnectFromGroup(ug.Group.Id);
                     LoggedInUser.UserGroupsCache.Remove(ug);
 
                     SwitchToHomeCommand.Execute().Subscribe();
@@ -218,7 +223,7 @@ namespace Groover.AvaloniaUI.ViewModels
             {
                 UserGroupViewModel userGroupViewModel = this._mapper.Map<UserGroupViewModel>(userGroup);
                 LoggedInUser.UserGroupsCache.AddOrUpdate(userGroupViewModel);
-                await this._groupChatService.ConnectToGroup(userGroup.Group.Id);
+                await this._chatHubService.ConnectToGroup(userGroup.Group.Id);
 
                 NotificationsViewModel.AddNotification(new NotificationViewModel()
                 {
@@ -238,7 +243,7 @@ namespace Groover.AvaloniaUI.ViewModels
                     if (uId == LoggedInUser.Id)
                     {
                         LoggedInUser.UserGroupsCache.Remove(ug);
-                        await this._groupChatService.DisconnectFromGroup(ug.Group.Id);
+                        await this._chatHubService.DisconnectFromGroup(ug.Group.Id);
                     }
                     else
                     {
@@ -326,7 +331,7 @@ namespace Groover.AvaloniaUI.ViewModels
                     if (user != null)
                     {
                         user.IsOnline = true;
-                        await _groupChatService.NotifyConnection(gId, uId);
+                        await _chatHubService.NotifyConnection(gId, uId);
                     }
                 }
             }
@@ -421,7 +426,12 @@ namespace Groover.AvaloniaUI.ViewModels
 
             //selectedUg.Group.GroupUsers.SortByRole();
 
-            ActiveChatViewModel = this.ChatViewModels.FirstOrDefault(vm => vm.UserGroup.Group == selectedUg.Group);
+            var cvm = this.ChatViewModels.FirstOrDefault(vm => vm.UserGroup.Group == selectedUg.Group);
+
+            if (cvm != null)
+                await cvm.Initialize();
+
+            ActiveChatViewModel = cvm;
         }
 
         public async Task SwitchToHome()
@@ -431,12 +441,9 @@ namespace Groover.AvaloniaUI.ViewModels
 
         private ChatViewModel GenerateChatViewModel(UserGroupViewModel userGroup)
         {
-            var viewModel = new ChatViewModel();
+            var viewModel = new ChatViewModel(LoggedInUser, userGroup, _groupChatService, _chatHubService);
 
             //Set callbacks
-
-            //Set data
-            viewModel.InitializeData(LoggedInUser, userGroup, _groupService);
 
             return viewModel;
         }

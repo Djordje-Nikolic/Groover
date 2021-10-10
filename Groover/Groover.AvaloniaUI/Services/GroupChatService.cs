@@ -1,4 +1,5 @@
-﻿using Groover.AvaloniaUI.Models.DTOs;
+﻿using Groover.AvaloniaUI.Models;
+using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
@@ -18,10 +19,44 @@ namespace Groover.AvaloniaUI.Services
     {
         private readonly Controller _controller;
         private readonly FileExtensionContentTypeProvider _mimeContentTypeProvider;
-        public GroupChatService(IApiService apiService) : base(apiService)
+        public GroupChatService(IApiService apiService, ICacheWrapper cacheWrapper) : base(apiService, cacheWrapper)
         {
             _mimeContentTypeProvider = new FileExtensionContentTypeProvider();
             _controller = Controller.GroupChat;
+        }
+
+        public async Task<TrackResponse> GetLoadedTrackAsync(int groupId, string trackId, bool getFromCacheIfAvailable)
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add("groupId", groupId.ToString());
+            queryParams.Add("trackId", trackId);
+            TrackResponse trackResponse = await this.SendRequestAsync<TrackResponse>(queryParams, HttpMethod.Get, _controller, "getTrack");
+
+            if (trackResponse.IsSuccessful)
+            {
+                string uniqueFilename = $"{trackResponse.Id}.{trackResponse.Extension}";
+                string? filePath = null;
+
+                if (getFromCacheIfAvailable)
+                {
+                    filePath = _cacheWrapper.LocateCachedFile(uniqueFilename, FileType.Track);
+                }
+
+                if (filePath != null)
+                {
+                    trackResponse.TrackFileResponse = new FileResponse()
+                    {
+                        FilePath = filePath,
+                        IsSuccessful = true
+                    };
+                }
+                else
+                {
+                    trackResponse.TrackFileResponse = await this.SendFileRequestAsync(trackResponse.TrackFileLink, uniqueFilename, FileType.Track);
+                }
+            }
+
+            return trackResponse;
         }
 
         public async Task<PagedResponse<ICollection<Message>>> GetMessagesAsync(int groupId, PageParams pageParams)
@@ -29,7 +64,7 @@ namespace Groover.AvaloniaUI.Services
             var queryParams = new Dictionary<string, string>();
             queryParams.Add("groupId", groupId.ToString());
             queryParams.Add("pageSize", pageParams.PageSize.ToString());
-            queryParams.Add("pagingState", pageParams.PagingState.ToString());
+            if (pageParams.PagingState != null) queryParams.Add("pagingState", pageParams.PagingState);
             return await this.SendRequestAsync<PagedResponse<ICollection<Message>>>(queryParams, HttpMethod.Get, _controller, "getMessages");
         }
 
@@ -38,9 +73,24 @@ namespace Groover.AvaloniaUI.Services
             var queryParams = new Dictionary<string, string>();
             queryParams.Add("groupId", groupId.ToString());
             queryParams.Add("pageSize", pageParams.PageSize.ToString());
-            queryParams.Add("pagingState", pageParams.PagingState.ToString());
-            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString("dd/MM/yyyy HH:mm:ss"));
+            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat));
+            if (pageParams.PagingState != null) queryParams.Add("pagingState", pageParams.PagingState.ToString());
             return await this.SendRequestAsync<PagedResponse<ICollection<Message>>>(queryParams, HttpMethod.Get, _controller, "getMessages");
+        }
+
+        public async Task<CollectionResponse<Message>> GetMessagesAsync(int groupId, DateTime afterDateTime)
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add("groupId", groupId.ToString());
+            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat));
+            return await this.SendRequestAsync<CollectionResponse<Message>>(queryParams, HttpMethod.Get, _controller, "getMessages");
+        }
+
+        public async Task<CollectionResponse<Message>> GetMessagesAsync(int groupId)
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add("groupId", groupId.ToString());
+            return await this.SendRequestAsync<CollectionResponse<Message>>(queryParams, HttpMethod.Get, _controller, "getMessages");
         }
 
         public async Task<BaseResponse> SendTextMessageAsync(TextMessageRequest textMessageRequest)

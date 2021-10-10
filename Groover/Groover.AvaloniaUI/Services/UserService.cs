@@ -16,7 +16,7 @@ namespace Groover.AvaloniaUI.Services
     {
         private readonly Controller _controller;
 
-        public UserService(IApiService apiService) : base(apiService)
+        public UserService(IApiService apiService, ICacheWrapper cacheWrapper) : base(apiService, cacheWrapper)
         {
             _controller = Controller.User;
         }
