@@ -11,5 +11,13 @@ namespace Groover.AvaloniaUI.Models.Requests
         public int GroupId { get; set; }
 
         public string TrackName { get; set; }
+
+        public TrackMessageRequest(string trackName)
+        {
+            if (string.IsNullOrWhiteSpace(trackName))
+                throw new ArgumentNullException(nameof(trackName));
+
+            TrackName = trackName;
+        }
     }
 }

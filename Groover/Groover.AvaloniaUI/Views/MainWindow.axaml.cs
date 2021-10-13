@@ -6,7 +6,6 @@ using Avalonia.ReactiveUI;
 using Groover.AvaloniaUI.Models;
 using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Responses;
-using Groover.AvaloniaUI.Utils;
 using Groover.AvaloniaUI.ViewModels;
 using Groover.AvaloniaUI.ViewModels.Dialogs;
 using Groover.AvaloniaUI.ViewModels.Notifications;
@@ -68,6 +67,14 @@ namespace Groover.AvaloniaUI.Views
                 .RegisterHandler(DoShowNotificationDialogAsync)
                 .DisposeWith(disposables);
 
+                ViewModel.ShowChooseImageDialog
+                .RegisterHandler(DoShowChooseImageDialogAsync)
+                .DisposeWith(disposables);
+
+                ViewModel.ShowChooseTrackDialog
+                .RegisterHandler(DoShowChooseTrackDialogAsync)
+                .DisposeWith(disposables);
+
                 //this._mainView.LogoutCommand.Subscribe(x => ShowWelcomeDialog());
 
                 this.WhenAnyValue(v => v.ViewModel.WelcomeDialogResult)
@@ -82,6 +89,8 @@ namespace Groover.AvaloniaUI.Views
                          vm.ShowGroupEditDialog = ViewModel.ShowGroupEditDialog;
                          vm.ShowUserEditDialog = ViewModel.ShowUserEditDialog;
                          vm.ShowNotificationDialog = ViewModel.ShowNotificationDialog;
+                         vm.ShowChooseImageDialog = ViewModel.ShowChooseImageDialog;
+                         vm.ShowChooseTrackDialog = ViewModel.ShowChooseTrackDialog;
                          vm.LogoutCommand.Subscribe(x =>
                          {
                              if (x == true)
@@ -210,12 +219,29 @@ namespace Groover.AvaloniaUI.Views
             interaction.SetOutput(result);
         }
 
+        private async Task DoShowChooseImageDialogAsync(InteractionContext<ChooseImageDialogViewModel, string?> interaction)
+        {
+            var dialog = new ChooseImageDialogView();
+            dialog.DataContext = interaction.Input;
+
+            var result = await dialog.ShowDialog<string?>(this);
+            interaction.SetOutput(result);
+        }
+
+        private async Task DoShowChooseTrackDialogAsync(InteractionContext<ChooseTrackDialogViewModel, string?> interaction)
+        {
+            var dialog = new ChooseTrackDialogView();
+            dialog.DataContext = interaction.Input;
+
+            var result = await dialog.ShowDialog<string?>(this);
+            interaction.SetOutput(result);
+        }
+
         private async Task DoShowNotificationDialogAsync(InteractionContext<NotificationViewModel, NotificationViewModel?> interaction)
         {
             var viewModel = interaction.Input;
             Window dialog;
 
-            //Napisi odgovarajuce views i inicijalizuj ih ovde
             if (viewModel is InviteViewModel)
             {
                 dialog = new InviteView();

@@ -20,6 +20,7 @@ using DynamicData;
 using Groover.AvaloniaUI.ViewModels.Notifications;
 using Avalonia.Threading;
 using Groover.AvaloniaUI.Models.DTOs;
+using Groover.AvaloniaUI.ViewModels.Chat;
 
 namespace Groover.AvaloniaUI.ViewModels
 {
@@ -30,6 +31,7 @@ namespace Groover.AvaloniaUI.ViewModels
         private IGroupChatService _groupChatService;
         private IChatHubService _chatHubService;
         private IMapper _mapper;
+        private IVLCWrapper _vlcWrapper;
         private readonly UserConstants _userParams;
 
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
@@ -37,6 +39,8 @@ namespace Groover.AvaloniaUI.ViewModels
         public Interaction<GroupViewModelBase, GroupResponse?> ShowGroupEditDialog { get; set; }
         public Interaction<EditUserDialogViewModel, UserResponse?> ShowUserEditDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
+        public Interaction<ChooseImageDialogViewModel, string?> ShowChooseImageDialog { get; set; }
+        public Interaction<ChooseTrackDialogViewModel, string?> ShowChooseTrackDialog { get; set; }
 
         [Reactive]
         public Interaction<NotificationViewModel, NotificationViewModel?> ShowNotificationDialog { get; set; } 
@@ -75,6 +79,7 @@ namespace Groover.AvaloniaUI.ViewModels
                             IChatHubService chatHubService,
                             IGroupChatService groupChatService,
                             IMapper mapper,
+                            IVLCWrapper vlcWrapper,
                             UserConstants userParameters)
         {
 
@@ -95,6 +100,7 @@ namespace Groover.AvaloniaUI.ViewModels
             _chatHubService = chatHubService;
             _groupChatService = groupChatService;
             _mapper = mapper;
+            _vlcWrapper = vlcWrapper;
             _userParams = userParameters;
 
             NotificationsViewModel = new NotificationsViewModel();
@@ -143,6 +149,10 @@ namespace Groover.AvaloniaUI.ViewModels
         public async Task Cleanup()
         {
             await _chatHubService.Reset();
+            foreach (var cVm in ChatViewModels)
+            {
+                cVm.Dispose();
+            }
         }
 
         #region Chat Service Callbacks
@@ -441,7 +451,8 @@ namespace Groover.AvaloniaUI.ViewModels
 
         private ChatViewModel GenerateChatViewModel(UserGroupViewModel userGroup)
         {
-            var viewModel = new ChatViewModel(LoggedInUser, userGroup, _groupChatService, _chatHubService);
+            var viewModel = new ChatViewModel(LoggedInUser, userGroup, _groupChatService, _chatHubService,
+                ShowChooseImageDialog, ShowChooseTrackDialog);
 
             //Set callbacks
 

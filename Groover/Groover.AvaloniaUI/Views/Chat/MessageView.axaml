@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             xmlns:views="using:Groover.AvaloniaUI.Views.Chat"
+             xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels.Chat"
+             mc:Ignorable="d"
+             x:Class="Groover.AvaloniaUI.Views.Chat.MessageView"
+             Name="Root"
+             HorizontalAlignment="Left">
+  <UserControl.Resources>
+    <utils:ForegroundByRoleConverter x:Key="foregroundByRoleConverter" />
+  </UserControl.Resources>
+  <Grid Margin="3" ColumnDefinitions="Auto" RowDefinitions="Auto,Auto,Auto">
+    <TextBlock Grid.Row="0" Grid.Column="0" Margin="1,0,0,0"
+               HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
+               Foreground="{Binding Role, Converter={StaticResource foregroundByRoleConverter}, 
+               FallbackValue={DynamicResource ThemeControlHighlightLowBrush}}"
+               Text="{Binding User.Username}">UserName</TextBlock>
+    <styles:Card Grid.Row="1" Grid.Column="0" Padding="4,2,4,2" HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
+                 ToolTip.Tip="{Binding FullCreatedAtDisplay}"
+                 ToolTip.ShowDelay="1000"
+                 ToolTip.Placement="Pointer">
+      <StackPanel MaxWidth="250">
+        <TextBlock
+          IsVisible="{Binding HasText}"
+          TextWrapping="Wrap"
+          Text="{Binding Content}">Here goes the message
+        </TextBlock>
+        <Image
+          IsVisible="{Binding HasImage}"
+          Stretch="Uniform"
+          Source="{Binding Image}">
+        </Image>
+        <views:TrackView
+          IsVisible="{Binding HasTrack}"
+          DataContext="{Binding Track}"> 
+        </views:TrackView>
+      </StackPanel>
+    </styles:Card>
+    <TextBlock Grid.Row="2" Grid.Column="0" Foreground="Red" Margin="0,0,0,0" 
+               HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
+               TextWrapping="Wrap" Text="{Binding DisplayError}"></TextBlock>
+  </Grid>
+</UserControl>

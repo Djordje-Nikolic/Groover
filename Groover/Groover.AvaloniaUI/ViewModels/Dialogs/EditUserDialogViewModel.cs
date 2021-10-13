@@ -24,7 +24,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
     {
         protected IUserService _userService;
         protected IMapper _mapper;
-        protected ImageConstants _imageConstants;
+        protected AvatarConfiguration _imageConstants;
         protected UserConstants _userConstants;
 
         public Interaction<string[], string?> ShowChooseImageDialog { get; set; }
@@ -60,8 +60,8 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
         {
             _userService = userService;
             _mapper = mapper;
-            _imageConstants = Locator.Current.GetService<ImageConstants>();
-            _userConstants = Locator.Current.GetService<UserConstants>();
+            _imageConstants = DIContainer.GetRequiredService<AvatarConfiguration>(Locator.Current);
+            _userConstants = DIContainer.GetRequiredService<UserConstants>(Locator.Current);
 
             TitleText = titleText;
             User = user;

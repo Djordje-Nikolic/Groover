@@ -26,8 +26,14 @@ namespace Groover.AvaloniaUI
             var identityConfig = new UserConstants(ConfigurationManager.GetSection("identitySettings") as NameValueCollection);
             services.RegisterConstant<UserConstants>(identityConfig);
 
-            var imageConfig = new ImageConstants(ConfigurationManager.GetSection("imageSettings") as NameValueCollection);
-            services.RegisterConstant<ImageConstants>(imageConfig);
+            var avatarConfig = new AvatarConfiguration(ConfigurationManager.GetSection("avatarConfiguration") as NameValueCollection);
+            services.RegisterConstant<AvatarConfiguration>(avatarConfig);
+
+            var imageConfig = new ImageConfiguration(ConfigurationManager.GetSection("imageConfiguration") as NameValueCollection);
+            services.RegisterConstant<ImageConfiguration>(imageConfig);
+
+            var trackConfig = new TrackConfiguration(ConfigurationManager.GetSection("trackConfiguration") as NameValueCollection);
+            services.RegisterConstant<TrackConfiguration>(trackConfig);
 
             var cacheConfig = new CacheConfiguration(ConfigurationManager.GetSection("cacheSettings") as NameValueCollection);
             services.RegisterConstant<ICacheConfiguration>(cacheConfig);

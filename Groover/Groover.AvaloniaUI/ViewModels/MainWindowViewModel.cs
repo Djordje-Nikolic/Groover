@@ -1,7 +1,6 @@
 using Groover.AvaloniaUI.Models;
 using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Responses;
-using Groover.AvaloniaUI.Utils;
 using Groover.AvaloniaUI.ViewModels.Dialogs;
 using Groover.AvaloniaUI.ViewModels.Notifications;
 using ReactiveUI;
@@ -23,6 +22,8 @@ namespace Groover.AvaloniaUI.ViewModels
         public Interaction<ChangeRoleDialogViewModel, GrooverGroupRole?> ShowGroupRoleDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
+        public Interaction<ChooseImageDialogViewModel, string?> ShowChooseImageDialog { get; set; }
+        public Interaction<ChooseTrackDialogViewModel, string?> ShowChooseTrackDialog { get; set; }
         public ReactiveCommand<Unit, Unit> WelcomeDialogCommand { get; }
 
         [ObservableAsProperty]
@@ -37,6 +38,8 @@ namespace Groover.AvaloniaUI.ViewModels
             ShowGroupEditDialog = new Interaction<GroupViewModelBase, GroupResponse?>();
             ShowUserEditDialog = new Interaction<EditUserDialogViewModel, UserResponse?>();
             ShowNotificationDialog = new Interaction<NotificationViewModel, NotificationViewModel?>();
+            ShowChooseImageDialog = new Interaction<ChooseImageDialogViewModel, string?>();
+            ShowChooseTrackDialog = new Interaction<ChooseTrackDialogViewModel, string?>();
 
             WelcomeDialogCommand = ReactiveCommand.CreateFromTask(async () =>
             {

@@ -78,7 +78,7 @@ Groover GroupChat Service Error List:
 
 Groover Hubs Error List:
 
-1 not_a_member
+1 not_member
 2 invalid_claims
 3 bad_id
 

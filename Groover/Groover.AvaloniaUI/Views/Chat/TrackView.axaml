@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             xmlns:views="using:Groover.AvaloniaUI.Views.Chat"
+             xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels.Chat"
+             mc:Ignorable="d"
+             x:Class="Groover.AvaloniaUI.Views.Chat.TrackView">
+  <UserControl.Resources>
+    <utils:TimeSpanConverter x:Key="timeSpanConverter"></utils:TimeSpanConverter>
+  </UserControl.Resources>
+  <StackPanel Width="250" Margin="0,0,5,0">
+    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" TextAlignment="Center"
+               ToolTip.Tip="{Binding Name}" Margin="9,3,15,5"
+               ToolTip.ShowDelay="1000">Name of the track goes here</TextBlock>
+    <TextBlock Foreground="Red" Margin="0,-5,0,0" HorizontalAlignment="Center" 
+               TextWrapping="Wrap" TextAlignment="Center" Text="{Binding AllErrors}"></TextBlock>
+    <StackPanel Orientation="Horizontal">
+      <Slider Margin="12,-3,15,0" Width="150"
+        Classes="Modern"
+        Minimum="0" Maximum="{Binding TotalDurationMs, Mode=OneWay}"
+        Value="{Binding ElapsedMiliseconds, Mode=TwoWay}"> 
+      </Slider>
+      <TextBlock Text="{Binding ElapsedTime, Converter={StaticResource timeSpanConverter}}">0:00</TextBlock>
+      <TextBlock Text=" / "></TextBlock>
+      <TextBlock Text="{Binding TotalDuration, Converter={StaticResource timeSpanConverter}}">5:00</TextBlock>
+    </StackPanel>
+    <DockPanel Width="250" LastChildFill="False" Margin="0,3,0,3">
+      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding PlayCommand}"
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+        <icons:MaterialIcon Kind="Play" Margin="0"
+                            Width="25" Height="25"></icons:MaterialIcon>
+      </Button>
+      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding PauseCommand}"
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+        <icons:MaterialIcon Kind="Pause" Width="25" Height="25"></icons:MaterialIcon>
+      </Button>
+      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding StopCommand}"
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+        <icons:MaterialIcon Kind="Stop" Width="25" Height="25"></icons:MaterialIcon>
+      </Button>
+      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" ToolTip.Tip="Unmute"
+              IsVisible="{Binding Muted}" Command="{Binding ToggleMuteCommand}"
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+        <icons:MaterialIcon Kind="VolumeMute" Width="25" Height="25"></icons:MaterialIcon>
+      </Button>
+      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" ToolTip.Tip="Mute"
+              IsVisible="{Binding !Muted}" Command="{Binding ToggleMuteCommand}"
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+        <icons:MaterialIcon Kind="VolumeMedium" Width="25" Height="25"></icons:MaterialIcon>
+      </Button>
+      <Button DockPanel.Dock="Right" Classes="Outline" Padding="3,0,3,0" Margin="2"
+              IsVisible="{Binding !Loaded}" Command="{Binding LoadCommand}"
+              HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+              Height="20">
+        <TextBlock FontSize="13">Load track</TextBlock>
+      </Button>
+      <Slider DockPanel.Dock="Right" Width="60" ToolTip.ShowDelay="2000" ToolTip.Tip="Volume"
+              Classes="Modern Accent" Margin="7,0,7,0"
+              IsVisible="{Binding Loaded}" Minimum="0" Maximum="100"
+              Value="{Binding CurrentVolume, Mode=TwoWay}">
+      </Slider>
+    </DockPanel>
+  </StackPanel>
+</UserControl>
