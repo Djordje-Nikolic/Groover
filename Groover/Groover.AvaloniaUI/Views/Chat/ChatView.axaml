@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             xmlns:views="using:Groover.AvaloniaUI.Views.Chat"
+             xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels.Chat"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
+             x:Class="Groover.AvaloniaUI.Views.Chat.ChatView"
+             Name="Root">
+  <UserControl.Resources>
+    <utils:MessageHorizontalAlignmentConverter x:Key="messageAlignmentConverter" />
+    <utils:AreEqualIntegersConverter x:Key="areEqualIntegersConverter" />
+  </UserControl.Resources>
+  <Border BorderThickness="3" BorderBrush="Aqua">
+    <Grid ColumnDefinitions="*" RowDefinitions="*, Auto">
+      <styles:Card Grid.Row="0" CornerRadius="5" Grid.Column="0" Margin="6,7,6,3" Padding="3,0,3,0">
+        <ScrollViewer 
+           HorizontalContentAlignment="Stretch"
+           VerticalContentAlignment="Stretch"
+           VerticalScrollBarVisibility="Visible"
+           HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl Items="{Binding SortedMessages}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Bottom"></StackPanel>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <views:MessageView DataContext="{Binding}" HorizontalAlignment="{Binding SentByLoggedInUser, Converter={StaticResource messageAlignmentConverter}}">
+                </views:MessageView>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </styles:Card>
+      <StackPanel Grid.Row="1" Grid.Column="0">
+        <Separator Margin="0,5,0,0"></Separator>
+        <views:InputView 
+           DataContext="{Binding InputViewModel}">
+        </views:InputView>
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

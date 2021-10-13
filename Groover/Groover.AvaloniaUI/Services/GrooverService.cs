@@ -59,7 +59,6 @@ namespace Groover.AvaloniaUI.Services
                     var responseContent = await response.Content.ReadAsStringAsync();
                     parsedResponse.IsSuccessful = false;
                     ErrorResponse errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent);
-                    parsedResponse.ErrorCodes = errorResponse?.ErrorCodes ?? new List<string>();
                     parsedResponse.ErrorResponse = errorResponse;
                 }
             }
@@ -100,7 +99,6 @@ namespace Groover.AvaloniaUI.Services
                 {
                     parsedResponse = new TResponse() { IsSuccessful = false };
                     ErrorResponse errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent);
-                    parsedResponse.ErrorCodes = errorResponse?.ErrorCodes ?? new List<string>();
                     parsedResponse.ErrorResponse = errorResponse;
                 }
 
@@ -157,7 +155,6 @@ namespace Groover.AvaloniaUI.Services
                 {
                     parsedResponse = new TResponse() { IsSuccessful = false };
                     ErrorResponse errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent);
-                    parsedResponse.ErrorCodes = errorResponse?.ErrorCodes ?? new List<string>();
                     parsedResponse.ErrorResponse = errorResponse;
                 }
 

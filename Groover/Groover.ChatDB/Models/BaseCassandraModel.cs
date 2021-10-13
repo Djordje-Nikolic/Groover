@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Groover.ChatDB.Models
 {
-    public class BaseCassandraModel
+    public abstract class BaseCassandraModel
     {
     }
 }

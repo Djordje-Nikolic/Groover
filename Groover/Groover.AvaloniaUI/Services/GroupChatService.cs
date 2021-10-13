@@ -42,7 +42,7 @@ namespace Groover.AvaloniaUI.Services
                     filePath = _cacheWrapper.LocateCachedFile(uniqueFilename, FileType.Track);
                 }
 
-                if (filePath != null)
+                if (!string.IsNullOrWhiteSpace(filePath))
                 {
                     trackResponse.TrackFileResponse = new FileResponse()
                     {

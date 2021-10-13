@@ -1,4 +1,5 @@
 ﻿using Groover.AvaloniaUI.Models.Requests;
+using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
@@ -19,8 +20,8 @@ namespace Groover.AvaloniaUI.Services.Interfaces
         Task ConnectToGroup(int groupId);
         Task DisconnectFromGroup(int groupId);
         Task NotifyConnection(int groupId, int userToNotifyId, int retryOnUnauthorized = 1);
-        Task SendTextMessage(TextMessageRequest messageRequest);
-        Task SendImageMessage(ImageMessageRequest messageRequest);
+        Task<BaseResponse> SendTextMessage(TextMessageRequest messageRequest, int retryOnUnauthorized = 1);
+        Task<BaseResponse> SendImageMessage(ImageMessageRequest messageRequest, int retryOnUnauthorized = 1);
         Task Reset();
     }
 }

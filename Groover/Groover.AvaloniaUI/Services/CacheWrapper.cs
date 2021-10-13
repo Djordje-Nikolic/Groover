@@ -31,7 +31,7 @@ namespace Groover.AvaloniaUI.Services
 
             if (File.Exists(fullFilePath))
                 File.Delete(fullFilePath);
-
+            
             using (FileStream fs = File.Create(fullFilePath))
             {
                 stream.Seek(0, SeekOrigin.Begin);

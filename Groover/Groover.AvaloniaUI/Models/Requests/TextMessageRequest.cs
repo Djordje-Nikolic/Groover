@@ -11,5 +11,15 @@ namespace Groover.AvaloniaUI.Models.Requests
         public int GroupId { get; set; }
 
         public string Content { get; set; }
+
+        public TextMessageRequest() { }
+
+        public TextMessageRequest(string textContent) 
+        {
+            if (string.IsNullOrWhiteSpace(textContent))
+                throw new ArgumentNullException(nameof(textContent));
+
+            Content = textContent;
+        }
     }
 }

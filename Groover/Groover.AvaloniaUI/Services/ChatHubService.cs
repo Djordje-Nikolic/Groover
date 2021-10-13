@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Groover.AvaloniaUI.Models.Requests;
+using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
 using Groover.AvaloniaUI.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -12,6 +13,7 @@ namespace Groover.AvaloniaUI.Services
 {
     public class ChatHubService : IChatHubService, IDisposable, IAsyncDisposable
     {
+        public const int DefaultRetryOnUnauthorizedAttempts = 1;
         public HashSet<int> ConnectedGroups { get; private set; }
 
         private HubConnection _connection;
@@ -102,7 +104,7 @@ namespace Groover.AvaloniaUI.Services
             }
         }
 
-        public async Task NotifyConnection(int groupId, int userToNotifyId, int retryOnUnauthorized = 1)
+        public async Task NotifyConnection(int groupId, int userToNotifyId, int retryOnUnauthorized = DefaultRetryOnUnauthorizedAttempts)
         {
             try
             {
@@ -121,11 +123,17 @@ namespace Groover.AvaloniaUI.Services
             }
         }
         
-        public async Task SendTextMessage(TextMessageRequest textMessageRequest)
+        public async Task<BaseResponse> SendTextMessage(TextMessageRequest textMessageRequest, int retryOnUnauthorized = DefaultRetryOnUnauthorizedAttempts)
         {
             try
             {
                 await Connection.InvokeAsync("SendTextMessage", textMessageRequest);
+
+                return new BaseResponse()
+                {
+                    IsSuccessful = true,
+                    StatusCode = System.Net.HttpStatusCode.OK
+                };
             }
             catch (Exception e)
             {
@@ -133,18 +141,36 @@ namespace Groover.AvaloniaUI.Services
                 if (e.Message.Contains("Unauthorized"))
                 {
                     await ReconnectOnTokenFail();
-                    await SendTextMessage(textMessageRequest);
+                    return await SendTextMessage(textMessageRequest, retryOnUnauthorized - 1);
                 }
                 else
-                    throw;
+                {
+                    var errors = e.Message.Split(':').Select(error => error.Trim()).ToArray();
+                    return new BaseResponse()
+                    {
+                        IsSuccessful = false,
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        ErrorResponse = new ErrorResponse()
+                        {
+                            Error = errors[1],
+                            ErrorCode = errors[0]
+                        }
+                    };
+                }
             }
         }
 
-        public async Task SendImageMessage(ImageMessageRequest imageMessageRequest)
+        public async Task<BaseResponse> SendImageMessage(ImageMessageRequest imageMessageRequest, int retryOnUnauthorized = DefaultRetryOnUnauthorizedAttempts)
         {
             try
             {
                 await Connection.InvokeAsync("SendImageMessage", imageMessageRequest);
+
+                return new BaseResponse()
+                {
+                    IsSuccessful = true,
+                    StatusCode = System.Net.HttpStatusCode.OK
+                };
             }
             catch (Exception e)
             {
@@ -152,10 +178,22 @@ namespace Groover.AvaloniaUI.Services
                 if (e.Message.Contains("Unauthorized"))
                 {
                     await ReconnectOnTokenFail();
-                    await SendImageMessage(imageMessageRequest);
+                    return await SendImageMessage(imageMessageRequest, retryOnUnauthorized - 1);
                 }
                 else
-                    throw;
+                {
+                    var errors = e.Message.Split(':').Select(error => error.Trim()).ToArray();
+                    return new BaseResponse()
+                    {
+                        IsSuccessful = false,
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        ErrorResponse = new ErrorResponse()
+                        {
+                            Error = errors[1],
+                            ErrorCode = errors[0]
+                        }
+                    };
+                }
             }
         }
 

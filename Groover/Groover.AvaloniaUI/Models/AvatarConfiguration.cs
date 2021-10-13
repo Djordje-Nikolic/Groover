@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.Models
 {
-    public class ImageConstants
+    public class AvatarConfiguration
     {
         public int MaxWidth { get; set; }
         public int MinWidth { get; set; }
@@ -15,7 +15,7 @@ namespace Groover.AvaloniaUI.Models
         public int MinHeight { get; set; }
         public double MaxSizeInMb { get; set; }
 
-        public ImageConstants(NameValueCollection nvC)
+        public AvatarConfiguration(NameValueCollection nvC)
         {
             if (nvC == null)
                 throw new ArgumentNullException();

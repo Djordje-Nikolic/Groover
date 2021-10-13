@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             mc:Ignorable="d" 
+             x:Class="Groover.AvaloniaUI.Views.Chat.InputView"
+             Name="Root">
+  <Grid RowDefinitions="*,*" ColumnDefinitions="*, 40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" 
+                VerticalAlignment="Stretch" MinHeight="30" Margin="0">
+      <TextBox Name="textControl"  
+             MaxHeight="150" MinHeight="40"  MinWidth="200"
+             AcceptsTab="True" AcceptsReturn="True" Classes="Filled"
+             TextWrapping="Wrap" Margin="6,7,5,5"
+             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+             IsVisible="{Binding TrackFilePath, Converter={x:Static ObjectConverters.IsNull}}" 
+             Text="{Binding TextContent}"></TextBox>
+      <Canvas Name="imagePanel" Height="{Binding #imageControl.Height}" Width="{Binding #imageControl.Width}" ClipToBounds="True">
+        <Canvas.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="Image" Converter="{x:Static ObjectConverters.IsNotNull}"></Binding>
+            <Binding Path="TrackFilePath" Converter="{x:Static ObjectConverters.IsNull}"></Binding>
+          </MultiBinding>
+        </Canvas.IsVisible>
+        <Image Name="imageControl" Canvas.Top="0" Canvas.Left="0" 
+               Source="{Binding Image}" Width="{Binding #textControl.Width}" Stretch="Uniform">
+        </Image>
+        <Button Canvas.Top="20" Canvas.Right="20" Classes="Flat"
+                Height="35" Width="35" assist:ButtonAssist.CornerRadius="35"
+                Command="{Binding ClearImageCommand}" IsVisible="{Binding #imagePanel.IsVisible}">
+          <icons:MaterialIcon Kind="CloseCircle" Height="25" Width="25"></icons:MaterialIcon>
+        </Button>
+      </Canvas>
+      <Border CornerRadius="5" Background="{StaticResource ThemeControlHighBrush}" Margin="6,7,5,5">
+        <Border.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="Image" Converter="{x:Static ObjectConverters.IsNull}"></Binding>
+            <Binding Path="TrackFilePath" Converter="{x:Static ObjectConverters.IsNotNull}"></Binding>
+          </MultiBinding>
+        </Border.IsVisible>
+        <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Center"
+           Width="{Binding #textControl.Width}" ClipToBounds="True">
+          <Button DockPanel.Dock="Right" Classes="Flat"
+            Height="35" Width="35" assist:ButtonAssist.CornerRadius="35"
+            Command="{Binding ClearTrackCommand}" Foreground="{StaticResource ThemeForegroundBrush}">
+            <icons:MaterialIcon Kind="CloseCircle" Height="25" Width="25"></icons:MaterialIcon>
+          </Button>
+          <TextBlock Name="trackControl" VerticalAlignment="Center" HorizontalAlignment="Center" DockPanel.Dock="Left"
+                      Text="{Binding TrackDisplayText}">
+          </TextBlock>
+        </DockPanel>
+      </Border>
+    </StackPanel>
+    <Button Grid.Column="1" Grid.Row="0" assist:ButtonAssist.CornerRadius="35"
+            Height="35" Width="35" Classes="Flat"
+            Margin="2,8,5,4" IsDefault="True"
+            Command="{Binding SendMessageCommand}">
+      <icons:MaterialIcon Kind="Send" Height="25" Width="25">    
+      </icons:MaterialIcon>
+    </Button>
+    <ToggleButton Grid.Column="1" Grid.Row="1" assist:ButtonAssist.CornerRadius="35"
+            Height="35" Width="35" Classes="Flat"
+            Margin="2,0,8,8" Name="attachButton"
+            Foreground="{StaticResource ThemeAccentBrush}">
+      <icons:MaterialIcon Kind="PlusCircle" Height="25" Width="30"></icons:MaterialIcon>
+    </ToggleButton>
+    <Popup Name="myPopup"
+       IsOpen="{Binding #attachButton.IsChecked, Mode=TwoWay}"
+       StaysOpen="False"
+       PlacementMode="Bottom"
+       PlacementTarget="{Binding ElementName=attachButton}"
+       PlacementAnchor="Bottom">
+      <styles:Card Padding="0" CornerRadius="5">
+        <DockPanel Width="80" Height="45" Margin="0">
+          <Button DockPanel.Dock="Left" Width="40" Classes="Flat" Command="{Binding ChooseImageCommand}">
+            <icons:MaterialIcon Kind="Image" Width="25" Height="25" Foreground="{StaticResource ThemeBackgroundBrush}"></icons:MaterialIcon>
+          </Button>
+          <Button DockPanel.Dock="Right" Width="40" Classes="Flat" Command="{Binding ChooseTrackCommand}">
+            <icons:MaterialIcon Kind="Music" Width="25" Height="25" Foreground="{StaticResource ThemeBackgroundBrush}"></icons:MaterialIcon>
+          </Button>
+        </DockPanel>
+      </styles:Card>
+    </Popup>
+  </Grid>
+</UserControl>

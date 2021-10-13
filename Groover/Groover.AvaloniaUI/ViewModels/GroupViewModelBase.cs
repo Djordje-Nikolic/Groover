@@ -24,7 +24,7 @@ namespace Groover.AvaloniaUI.ViewModels
     {
         protected IGroupService _groupService;
         protected IMapper _mapper;
-        protected ImageConstants _imageConstants;
+        protected AvatarConfiguration _imageConstants;
 
         public Interaction<string[], string?> ShowChooseImageDialog { get; set; }
 
@@ -57,7 +57,7 @@ namespace Groover.AvaloniaUI.ViewModels
         {
             _groupService = groupService;
             _mapper = mapper;
-            _imageConstants = Locator.Current.GetService<ImageConstants>();
+            _imageConstants = DIContainer.GetRequiredService<AvatarConfiguration>(Locator.Current);
 
             TitleText = titleText;
             Group = group;

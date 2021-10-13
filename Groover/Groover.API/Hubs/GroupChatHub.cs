@@ -51,7 +51,7 @@ namespace Groover.API.Hubs
         public async Task OpenGroupConnection(string groupId)
         {
             if (!IsGroupMember(groupId))
-                throw new HubException("Unauthorized: not_a_member");
+                throw new HubException("Unauthorized: not_member");
 
             var userId = GetUserId();
 
@@ -74,7 +74,7 @@ namespace Groover.API.Hubs
         public async Task NotifyConnection(string groupId, string userToNotifyId)
         {
             if (!IsGroupMember(groupId))
-                throw new HubException("Unauthorized: not_a_member");
+                throw new HubException("Unauthorized: not_member");
 
             var senderId = GetUserId();
 
@@ -86,7 +86,7 @@ namespace Groover.API.Hubs
         public async Task SendTextMessage(TextMessageRequest messageData)
         {
             if (!IsGroupMember(messageData.GroupId.ToString()))
-                throw new HubException("Unauthorized: not_a_member");
+                throw new HubException("Unauthorized: not_member");
 
             var senderId = GetUserId();
             if (!int.TryParse(senderId, out int userId))
@@ -126,7 +126,7 @@ namespace Groover.API.Hubs
         public async Task SendImageMessage(ImageMessageRequest messageData)
         {
             if (!IsGroupMember(messageData.GroupId.ToString()))
-                throw new HubException("Unauthorized: not_a_member");
+                throw new HubException("Unauthorized: not_member");
 
             var senderId = GetUserId();
             if (!int.TryParse(senderId, out int userId))

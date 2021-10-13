@@ -11,7 +11,7 @@ namespace Groover.AvaloniaUI.Models.Responses
     {
         public string? Message { get; set; }
         public bool IsSuccessful { get; set; }
-        public List<string> ErrorCodes { get; set; }
+        public List<string> ErrorCodes => ErrorResponse?.ErrorCodes ?? new List<string>();
         public ErrorResponse ErrorResponse { get; set; }
         public HttpStatusCode StatusCode { get; set; }
     }
