@@ -10,6 +10,7 @@ namespace Groover.ChatDB
     public class ChatDbConfiguration : IChatDbConfiguration
     {
         public string ContactPointAddress { get; set; }
+        public int ContactPointPort { get; set; }
         public string GroupChatKeySpace { get; set; }
         public int BytesPerTrackChunk { get; set; }
         public int MaximumImageSizeInBytes { get; set; }

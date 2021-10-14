@@ -22,6 +22,7 @@ namespace Groover.ChatDB
         public IChatDbCluster CreateInstance(IChatDbConfiguration configuration)
         {
             ICluster cluster = Cluster.Builder()
+                .WithPort(configuration.ContactPointPort)
                 .AddContactPoint(configuration.ContactPointAddress)
                 .Build();
 

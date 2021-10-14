@@ -98,7 +98,7 @@ namespace Groover.API.Controllers
         }
 
         //Member
-        [HttpGet("getMessages")]
+        [HttpGet("getAllMessages")]
         public async Task<IActionResult> GetMessages(int groupId)
         {
             if (!await IsGroupMemberAsync(groupId))
@@ -144,7 +144,7 @@ namespace Groover.API.Controllers
         }
 
         //Member
-        [HttpGet("getMessages")]
+        [HttpGet("getAllLatestMessages")]
         public async Task<IActionResult> GetMessages(int groupId, string createdAfter)
         {
             if (!await IsGroupMemberAsync(groupId))
@@ -171,7 +171,7 @@ namespace Groover.API.Controllers
         }
 
         //Member
-        [HttpGet("getMessages")]
+        [HttpGet("getLatestMessages")]
         public async Task<IActionResult> GetMessages(int groupId, int pageSize, string? pagingState, string createdAfter)
         {
             if (!await IsGroupMemberAsync(groupId))

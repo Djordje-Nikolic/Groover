@@ -62,7 +62,7 @@ namespace Groover.API.Models
             CreateMap<ImageMessageRequest, ImageMessageDTO>()
                 .ForMember(d => d.Image, options =>
                     options.MapFrom(s => !string.IsNullOrWhiteSpace(s.Image) ? Convert.FromBase64String(s.Image) : null));
-            CreateMap<TextMessageRequest, TextMessageRequest>();
+            CreateMap<TextMessageRequest, TextMessageDTO>();
             CreateMap<TrackMessageRequest, TrackMessageDTO>();
             CreateMap<FullMessageDTO, FullMessageResponse>()
                 .ForMember(d => d.Type, options =>

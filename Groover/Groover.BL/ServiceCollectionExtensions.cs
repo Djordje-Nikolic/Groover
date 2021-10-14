@@ -50,9 +50,9 @@ namespace Groover.BL
         public static IServiceCollection AddChatDatabase(this IServiceCollection services, IConfigurationSection configurationSection)
         {
             //Init config
-            var chatDbConfiguration = configurationSection
-                .Get<IChatDbConfiguration>();
-            services.AddSingleton(chatDbConfiguration);
+            ChatDbConfiguration chatDbConfiguration = configurationSection
+                .Get<ChatDbConfiguration>();
+            services.AddSingleton<IChatDbConfiguration>(chatDbConfiguration);
 
             //Init cluster factory
             services.AddSingleton<IChatDbClusterFactory, ChatDbClusterFactory>(serviceProvider =>

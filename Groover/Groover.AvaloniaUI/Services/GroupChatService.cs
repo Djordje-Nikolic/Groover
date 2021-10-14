@@ -75,7 +75,7 @@ namespace Groover.AvaloniaUI.Services
             queryParams.Add("pageSize", pageParams.PageSize.ToString());
             queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat));
             if (pageParams.PagingState != null) queryParams.Add("pagingState", pageParams.PagingState.ToString());
-            return await this.SendRequestAsync<PagedResponse<ICollection<Message>>>(queryParams, HttpMethod.Get, _controller, "getMessages");
+            return await this.SendRequestAsync<PagedResponse<ICollection<Message>>>(queryParams, HttpMethod.Get, _controller, "getLatestMessages");
         }
 
         public async Task<CollectionResponse<Message>> GetMessagesAsync(int groupId, DateTime afterDateTime)
@@ -83,14 +83,14 @@ namespace Groover.AvaloniaUI.Services
             var queryParams = new Dictionary<string, string>();
             queryParams.Add("groupId", groupId.ToString());
             queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat));
-            return await this.SendRequestAsync<CollectionResponse<Message>>(queryParams, HttpMethod.Get, _controller, "getMessages");
+            return await this.SendRequestAsync<CollectionResponse<Message>>(queryParams, HttpMethod.Get, _controller, "getAllLatestMessages");
         }
 
         public async Task<CollectionResponse<Message>> GetMessagesAsync(int groupId)
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add("groupId", groupId.ToString());
-            return await this.SendRequestAsync<CollectionResponse<Message>>(queryParams, HttpMethod.Get, _controller, "getMessages");
+            return await this.SendRequestAsync<CollectionResponse<Message>>(queryParams, HttpMethod.Get, _controller, "getAllMessages");
         }
 
         public async Task<BaseResponse> SendTextMessageAsync(TextMessageRequest textMessageRequest)
