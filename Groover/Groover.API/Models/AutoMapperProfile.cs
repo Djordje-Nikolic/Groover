@@ -6,6 +6,7 @@ using Groover.BL.Models.Chat.DTOs;
 using Groover.BL.Models.DTOs;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -68,7 +69,9 @@ namespace Groover.API.Models
                 .ForMember(d => d.Type, options =>
                     options.MapFrom(s => s.Type.ToString()))
                 .ForMember(d => d.Image, options =>
-                    options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null));
+                    options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null))
+                .ForMember(d => d.CreatedAt, options => 
+                    options.MapFrom(s => s.CreatedAt.ToString(FullMessageResponse.DateTimeFormat, CultureInfo.InvariantCulture)));
 
             CreateMap(typeof(PagedDataDTO<>), typeof(PagedResponse<>));
             CreateMap<PageParamsDTO, PageParamsResponse>();

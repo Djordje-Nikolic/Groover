@@ -47,6 +47,8 @@ namespace Groover.AvaloniaUI
             services.RegisterLazySingleton<ICacheWrapper>(() => new CacheWrapper(
                 resolver.GetRequiredService<ICacheConfiguration>()));
 
+            services.RegisterLazySingleton<IVLCWrapper>(() => new VLCWrapper());
+
             //Make into singleton?
             services.Register<IGroupService>(() => new GroupService(
                 resolver.GetRequiredService<IApiService>(),

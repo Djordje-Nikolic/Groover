@@ -9,11 +9,12 @@
              xmlns:views="using:Groover.AvaloniaUI.Views.Chat"
              xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels.Chat"
              mc:Ignorable="d"
-             x:Class="Groover.AvaloniaUI.Views.Chat.TrackView">
+             x:Class="Groover.AvaloniaUI.Views.Chat.TrackView"
+             Name="Root">
   <UserControl.Resources>
     <utils:TimeSpanConverter x:Key="timeSpanConverter"></utils:TimeSpanConverter>
   </UserControl.Resources>
-  <StackPanel Width="250" Margin="0,0,5,0">
+  <StackPanel Width="250" Margin="0,0,5,0" IsVisible="{Binding #Root.IsVisible}">
     <TextBlock Text="{Binding Name}" TextWrapping="Wrap" TextAlignment="Center"
                ToolTip.Tip="{Binding Name}" Margin="9,3,15,5"
                ToolTip.ShowDelay="1000">Name of the track goes here</TextBlock>

@@ -117,7 +117,10 @@ namespace Groover.AvaloniaUI.ViewModels
                 .Select(role => role == GrooverGroupRole.Admin)
                 .ToPropertyEx(this, x => x.IsActiveGroupAdmin);
 
-            InitializeLoggedInUser(loggedInUser);
+            if (loggedInUser == null)
+                return;
+
+            LoggedInUser = loggedInUser;
         }
 
         public async Task InitializeChatConnections()
@@ -393,13 +396,8 @@ namespace Groover.AvaloniaUI.ViewModels
         }
         #endregion
 
-        private void InitializeLoggedInUser(UserViewModel loggedInUser)
+        public void Initialize()
         {
-            if (loggedInUser == null)
-                return;
-
-            LoggedInUser = loggedInUser;
-
             LoggedInUser.UserGroupsCache.Connect()
                 .TransformWithInlineUpdate(ug => GenerateChatViewModel(ug), (previousViewModel, updatedUserGroup) =>
                 {

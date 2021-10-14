@@ -81,6 +81,20 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
             Id = message.Id;
 
+            //Converting message type to bindable values for the frontend
+            this.WhenAnyValue(mVm => mVm.Type)
+                .Select(type => type == MessageType.Track)
+                .ToPropertyEx(this, mVm => mVm.HasTrack, initialValue: false);
+
+            this.WhenAnyValue(mVm => mVm.Type)
+                .Select(type => type == MessageType.Image)
+                .ToPropertyEx(this, mVm => mVm.HasImage, initialValue: false);
+
+            this.WhenAnyValue(mVm => mVm.Type)
+                .Select(type => type == MessageType.Text ||
+                                type == MessageType.Image)
+                .ToPropertyEx(this, mVm => mVm.HasText, initialValue: false);
+
             if (!Enum.TryParse(typeof(MessageType), message.Type, out object? tempMessageType) || tempMessageType == null)
             {
                 throw new ArgumentException("Type couldn't be parsed.", nameof(message));
@@ -90,32 +104,6 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 Type = (MessageType)tempMessageType;
             }
 
-            //Converting message type to bindable values for the frontend
-            this.WhenAnyValue(mVm => mVm.Type)
-                .Select(type => type == MessageType.Track)
-                .ToPropertyEx(this, mVm => mVm.HasTrack);
-
-            this.WhenAnyValue(mVm => mVm.Type)
-                .Select(type => type == MessageType.Image)
-                .ToPropertyEx(this, mVm => mVm.HasImage);
-
-            this.WhenAnyValue(mVm => mVm.Type)
-                .Select(type => type == MessageType.Text ||
-                                type == MessageType.Image)
-                .ToPropertyEx(this, mVm => mVm.HasText);
-
-            if (!DateTime.TryParseExact(message.CreatedAt,
-                Message.DateTimeFormat,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal, out DateTime dateTimeResult))
-            {
-                throw new ArgumentException("CreatedAt couldn't be parsed.", nameof(message));
-            }
-            else
-            {
-                CreatedAt = dateTimeResult.ToLocalTime();
-            }
-
             this.WhenAnyValue(mVm => mVm.CreatedAt)
                 .Select(dt => dt.ToString(dateTimeDisplayFormat))
                 .ToPropertyEx(this, mVm => mVm.CreatedAtDisplay);
@@ -123,6 +111,23 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             this.WhenAnyValue(mVm => mVm.CreatedAt)
                 .Select(dt => dt.ToString(DefaultFullDateTimeDisplayFormat))
                 .ToPropertyEx(this, mVm => mVm.FullCreatedAtDisplay);
+
+            if (!DateTime.TryParseExact(message.CreatedAt,
+                Message.DateTimeFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal, out DateTime dateTimeResult))
+            {
+                if (!DateTime.TryParse(message.CreatedAt,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal, out dateTimeResult))
+                {
+                    throw new ArgumentException("CreatedAt couldn't be parsed.", nameof(message));
+                }
+            }
+            else
+            {
+                CreatedAt = dateTimeResult.ToLocalTime();
+            }
 
             if (message.SenderId != groupUser.User.Id)
                 throw new ArgumentException("Invalid user passed as argument.");
@@ -177,6 +182,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 Track = GetInitialTrackViewModel();
             }
         }
+
 
         private TrackViewModel? GetInitialTrackViewModel()
         {

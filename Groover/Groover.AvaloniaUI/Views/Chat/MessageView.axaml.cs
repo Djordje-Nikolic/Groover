@@ -8,6 +8,8 @@ namespace Groover.AvaloniaUI.Views.Chat
 {
     public partial class MessageView : ReactiveUserControl<MessageViewModel>
     {
+        private TrackView _trackView;
+
         public MessageView()
         {
             InitializeComponent();

@@ -231,7 +231,7 @@ namespace Groover.API.Controllers
             var notificationData = _mapper.Map<FullMessageResponse>(addedMessageDTO);
             await _notificationService.GroupMessageAddedAsync(notificationData);
 
-            return Ok();
+            return Ok(new { message = $"Successfully sent a text message (id: {addedMessageDTO.Id}) to group with id {addedMessageDTO.GroupId}." });
         }
 
         //Member
@@ -264,7 +264,7 @@ namespace Groover.API.Controllers
             var notificationData = _mapper.Map<FullMessageResponse>(addedMessageDTO);
             await _notificationService.GroupMessageAddedAsync(notificationData);
 
-            return Ok();
+            return Ok(new { message = $"Successfully sent an image message (id: {addedMessageDTO.Id}) to group with id {addedMessageDTO.GroupId}." });
         }
 
         //Member
@@ -298,7 +298,7 @@ namespace Groover.API.Controllers
             var notificationData = _mapper.Map<FullMessageResponse>(addedMessageDTO);
             await _notificationService.GroupMessageAddedAsync(notificationData);
 
-            return Ok();
+            return Ok(new { message = $"Successfully sent a track message (id: {addedMessageDTO.Id}) to group with id {addedMessageDTO.GroupId}." });
         }
 
         private async Task<bool> IsGroupAdminAsync(int groupId)

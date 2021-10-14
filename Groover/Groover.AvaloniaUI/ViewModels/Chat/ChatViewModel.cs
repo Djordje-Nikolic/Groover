@@ -97,6 +97,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private async Task<BaseResponse> SendMessage(TextMessageRequest message)
         {
+            message.GroupId = UserGroup.Group.Id;
+
             BaseResponse baseResponse;
             if (_prioritiseHub)
             {
@@ -112,6 +114,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private async Task<BaseResponse> SendMessage(ImageMessageRequest message)
         {
+            message.GroupId = UserGroup.Group.Id;
+
             BaseResponse baseResponse;
             if (_prioritiseHub)
             {
@@ -127,6 +131,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private async Task<BaseResponse> SendMessage(TrackMessageRequest message, string filePath)
         {
+            message.GroupId = UserGroup.Group.Id;
+
             return await _groupChatService.SendTrackMessageAsync(message, filePath);
         }
 

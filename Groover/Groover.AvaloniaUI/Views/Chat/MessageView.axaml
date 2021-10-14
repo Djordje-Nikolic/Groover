@@ -36,8 +36,7 @@
           Stretch="Uniform"
           Source="{Binding Image}">
         </Image>
-        <views:TrackView
-          IsVisible="{Binding HasTrack}"
+        <views:TrackView Name="trackView"
           DataContext="{Binding Track}"> 
         </views:TrackView>
       </StackPanel>
