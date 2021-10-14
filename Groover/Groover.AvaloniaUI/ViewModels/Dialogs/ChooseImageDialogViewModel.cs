@@ -84,7 +84,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
             IObservable<bool> isValidExtension = this.WhenAnyValue(vm => vm.ChosenFilePath,
                 filepath => string.IsNullOrWhiteSpace(filepath) ||
                 !File.Exists(filepath) ||
-                _config.AllowedExtensions.Contains(Path.GetExtension(filepath)));
+                _config.AllowedExtensions.Contains(Path.GetExtension(filepath).TrimStart('.')));
             this.ValidationRule(vm => vm.Image, isValidExtension, $"Extension not supported. Allowed extensions: {string.Join(',', _config.AllowedExtensions)}");
 
             IObservable<bool> doesFileExist = this.WhenAnyValue(vm => vm.ChosenFilePath,

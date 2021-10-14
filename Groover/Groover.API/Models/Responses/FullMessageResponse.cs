@@ -7,6 +7,7 @@ namespace Groover.API.Models.Responses
 {
     public class FullMessageResponse
     {
+        public const string DateTimeFormat = "dd/MM/yyyy HH:mm:ss";
         public string Id { get; set; }
         public string Type { get; set; }
         public string CreatedAt { get; set; }

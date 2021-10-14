@@ -89,7 +89,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
             this.ValidationRule(vm => vm.ChosenFileInfo, info => info == null || info.Exists, "Chosen file does not exist.");
             this.ValidationRule(vm => vm.ChosenFileInfo, info => info == null || !info.Exists || info.Length < _config.MaxTrackSize, 
                 $"File too large. Max size: {string.Format("{0:N2} Kb", _config.MaxTrackSize / 1024 / 1024)}");
-            this.ValidationRule(vm => vm.ChosenFileInfo, info => info == null || !info.Exists || _config.AllowedExtensions.Contains(info.Extension),
+            this.ValidationRule(vm => vm.ChosenFileInfo, info => info == null || !info.Exists || _config.AllowedExtensions.Contains(info.Extension.TrimStart('.')),
                 $"Extension not supported: Allowed extensions: {string.Join(',', _config.AllowedExtensions)}");
         }
     }

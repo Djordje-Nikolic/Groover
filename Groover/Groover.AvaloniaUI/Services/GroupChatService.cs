@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -73,7 +74,7 @@ namespace Groover.AvaloniaUI.Services
             var queryParams = new Dictionary<string, string>();
             queryParams.Add("groupId", groupId.ToString());
             queryParams.Add("pageSize", pageParams.PageSize.ToString());
-            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat));
+            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat, CultureInfo.InvariantCulture));
             if (pageParams.PagingState != null) queryParams.Add("pagingState", pageParams.PagingState.ToString());
             return await this.SendRequestAsync<PagedResponse<ICollection<Message>>>(queryParams, HttpMethod.Get, _controller, "getLatestMessages");
         }
@@ -82,7 +83,7 @@ namespace Groover.AvaloniaUI.Services
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add("groupId", groupId.ToString());
-            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat));
+            queryParams.Add("createdAfter", afterDateTime.ToUniversalTime().ToString(Message.DateTimeFormat, CultureInfo.InvariantCulture));
             return await this.SendRequestAsync<CollectionResponse<Message>>(queryParams, HttpMethod.Get, _controller, "getAllLatestMessages");
         }
 

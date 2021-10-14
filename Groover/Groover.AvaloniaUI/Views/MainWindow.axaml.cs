@@ -101,6 +101,8 @@ namespace Groover.AvaloniaUI.Views
                          }).DisposeWith(disposables);
 
                          LoadingScreenCommand.Execute(vm.LoggedInUser).Subscribe();
+
+                         vm.Initialize();
                      }
                  })
                 .BindTo(this, x => x._mainView.DataContext)

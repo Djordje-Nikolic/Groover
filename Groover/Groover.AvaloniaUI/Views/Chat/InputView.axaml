@@ -9,17 +9,19 @@
              mc:Ignorable="d" 
              x:Class="Groover.AvaloniaUI.Views.Chat.InputView"
              Name="Root">
-  <Grid RowDefinitions="*,*" ColumnDefinitions="*, 40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-    <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" 
+  <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*, 40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <DockPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" LastChildFill="True"
                 VerticalAlignment="Stretch" MinHeight="30" Margin="0">
-      <TextBox Name="textControl"  
-             MaxHeight="150" MinHeight="40"  MinWidth="200"
+      <TextBox Name="textControl" DockPanel.Dock="Top"
+             MaxHeight="150" MinHeight="20"  MinWidth="200"
              AcceptsTab="True" AcceptsReturn="True" Classes="Filled"
-             TextWrapping="Wrap" Margin="6,7,5,5"
+             TextWrapping="Wrap" Margin="6"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
              IsVisible="{Binding TrackFilePath, Converter={x:Static ObjectConverters.IsNull}}" 
              Text="{Binding TextContent}"></TextBox>
-      <Canvas Name="imagePanel" Height="{Binding #imageControl.Height}" Width="{Binding #imageControl.Width}" ClipToBounds="True">
+      <Canvas Name="imagePanel" DockPanel.Dock="Top"
+              Height="{Binding #imageControl.Height}" Width="{Binding #imageControl.Width}"
+              ClipToBounds="True">
         <Canvas.IsVisible>
           <MultiBinding Converter="{x:Static BoolConverters.And}">
             <Binding Path="Image" Converter="{x:Static ObjectConverters.IsNotNull}"></Binding>
@@ -35,7 +37,8 @@
           <icons:MaterialIcon Kind="CloseCircle" Height="25" Width="25"></icons:MaterialIcon>
         </Button>
       </Canvas>
-      <Border CornerRadius="5" Background="{StaticResource ThemeControlHighBrush}" Margin="6,7,5,5">
+      <Border CornerRadius="5" Background="{StaticResource ThemeControlHighBrush}" Margin="6,7,5,5"
+              VerticalAlignment="Stretch" DockPanel.Dock="Top" IsVisible="False">
         <Border.IsVisible>
           <MultiBinding Converter="{x:Static BoolConverters.And}">
             <Binding Path="Image" Converter="{x:Static ObjectConverters.IsNull}"></Binding>
@@ -54,19 +57,20 @@
           </TextBlock>
         </DockPanel>
       </Border>
-    </StackPanel>
+    </DockPanel>
     <Button Grid.Column="1" Grid.Row="0" assist:ButtonAssist.CornerRadius="35"
-            Height="35" Width="35" Classes="Flat"
-            Margin="2,8,5,4" IsDefault="True"
+            Height="25" Width="30" Classes="Flat"
+            Margin="2,4,6,0" IsDefault="True" Padding="0"
             Command="{Binding SendMessageCommand}">
       <icons:MaterialIcon Kind="Send" Height="25" Width="25">    
       </icons:MaterialIcon>
     </Button>
-    <ToggleButton Grid.Column="1" Grid.Row="1" assist:ButtonAssist.CornerRadius="35"
-            Height="35" Width="35" Classes="Flat"
-            Margin="2,0,8,8" Name="attachButton"
-            Foreground="{StaticResource ThemeAccentBrush}">
-      <icons:MaterialIcon Kind="PlusCircle" Height="25" Width="30"></icons:MaterialIcon>
+    <ToggleButton Grid.Column="1" Grid.Row="1" assist:ButtonAssist.CornerRadius="25"
+            Height="25" Width="25" Classes="Flat"
+            Margin="2,0,8,4" Padding="0" Name="attachButton"
+            Foreground="{StaticResource ThemeAccentBrush}"
+            HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+      <icons:MaterialIcon Kind="PlusCircle" Height="25" Width="25"></icons:MaterialIcon>
     </ToggleButton>
     <Popup Name="myPopup"
        IsOpen="{Binding #attachButton.IsChecked, Mode=TwoWay}"

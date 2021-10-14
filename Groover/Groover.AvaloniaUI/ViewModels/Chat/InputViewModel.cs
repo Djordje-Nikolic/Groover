@@ -120,7 +120,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             string? trackFilePath = await _chooseTrackInteraction.Handle(viewModel);
             if (!string.IsNullOrWhiteSpace(trackFilePath))
             {
-                ImageFilePath = trackFilePath;
+                TrackFilePath = trackFilePath;
             }
         }
 
