@@ -49,20 +49,12 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public int CurrentVolume
         {
             get => _currentVolume;
-            set
-            {
-                ChangeCurrentTrackVolume(value);
-                this.RaiseAndSetIfChanged(ref _currentVolume, value);
-            }
+            set => VolumeChanged(value, true);
         }
         public long ElapsedMiliseconds
         {
             get => _elapsedMiliseconds;
-            set
-            {
-                ChangeCurrentTrackTime(value);
-                this.RaiseAndSetIfChanged(ref _elapsedMiliseconds, value);
-            }
+            set => TimeChanged(value, true);
         }
         [ObservableAsProperty]
         public TimeSpan ElapsedTime { get; }
@@ -300,6 +292,22 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             TotalDuration = TimeSpan.FromSeconds(seconds);
         }
 
+        private void TimeChanged(long newElapsedMs, bool sendToPlayer)
+        {
+            if (sendToPlayer)
+                ChangePlayerTrackTime(newElapsedMs);
+
+            this.RaiseAndSetIfChanged(ref _elapsedMiliseconds, newElapsedMs, nameof(ElapsedMiliseconds));
+        }
+
+        private void VolumeChanged(int newVolume, bool sendToPlayer)
+        {
+            if (sendToPlayer)
+                ChangePlayerTrackVolume(newVolume);
+
+            this.RaiseAndSetIfChanged(ref _currentVolume, newVolume, nameof(CurrentVolume));
+        }
+
         #region MediaPlayer Methods
         private void RegisterEventHandlers()
         {
@@ -315,12 +323,12 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private void MediaPlayer_TimeChanged(object? sender, MediaPlayerTimeChangedEventArgs e)
         {
-            this.RaiseAndSetIfChanged(ref _elapsedMiliseconds, e.Time, nameof(ElapsedMiliseconds));
+            TimeChanged(e.Time, false);
         }
 
         private void MediaPlayer_VolumeChanged(object? sender, MediaPlayerVolumeChangedEventArgs e)
         {
-            this.RaiseAndSetIfChanged(ref _currentVolume, (int)e.Volume, nameof(CurrentVolume));
+            VolumeChanged((int)e.Volume, false);
         }
 
         private void MediaPlayer_MuteToggled(object? sender, EventArgs e, bool muted)
@@ -328,7 +336,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             Muted = muted;
         }
 
-        private void ChangeCurrentTrackTime(long newTime)
+        private void ChangePlayerTrackTime(long newTime)
         {
             if (MediaPlayer != null)
             {
@@ -336,7 +344,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             }
         }
 
-        private void ChangeCurrentTrackVolume(int newVolume)
+        private void ChangePlayerTrackVolume(int newVolume)
         {
             if (MediaPlayer != null)
             {
