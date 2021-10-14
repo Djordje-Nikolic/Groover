@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Groover.AvaloniaUI.ViewModels.Chat;
+using ReactiveUI;
 
 namespace Groover.AvaloniaUI.Views.Chat
 {
@@ -13,6 +14,19 @@ namespace Groover.AvaloniaUI.Views.Chat
         public MessageView()
         {
             InitializeComponent();
+
+            _trackView = this.FindControl<TrackView>("trackView");
+
+            this.WhenActivated(disposables =>
+            {
+                this.OneWayBind(ViewModel,
+                    vm => vm.Track,
+                    view => view._trackView.DataContext);
+
+                this.OneWayBind(ViewModel,
+                    vm => vm.HasTrack,
+                    view => view._trackView.IsVisible);
+            });
         }
 
         private void InitializeComponent()
