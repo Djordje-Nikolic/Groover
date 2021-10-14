@@ -21,7 +21,9 @@
                Foreground="{Binding Role, Converter={StaticResource foregroundByRoleConverter}, 
                FallbackValue={DynamicResource ThemeControlHighlightLowBrush}}"
                Text="{Binding User.Username}">UserName</TextBlock>
-    <styles:Card Grid.Row="1" Grid.Column="0" Padding="4,2,4,2" HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
+    <styles:Card Grid.Row="1" Grid.Column="0" Padding="4,2,4,2" 
+                 HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
+                 Background="{DynamicResource ThemeControlHighBrush}"
                  ToolTip.Tip="{Binding FullCreatedAtDisplay}"
                  ToolTip.ShowDelay="1000"
                  ToolTip.Placement="Pointer">
@@ -29,6 +31,7 @@
         <TextBlock
           IsVisible="{Binding HasText}"
           TextWrapping="Wrap"
+          Foreground="{DynamicResource ThemeForegroundBrush}"
           Text="{Binding Content}">Here goes the message
         </TextBlock>
         <Image
@@ -37,7 +40,8 @@
           Source="{Binding Image}">
         </Image>
         <views:TrackView Name="trackView"
-          DataContext="{Binding Track}"> 
+          Foreground="{DynamicResource ThemeForegroundBrush}">
+          <!--This control is manually binded in the code behind for messageview--> 
         </views:TrackView>
       </StackPanel>
     </styles:Card>

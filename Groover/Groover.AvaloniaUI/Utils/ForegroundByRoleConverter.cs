@@ -13,8 +13,8 @@ namespace Groover.AvaloniaUI.Utils
 {
     public class ForegroundByRoleConverter : IValueConverter
     {
-        public const string MemberForegroundName = "LightGray";
-        public const string AdminForegroundName = "Aqua";
+        public const string MemberForegroundName = "DarkGray";
+        public const string AdminForegroundName = "LightGray";
 
         public SolidColorBrush MemberForeground { get; }
         public SolidColorBrush AdminForeground { get; }

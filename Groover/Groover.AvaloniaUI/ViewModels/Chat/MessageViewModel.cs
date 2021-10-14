@@ -33,7 +33,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public DateTime CreatedAt { get; private set; }
         public bool SentByLoggedInUser { get; private set; }
 
-        public GroupUserViewModel GroupUser { get; }
+        [Reactive]
+        public GroupUserViewModel GroupUser { get; private set; }
 
         [Reactive]
         public MessageType Type { get; private set; }
@@ -70,16 +71,13 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         public MessageViewModel(Message message,
             GroupUserViewModel groupUser,
-            IVLCWrapper vlcWrapper,
             bool sentByLoggedInUser,
+            IVLCWrapper vlcWrapper,
             Func<string, Task<TrackResponse>> trackLoadDelegate,
             string dateTimeDisplayFormat = DefaultDateTimeDisplayFormat)
         {
             _trackLoadDelegate = trackLoadDelegate;
             _vlcWrapper = vlcWrapper;
-            SentByLoggedInUser = sentByLoggedInUser;
-
-            Id = message.Id;
 
             //Converting message type to bindable values for the frontend
             this.WhenAnyValue(mVm => mVm.Type)
@@ -95,15 +93,6 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                                 type == MessageType.Image)
                 .ToPropertyEx(this, mVm => mVm.HasText, initialValue: false);
 
-            if (!Enum.TryParse(typeof(MessageType), message.Type, out object? tempMessageType) || tempMessageType == null)
-            {
-                throw new ArgumentException("Type couldn't be parsed.", nameof(message));
-            }
-            else
-            {
-                Type = (MessageType)tempMessageType;
-            }
-
             this.WhenAnyValue(mVm => mVm.CreatedAt)
                 .Select(dt => dt.ToString(dateTimeDisplayFormat))
                 .ToPropertyEx(this, mVm => mVm.CreatedAtDisplay);
@@ -112,37 +101,12 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 .Select(dt => dt.ToString(DefaultFullDateTimeDisplayFormat))
                 .ToPropertyEx(this, mVm => mVm.FullCreatedAtDisplay);
 
-            if (!DateTime.TryParseExact(message.CreatedAt,
-                Message.DateTimeFormat,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal, out DateTime dateTimeResult))
-            {
-                if (!DateTime.TryParse(message.CreatedAt,
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.AssumeUniversal, out dateTimeResult))
-                {
-                    throw new ArgumentException("CreatedAt couldn't be parsed.", nameof(message));
-                }
-            }
-            else
-            {
-                CreatedAt = dateTimeResult.ToLocalTime();
-            }
-
-            if (message.SenderId != groupUser.User.Id)
-                throw new ArgumentException("Invalid user passed as argument.");
-
-            Content = message.Content;
-
             //Init user and role data
             this.WhenAnyValue(mVm => mVm.GroupUser.User)
                 .ToPropertyEx(this, mVm => mVm.User);
 
             this.WhenAnyValue(mVm => mVm.GroupUser.GroupRole)
                 .ToPropertyEx(this, mVm => mVm.Role);
-
-            //Idk if this will actually trigger stuff TEST, maybe manual assignment needed through OnUserRoleUpdated
-            GroupUser = groupUser;
 
             //Init image data
             this.WhenAnyValue(mVm => mVm.ImageBytes)
@@ -170,6 +134,51 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 })
                 .ToPropertyEx(this, mVm => mVm.Image);
 
+            Initialize(message, groupUser, sentByLoggedInUser);
+        }
+
+        private void Initialize(Message message,
+            GroupUserViewModel groupUser, 
+            bool sentByLoggedInUser)
+        {
+            SentByLoggedInUser = sentByLoggedInUser;
+
+            Id = message.Id;
+
+            if (!Enum.TryParse(typeof(MessageType), message.Type, out object? tempMessageType) || tempMessageType == null)
+            {
+                throw new ArgumentException("Type couldn't be parsed.", nameof(message));
+            }
+            else
+            {
+                Type = (MessageType)tempMessageType;
+            }
+
+            if (!DateTime.TryParseExact(message.CreatedAt,
+                Message.DateTimeFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal, out DateTime dateTimeResult))
+            {
+                if (!DateTime.TryParse(message.CreatedAt,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal, out dateTimeResult))
+                {
+                    throw new ArgumentException("CreatedAt couldn't be parsed.", nameof(message));
+                }
+            }
+            else
+            {
+                CreatedAt = dateTimeResult.ToLocalTime();
+            }
+
+            if (message.SenderId != groupUser.User.Id)
+                throw new ArgumentException("Invalid user passed as argument.");
+
+            Content = message.Content;
+
+            //Idk if this will actually trigger stuff TEST, maybe manual assignment needed through OnUserRoleUpdated
+            GroupUser = groupUser;
+
             ImageBytes = string.IsNullOrWhiteSpace(message.Image) ? null : Convert.FromBase64String(message.Image);
 
             TrackId = message.TrackId;
@@ -182,7 +191,6 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 Track = GetInitialTrackViewModel();
             }
         }
-
 
         private TrackViewModel? GetInitialTrackViewModel()
         {

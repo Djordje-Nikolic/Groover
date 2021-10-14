@@ -208,7 +208,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 return null; //maybe throw?
 
             bool sentByLoggedInUser = User.Id == sender.User.Id;
-            MessageViewModel messageViewModel = new MessageViewModel(message, sender, _vlcWrapper, sentByLoggedInUser, LoadTrack);
+            MessageViewModel messageViewModel = new MessageViewModel(message, sender, sentByLoggedInUser, _vlcWrapper, LoadTrack);
             return messageViewModel;
         }
 

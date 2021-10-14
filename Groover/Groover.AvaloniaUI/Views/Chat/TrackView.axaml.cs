@@ -12,16 +12,16 @@ namespace Groover.AvaloniaUI.Views.Chat
         {
             InitializeComponent();
 
-            this.PropertyChanged += (s, e) =>
-            {
-                if (e.Property == Control.DataContextProperty)
-                {
-                    if (e.NewValue != null)
-                        this.IsVisible = true;
-                    else
-                        this.IsVisible = false;
-                }
-            };
+            //this.PropertyChanged += (s, e) =>
+            //{
+            //    if (e.Property == Control.DataContextProperty)
+            //    {
+            //        if (e.NewValue != null)
+            //            this.IsVisible = true;
+            //        else
+            //            this.IsVisible = false;
+            //    }
+            //};
         }
 
         private void InitializeComponent()
