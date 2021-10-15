@@ -14,6 +14,18 @@ using System.Threading.Tasks;
 
 namespace Groover.AvaloniaUI.ViewModels.Dialogs
 {
+    public struct ChooseTrackResult
+    {
+        public string? FilePath { get; }
+        public string? FileName { get; }
+
+        public ChooseTrackResult(string? path, string? name)
+        {
+            FilePath = path;
+            FileName = name;
+        }
+    }
+
     public class ChooseTrackDialogViewModel : ReactiveValidationObject
     {
         private TrackConfiguration _config;
@@ -28,8 +40,8 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
         [ObservableAsProperty]
         public string FileSizeInMb { get; }
 
-        public ReactiveCommand<Unit, string?> YesCommand { get; }
-        public ReactiveCommand<Unit, string?> NoCommand { get; }
+        public ReactiveCommand<Unit, ChooseTrackResult?> YesCommand { get; }
+        public ReactiveCommand<Unit, ChooseTrackResult?> NoCommand { get; }
         public ReactiveCommand<Unit, Unit> ChooseTrackCommand { get; }
         public ReactiveCommand<Unit, Unit> ClearTrackCommand { get; }
 
@@ -43,8 +55,8 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
                 (filepath, name) => 
                 !string.IsNullOrWhiteSpace(filepath) &&
                 !string.IsNullOrWhiteSpace(name));
-            YesCommand = ReactiveCommand.Create<string?>(() => ChosenFilePath, this.IsValid());
-            NoCommand = ReactiveCommand.Create<string?>(() => { return null; });
+            YesCommand = ReactiveCommand.Create<ChooseTrackResult?>(() => new ChooseTrackResult(ChosenFilePath, TrackName), this.IsValid());
+            NoCommand = ReactiveCommand.Create<ChooseTrackResult?>(() => { return null; });
             ChooseTrackCommand = ReactiveCommand.CreateFromTask(ChooseTrack);
             ClearTrackCommand = ReactiveCommand.Create(ClearTrack);
 

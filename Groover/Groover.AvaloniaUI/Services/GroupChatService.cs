@@ -110,14 +110,15 @@ namespace Groover.AvaloniaUI.Services
             {
                 var jsonRequest = JsonConvert.SerializeObject(trackMessageRequest);
                 var messageDataContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+                messageDataContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("multipart/form-data");
                 multipartContent.Add(messageDataContent, "messageData");
 
                 var fileContent = new StreamContent(File.OpenRead(pathToFile));
-                if (!_mimeContentTypeProvider.TryGetContentType(Path.GetFileName(pathToFile), out string contentType))
-                {
-                    contentType = "application/octet-stream";
-                }
-                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+                //if (!_mimeContentTypeProvider.TryGetContentType(Path.GetFileName(pathToFile), out string contentType))
+                //{
+                //    contentType = "application/octet-stream";
+                //}
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("multipart/form-data");
                 multipartContent.Add(fileContent, "trackFile");
 
                 return await this.SendRequestAsync<BaseResponse>(multipartContent, HttpMethod.Post, _controller, "sendTrackMessage");

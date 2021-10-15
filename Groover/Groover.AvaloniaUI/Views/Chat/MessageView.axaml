@@ -18,15 +18,16 @@
   <Grid Margin="3" ColumnDefinitions="Auto" RowDefinitions="Auto,Auto,Auto">
     <TextBlock Grid.Row="0" Grid.Column="0" Margin="1,0,0,0"
                HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
+               IsVisible="{Binding !SentByLoggedInUser}"
                Foreground="{Binding Role, Converter={StaticResource foregroundByRoleConverter}, 
                FallbackValue={DynamicResource ThemeControlHighlightLowBrush}}"
-               Text="{Binding User.Username}">UserName</TextBlock>
+               Text="{Binding User.Username}"
+               ToolTip.Tip="{Binding FullCreatedAtDisplay}"
+               ToolTip.ShowDelay="1000"
+               ToolTip.Placement="Pointer">UserName</TextBlock>
     <styles:Card Grid.Row="1" Grid.Column="0" Padding="4,2,4,2" 
                  HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
-                 Background="{DynamicResource ThemeControlHighBrush}"
-                 ToolTip.Tip="{Binding FullCreatedAtDisplay}"
-                 ToolTip.ShowDelay="1000"
-                 ToolTip.Placement="Pointer">
+                 Background="{DynamicResource ThemeControlLowBrush}">
       <StackPanel MaxWidth="250">
         <TextBlock
           IsVisible="{Binding HasText}"
