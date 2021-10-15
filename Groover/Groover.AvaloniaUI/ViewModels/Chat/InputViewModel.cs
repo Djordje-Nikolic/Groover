@@ -25,7 +25,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         private Func<ImageMessageRequest, Task<BaseResponse>> _sendImgMsgDelegate;
         private Func<TrackMessageRequest, string, Task<BaseResponse>> _sendTrackMsgDelegate;
         private Interaction<ChooseImageDialogViewModel, string?> _chooseImageInteraction;
-        private Interaction<ChooseTrackDialogViewModel, string?> _chooseTrackInteraction;
+        private Interaction<ChooseTrackDialogViewModel, ChooseTrackResult?> _chooseTrackInteraction;
         private ImageConfiguration _imageConfig;
         private TrackConfiguration _trackConfig;
 
@@ -54,7 +54,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             Func<ImageMessageRequest, Task<BaseResponse>> imgMsgDelegate,
             Func<TrackMessageRequest, string, Task<BaseResponse>> trackMsgDelegate,
             Interaction<ChooseImageDialogViewModel, string?> chooseImageInteraction,
-            Interaction<ChooseTrackDialogViewModel, string?> chooseTrackInteraction)
+            Interaction<ChooseTrackDialogViewModel, ChooseTrackResult?> chooseTrackInteraction)
         {
             _sendTxtMsgDelegate = txtMsgDelegate;
             _sendImgMsgDelegate = imgMsgDelegate;
@@ -117,10 +117,11 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         private async Task ChooseTrack()
         {
             var viewModel = new ChooseTrackDialogViewModel(_trackConfig);
-            string? trackFilePath = await _chooseTrackInteraction.Handle(viewModel);
-            if (!string.IsNullOrWhiteSpace(trackFilePath))
+            ChooseTrackResult? trackResult = await _chooseTrackInteraction.Handle(viewModel);
+            if (trackResult != null)
             {
-                TrackFilePath = trackFilePath;
+                TrackFilePath = trackResult.Value.FilePath;
+                TrackName = trackResult.Value.FileName;
             }
         }
 

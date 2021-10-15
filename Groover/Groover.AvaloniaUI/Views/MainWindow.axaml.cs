@@ -230,12 +230,12 @@ namespace Groover.AvaloniaUI.Views
             interaction.SetOutput(result);
         }
 
-        private async Task DoShowChooseTrackDialogAsync(InteractionContext<ChooseTrackDialogViewModel, string?> interaction)
+        private async Task DoShowChooseTrackDialogAsync(InteractionContext<ChooseTrackDialogViewModel, ChooseTrackResult?> interaction)
         {
             var dialog = new ChooseTrackDialogView();
             dialog.DataContext = interaction.Input;
 
-            var result = await dialog.ShowDialog<string?>(this);
+            var result = await dialog.ShowDialog<ChooseTrackResult?>(this);
             interaction.SetOutput(result);
         }
 

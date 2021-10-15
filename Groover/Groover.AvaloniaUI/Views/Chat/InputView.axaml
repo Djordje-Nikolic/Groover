@@ -19,26 +19,29 @@
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
              IsVisible="{Binding TrackFilePath, Converter={x:Static ObjectConverters.IsNull}}" 
              Text="{Binding TextContent}"></TextBox>
-      <Canvas Name="imagePanel" DockPanel.Dock="Top"
-              Height="{Binding #imageControl.Height}" Width="{Binding #imageControl.Width}"
-              ClipToBounds="True">
-        <Canvas.IsVisible>
+      <Border Name="imagePanel" DockPanel.Dock="Top" Margin="6,0,5,5" Padding="2"
+              CornerRadius="5" Background="{StaticResource ThemeControlHighBrush}">
+        <Border.IsVisible>
           <MultiBinding Converter="{x:Static BoolConverters.And}">
             <Binding Path="Image" Converter="{x:Static ObjectConverters.IsNotNull}"></Binding>
             <Binding Path="TrackFilePath" Converter="{x:Static ObjectConverters.IsNull}"></Binding>
           </MultiBinding>
-        </Canvas.IsVisible>
-        <Image Name="imageControl" Canvas.Top="0" Canvas.Left="0" 
-               Source="{Binding Image}" Width="{Binding #textControl.Width}" Stretch="Uniform">
-        </Image>
-        <Button Canvas.Top="20" Canvas.Right="20" Classes="Flat"
-                Height="35" Width="35" assist:ButtonAssist.CornerRadius="35"
-                Command="{Binding ClearImageCommand}" IsVisible="{Binding #imagePanel.IsVisible}">
-          <icons:MaterialIcon Kind="CloseCircle" Height="25" Width="25"></icons:MaterialIcon>
-        </Button>
-      </Canvas>
+        </Border.IsVisible>
+        <Grid VerticalAlignment="Stretch" MaxHeight="300"
+              ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+          <Image Name="imageControl" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"
+                 Source="{Binding Image}" Stretch="Uniform" MaxHeight="300" HorizontalAlignment="Center">
+          </Image>
+          <Button Grid.Row="0" Grid.Column="1" Classes="Flat" VerticalAlignment="Top"
+                  Height="35" Width="35" assist:ButtonAssist.CornerRadius="35" Margin="0,0,-2,0"
+                  Command="{Binding ClearImageCommand}"
+                  Foreground="{StaticResource ThemeForegroundBrush}">
+            <icons:MaterialIcon Kind="CloseCircle" Height="25" Width="25"></icons:MaterialIcon>
+          </Button>
+        </Grid>
+      </Border>
       <Border CornerRadius="5" Background="{StaticResource ThemeControlHighBrush}" Margin="6,7,5,5"
-              VerticalAlignment="Stretch" DockPanel.Dock="Top" IsVisible="False">
+              VerticalAlignment="Stretch" DockPanel.Dock="Top">
         <Border.IsVisible>
           <MultiBinding Converter="{x:Static BoolConverters.And}">
             <Binding Path="Image" Converter="{x:Static ObjectConverters.IsNull}"></Binding>

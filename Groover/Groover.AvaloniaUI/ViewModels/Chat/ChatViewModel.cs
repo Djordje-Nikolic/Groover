@@ -41,12 +41,14 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public UserGroupViewModel UserGroup { get; set; }
         public InputViewModel InputViewModel { get; set; }
 
+        public ReactiveCommand<Unit, Unit> InitializeCommand { get; }
+
         public ChatViewModel(UserViewModel loggedInUser,
             UserGroupViewModel userGroup,
             IGroupChatService groupChatService,
             IChatHubService chatHubService,
             Interaction<ChooseImageDialogViewModel, string?> chooseImageInteraction,
-            Interaction<ChooseTrackDialogViewModel, string?> chooseTrackInteraction,
+            Interaction<ChooseTrackDialogViewModel, ChooseTrackResult?> chooseTrackInteraction,
             bool prioritiseSendingThroughHub = false)
         {
             _groupChatService = groupChatService;
@@ -76,9 +78,11 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             InputViewModel = new InputViewModel(SendMessage, SendMessage, SendMessage, 
                 chooseImageInteraction, 
                 chooseTrackInteraction);
+
+            InitializeCommand = ReactiveCommand.CreateFromTask(Initialize);
         }
 
-        public async Task Initialize()
+        private async Task Initialize()
         {
             if (_initialized)
                 return;

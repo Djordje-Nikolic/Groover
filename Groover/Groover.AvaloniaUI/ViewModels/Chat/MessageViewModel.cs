@@ -94,12 +94,12 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 .ToPropertyEx(this, mVm => mVm.HasText, initialValue: false);
 
             this.WhenAnyValue(mVm => mVm.CreatedAt)
-                .Select(dt => dt.ToString(dateTimeDisplayFormat))
-                .ToPropertyEx(this, mVm => mVm.CreatedAtDisplay);
-
-            this.WhenAnyValue(mVm => mVm.CreatedAt)
                 .Select(dt => dt.ToString(DefaultFullDateTimeDisplayFormat))
                 .ToPropertyEx(this, mVm => mVm.FullCreatedAtDisplay);
+
+            this.WhenAnyValue(mVm => mVm.CreatedAt)
+                .Select(dt => dt.ToString(dateTimeDisplayFormat))
+                .ToPropertyEx(this, mVm => mVm.CreatedAtDisplay);
 
             //Init user and role data
             this.WhenAnyValue(mVm => mVm.GroupUser.User)

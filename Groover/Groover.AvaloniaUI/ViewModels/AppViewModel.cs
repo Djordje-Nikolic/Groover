@@ -40,7 +40,7 @@ namespace Groover.AvaloniaUI.ViewModels
         public Interaction<EditUserDialogViewModel, UserResponse?> ShowUserEditDialog { get; set; }
         public Interaction<ChooseUserDialogViewModel, int?> ShowUserSearchDialog { get; set; }
         public Interaction<ChooseImageDialogViewModel, string?> ShowChooseImageDialog { get; set; }
-        public Interaction<ChooseTrackDialogViewModel, string?> ShowChooseTrackDialog { get; set; }
+        public Interaction<ChooseTrackDialogViewModel, ChooseTrackResult?> ShowChooseTrackDialog { get; set; }
 
         [Reactive]
         public Interaction<NotificationViewModel, NotificationViewModel?> ShowNotificationDialog { get; set; } 
@@ -437,7 +437,7 @@ namespace Groover.AvaloniaUI.ViewModels
             var cvm = this.ChatViewModels.FirstOrDefault(vm => vm.UserGroup.Group == selectedUg.Group);
 
             if (cvm != null)
-                await cvm.Initialize();
+                cvm.InitializeCommand.Execute().Subscribe();
 
             ActiveChatViewModel = cvm;
         }

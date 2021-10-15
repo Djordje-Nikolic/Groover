@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Groover.AvaloniaUI.ViewModels.Chat;
 using ReactiveUI;
+using System.Reactive.Disposables;
 
 namespace Groover.AvaloniaUI.Views.Chat
 {
@@ -21,11 +22,13 @@ namespace Groover.AvaloniaUI.Views.Chat
             {
                 this.OneWayBind(ViewModel,
                     vm => vm.Track,
-                    view => view._trackView.DataContext);
+                    view => view._trackView.DataContext)
+                .DisposeWith(disposables);
 
                 this.OneWayBind(ViewModel,
                     vm => vm.HasTrack,
-                    view => view._trackView.IsVisible);
+                    view => view._trackView.IsVisible)
+                .DisposeWith(disposables);
             });
         }
 
