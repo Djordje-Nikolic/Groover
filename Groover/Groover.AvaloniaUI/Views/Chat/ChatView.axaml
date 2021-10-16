@@ -32,8 +32,14 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <views:MessageView DataContext="{Binding}" HorizontalAlignment="{Binding SentByLoggedInUser, Converter={StaticResource messageAlignmentConverter}}">
-                </views:MessageView>
+                <StackPanel Orientation="Vertical" Margin="0"
+                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch"> <!--Maybe remove this stackpanel-->
+                  <TextBlock IsVisible="{Binding StartOfTimeSpanGroup}"
+                             HorizontalAlignment="Center" Text="{Binding FullCreatedAtDisplay}"
+                             Foreground="{StaticResource ThemeControlLowBrush}"></TextBlock>
+                  <views:MessageView DataContext="{Binding}" HorizontalAlignment="{Binding SentByLoggedInUser, Converter={StaticResource messageAlignmentConverter}}">
+                  </views:MessageView>
+                </StackPanel>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>

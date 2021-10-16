@@ -15,6 +15,7 @@
   <UserControl.Resources>
     <utils:TimeSpanConverter x:Key="timeSpanConverter"></utils:TimeSpanConverter>
     <sys:Boolean x:Key="TrueBool">True</sys:Boolean>
+    <sys:Boolean x:Key="FalseBool">False</sys:Boolean>
   </UserControl.Resources>
   <StackPanel Width="250" Margin="0,0,5,0" IsVisible="{Binding #Root.IsVisible}">
     <TextBlock Text="{Binding Name}" TextWrapping="Wrap" TextAlignment="Center"
@@ -24,7 +25,7 @@
                TextWrapping="Wrap" TextAlignment="Center" Text="{Binding AllErrors}"></TextBlock>
     <StackPanel Orientation="Horizontal">
       <Slider Margin="12,-3,15,0" Width="150"
-        Classes="Modern"
+        Classes="Modern" Foreground="{StaticResource ThemeForegroundBrush}"
         Minimum="0" Maximum="{Binding TotalDurationMs, Mode=OneWay}"
         Value="{Binding ElapsedMiliseconds, Mode=TwoWay}"> 
       </Slider>
@@ -34,39 +35,68 @@
     </StackPanel>
     <DockPanel Width="250" LastChildFill="False" Margin="0,3,0,3">
       <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding PlayCommand}"
-              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25" Foreground="{StaticResource ThemeForegroundBrush}">
         <icons:MaterialIcon Kind="Play" Margin="0"
                             Width="25" Height="25"></icons:MaterialIcon>
       </Button>
       <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding PauseCommand}"
-              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25" Foreground="{StaticResource ThemeForegroundBrush}">
         <icons:MaterialIcon Kind="Pause" Width="25" Height="25"></icons:MaterialIcon>
       </Button>
-      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding StopCommand}"
-              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding StopCommand}" 
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25" Foreground="{StaticResource ThemeForegroundBrush}">
         <icons:MaterialIcon Kind="Stop" Width="25" Height="25"></icons:MaterialIcon>
       </Button>
       <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" ToolTip.Tip="Unmute"
               IsVisible="{Binding Muted}" Command="{Binding ToggleMuteCommand}"
-              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25" Foreground="{StaticResource ThemeForegroundBrush}">
         <icons:MaterialIcon Kind="VolumeMute" Width="25" Height="25"></icons:MaterialIcon>
       </Button>
       <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" ToolTip.Tip="Mute"
               IsVisible="{Binding !Muted}" Command="{Binding ToggleMuteCommand}"
-              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
+              Width="25" Height="25" assist:ButtonAssist.CornerRadius="25" Foreground="{StaticResource ThemeForegroundBrush}">
         <icons:MaterialIcon Kind="VolumeMedium" Width="25" Height="25"></icons:MaterialIcon>
       </Button>
-      <Button DockPanel.Dock="Right" Classes="Outline" Padding="3,0,3,0" 
+      <Button DockPanel.Dock="Right" Classes="Outline Accent" Padding="3,0,3,0" 
               IsVisible="{Binding !Loaded}" Height="20" Margin="2"
               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
               Command="{Binding LoadOrResetCommand}" CommandParameter="{StaticResource TrueBool}">
         <TextBlock FontSize="13">Load track</TextBlock>
       </Button>
       <Slider DockPanel.Dock="Right" Width="60" ToolTip.ShowDelay="2000" ToolTip.Tip="Volume"
-              Classes="Modern Accent" Margin="7,0,7,0"
+              Classes="Modern" Margin="7,0,7,0"
               IsVisible="{Binding Loaded}" Minimum="0" Maximum="100"
               Value="{Binding CurrentVolume, Mode=TwoWay}">
       </Slider>
     </DockPanel>
   </StackPanel>
+  <UserControl.ContextMenu>
+    <ContextMenu>
+      <ContextMenu.Template>
+        <ControlTemplate TargetType="ContextMenu">
+          <styles:Card Padding="-4,-2,-4,-2" Margin="0">
+            <StackPanel>
+              <StackPanel.Styles>
+                <Style Selector="Button">
+                  <Setter Property="Padding" Value="2,2,2,2"></Setter>
+                  <Setter Property="Margin" Value="0,2,0,2"></Setter>
+                  <Setter Property="assist:ButtonAssist.CornerRadius" Value="2"></Setter>
+                </Style>
+                <Style Selector="Button > TextBlock">
+                  <Setter Property="FontSize" Value="13"></Setter>
+                  <Setter Property="FontWeight" Value="Normal"></Setter>
+                  <Setter Property="Foreground" Value="{StaticResource ThemeBackgroundBrush}"></Setter>
+                </Style>
+              </StackPanel.Styles>
+              <Button   Classes="Flat"
+                        Command="{Binding DataContext.LoadOrResetCommand, ElementName=Root}"
+                        CommandParameter="{StaticResource FalseBool}">
+                <TextBlock>Unload track</TextBlock>
+              </Button>
+            </StackPanel>
+          </styles:Card>
+        </ControlTemplate>
+      </ContextMenu.Template>
+    </ContextMenu>
+  </UserControl.ContextMenu>
 </UserControl>

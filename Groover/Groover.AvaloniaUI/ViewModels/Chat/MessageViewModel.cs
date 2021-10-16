@@ -25,9 +25,24 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public const string DefaultDateTimeDisplayFormat = "HH:mm";
         public const string DefaultFullDateTimeDisplayFormat = "dddd, dd MMMM yyyy HH:mm:ss";
 
+        public const int MinutesBetweenGroupedMessages = 15;
+        private static TimeSpan _timeSpanBetweenGroupedMessages = TimeSpan.FromMinutes(MinutesBetweenGroupedMessages);
+        public static TimeSpan TimeSpanBetweenGroupedMessages => _timeSpanBetweenGroupedMessages;
+
         private readonly Func<string, Task<TrackResponse>> _trackLoadDelegate;
         private readonly IVLCWrapper _vlcWrapper;
         private bool disposedValue;
+
+        /// <summary>
+        /// Indicates whether this message is the first in a list of messages sent around the same time.
+        /// </summary>
+        [Reactive]
+        public bool StartOfTimeSpanGroup { get; set; }
+        /// <summary>
+        /// Indicates whether this message is the first in a list of messages sent by the same user.
+        /// </summary>
+        [Reactive]
+        public bool StartOfUserGroup { get; set; }
 
         public string Id { get; private set; }
         public DateTime CreatedAt { get; private set; }
@@ -135,6 +150,21 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 .ToPropertyEx(this, mVm => mVm.Image);
 
             Initialize(message, groupUser, sentByLoggedInUser);
+        }
+
+        public static void SetGroupFlags(MessageViewModel previousViewModel, MessageViewModel currentViewModel)
+        {
+            TimeSpan diffTimeSpan = currentViewModel.CreatedAt - previousViewModel.CreatedAt;
+
+            currentViewModel.StartOfTimeSpanGroup = diffTimeSpan > MessageViewModel.TimeSpanBetweenGroupedMessages;
+            currentViewModel.StartOfUserGroup = previousViewModel.User.Id != currentViewModel.User.Id ||
+                                                currentViewModel.StartOfTimeSpanGroup;
+        }
+
+        public static void SetGroupFlags(MessageViewModel currentViewModel)
+        {
+            currentViewModel.StartOfTimeSpanGroup = true;
+            currentViewModel.StartOfUserGroup = true;
         }
 
         private void Initialize(Message message,

@@ -141,10 +141,9 @@
       </Border>
     </Panel>
     <Carousel Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" MinWidth="200"
-                Items="{Binding ChatViewModels}"
+                Items="{Binding ChatViewModels}" IsVirtualized="True"
                 SelectedItem="{Binding ActiveChatViewModel, Mode=OneWay}"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                 IsVisible="{Binding ActiveChatViewModel, Converter={x:Static ObjectConverters.IsNotNull}}">
       <Carousel.ItemTemplate>
         <DataTemplate>

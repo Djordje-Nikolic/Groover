@@ -36,6 +36,7 @@ namespace Groover.AvaloniaUI.Services
             {
                 //stream.Seek(0, SeekOrigin.Begin);
                 await stream.CopyToAsync(fs);
+                await stream.FlushAsync();
             }
 
             return fullFilePath;
