@@ -32,6 +32,7 @@ namespace Groover.API.Controllers
     public class GroupChatController : ControllerBase
     {
         private const string ExpectedDateTimeFormat = "d/MM/yyyy HH:mm:ss";
+        private const long MaxTrackRequestLength = 105057600;
         private readonly IGroupChatService _groupChatService;
         private readonly INotificationService _notificationService;
         private readonly IAuthorizationService _authorizationService;
@@ -269,8 +270,9 @@ namespace Groover.API.Controllers
 
         //Member
         [HttpPost("sendTrackMessage")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> SendTrackMessage([FromForm]IFormFile trackFile, [FromForm]TrackMessageRequest messageData)
+        [RequestSizeLimit(MaxTrackRequestLength)]
+        //[Consumes("multipart/form-data")]
+        public async Task<IActionResult> SendTrackMessage([FromForm]IFormFile trackFile, [ModelBinder(BinderType = typeof(JsonModelBinder))] TrackMessageRequest messageData)
         {
             var userId = GetUserId();
             if (userId == null)

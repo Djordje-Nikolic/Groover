@@ -19,8 +19,7 @@ namespace Groover.BL.Models.Chat.DTOs
         [Required(AllowEmptyStrings = false)]
         public string TrackName { get; set; }
 
-        [Required(AllowEmptyStrings = false)]
-        public string TrackFormat { get; set; }
+        public string TrackExtension { get; set; }
 
         public short TrackDuration { get; set; }
     }
