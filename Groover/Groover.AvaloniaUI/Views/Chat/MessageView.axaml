@@ -18,7 +18,7 @@
   <Grid Margin="3" ColumnDefinitions="Auto" RowDefinitions="Auto,Auto,Auto">
     <TextBlock Grid.Row="0" Grid.Column="0" Margin="1,0,0,0"
                HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
-               IsVisible="{Binding !SentByLoggedInUser}"
+               IsVisible="{Binding StartOfUserGroup}"
                Foreground="{Binding Role, Converter={StaticResource foregroundByRoleConverter}, 
                FallbackValue={DynamicResource ThemeControlHighlightLowBrush}}"
                Text="{Binding User.Username}"
