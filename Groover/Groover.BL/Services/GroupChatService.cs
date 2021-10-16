@@ -144,6 +144,7 @@ namespace Groover.BL.Services
 
             Track track = await _trackProcessor.ProcessTrackAsync(trackFile);
             track.Name = trackMessageDTO.TrackName.Normalize();
+            track.GroupId = trackMessageDTO.GroupId;
 
             try
             {
@@ -182,7 +183,7 @@ namespace Groover.BL.Services
             {
                 _logger.LogInformation($"Attempting to fetch a track from a group. Track UUID: {trackUuId} Group ID: {groupId}");
 
-                Track track = await _trackRepository.GetAsync(trackUuId);
+                Track track = await _trackRepository.GetAsync(groupId, trackUuId);
                 if (track == null)
                     throw new NotFoundException("Track with that id does not exist.", "not_found");
 
@@ -217,7 +218,7 @@ namespace Groover.BL.Services
             {
                 _logger.LogInformation($"Attempting to fetch a loaded track from a group. Track UUID: {trackUuId} Group ID: {groupId}");
 
-                Track track = await _trackRepository.GetAsync(trackUuId);
+                Track track = await _trackRepository.GetAsync(groupId, trackUuId);
                 if (track == null)
                     throw new NotFoundException("Track with that id does not exist.", "not_found");
 

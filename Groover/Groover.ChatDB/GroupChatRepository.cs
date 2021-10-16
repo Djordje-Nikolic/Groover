@@ -167,7 +167,7 @@ namespace Groover.ChatDB
                 throw new ArgumentException("Message is not a Track message.", nameof(message));
 
             TimeUuid trackId = message.TrackId ?? throw new ArgumentException("TrackId is undefined for this message.", nameof(message));
-            Track track = await TrackRepository.GetAsync(trackId);
+            Track track = await TrackRepository.GetAsync(message.GroupId, trackId);
 
             if (track == null)
                 throw new InvalidOperationException("There is no corresponding Track for this TrackId.");

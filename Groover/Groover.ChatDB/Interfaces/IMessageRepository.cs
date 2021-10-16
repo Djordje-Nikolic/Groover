@@ -14,11 +14,11 @@ namespace Groover.ChatDB.Interfaces
         Task DeleteAsync(TimeUuid messageId);
         Task DeleteAsync(Message message);
         Task<Message> UpdateAsync(Message message);
-        Task<Message> GetAsync(TimeUuid messageId);
+        Task<Message> GetAsync(int groupId, string messageId);
+        Task<Message> GetAsync(int groupId, TimeUuid messageId);
         Task<ICollection<Message>> GetByGroupAsync(int groupId);
         Task<ICollection<Message>> GetByGroupAsync(int groupId, PageParams pageParams);
         Task<ICollection<Message>> GetAfterAsync(int groupId, DateTime afterDateTime);
         Task<ICollection<Message>> GetAfterAsync(int groupId, DateTime afterDateTime, PageParams pageParams);
-        Task<Message> GetAsync(string messageId);
     }
 }

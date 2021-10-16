@@ -81,26 +81,27 @@ namespace Groover.ChatDB
             await _mapper.DeleteAsync<Track>(track);
         }
 
-        public async Task<Track> GetAsync(string trackId)
+        public async Task<Track> GetAsync(int groupId, string trackId)
         {
             if (string.IsNullOrWhiteSpace(trackId))
                 throw new ArgumentNullException(nameof(trackId));
 
+            TimeUuid messageTimeUuid;
             try
             {
-                TimeUuid messageTimeUuid = TimeUuid.Parse(trackId);
-
-                return await GetAsync(messageTimeUuid);
+                messageTimeUuid = TimeUuid.Parse(trackId);
             }
             catch (Exception e)
             {
                 throw new ArgumentException("Argument is not a valid TimeUuid format.", nameof(trackId), e);
             }
+
+            return await GetAsync(groupId, messageTimeUuid);
         }
 
-        public async Task<Track> GetAsync(TimeUuid trackId)
+        public async Task<Track> GetAsync(int groupId, TimeUuid trackId)
         {
-            return await _mapper.SingleOrDefaultAsync<Track>("WHERE trackId = ?", trackId);
+            return await _mapper.SingleOrDefaultAsync<Track>("WHERE groupId = ? AND trackId = ?", groupId, trackId);
         }
 
         public async Task<ICollection<Track>> GetByGroupAsync(int groupId)
@@ -148,7 +149,7 @@ namespace Groover.ChatDB
             ValidateMetadata(track);
 
             await _mapper.UpdateAsync<Track>(track);
-            return await GetAsync(track.Id);
+            return await GetAsync(track.GroupId, track.Id);
         }
 
         public async Task<bool> LoadAsync(Track track, bool checkHash = false)

@@ -194,7 +194,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private TrackViewModel? GetInitialTrackViewModel()
         {
-            if (Type == MessageType.Track)
+            if (Type != MessageType.Track)
                 return null;
 
             try
