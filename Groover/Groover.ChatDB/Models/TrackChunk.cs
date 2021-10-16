@@ -13,13 +13,13 @@ namespace Groover.ChatDB.Models
     {
         [Column("trackId")]
         [PartitionKey]
-        internal TimeUuid TrackId { get; set; }
+        public TimeUuid TrackId { get; set; }
 
         [Column("chunkOrder")]
         [ClusteringKey(ClusteringSortOrder = Cassandra.Mapping.SortOrder.Ascending)]
-        internal int ChunkOrder { get; set; }
+        public int ChunkOrder { get; set; }
 
         [Column("chunk")]
-        internal byte[] Chunk { get; set; }
+        public byte[] Chunk { get; set; }
     }
 }
