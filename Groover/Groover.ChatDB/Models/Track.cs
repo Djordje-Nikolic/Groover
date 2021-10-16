@@ -41,7 +41,7 @@ namespace Groover.ChatDB.Models
         public string Hash { get; set; }
 
         [Column("chunkCount")]
-        internal int ChunkCount { get; set; }
+        public int ChunkCount { get; set; }
 
         [Ignore]
         public byte[] TrackBytes { get; set; }

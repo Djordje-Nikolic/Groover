@@ -52,26 +52,28 @@ namespace Groover.ChatDB
             await _mapper.DeleteAsync<Message>(message);
         }
 
-        public async Task<Message> GetAsync(string messageId)
+        public async Task<Message> GetAsync(int groupId, string messageId)
         {
             if (string.IsNullOrWhiteSpace(messageId))
                 throw new ArgumentNullException(nameof(messageId));
 
+            TimeUuid messageTimeUuid;
+
             try
             {
-                TimeUuid messageTimeUuid = TimeUuid.Parse(messageId);
-
-                return await GetAsync(messageTimeUuid);
+                messageTimeUuid = TimeUuid.Parse(messageId);
             }
             catch (Exception e)
             {
                 throw new ArgumentException("Argument is not a valid TimeUuid format.", nameof(messageId), e);
             }
+
+            return await GetAsync(groupId, messageTimeUuid);
         }
 
-        public async Task<Message> GetAsync(TimeUuid messageId)
+        public async Task<Message> GetAsync(int groupId, TimeUuid messageId)
         {
-            return await _mapper.SingleOrDefaultAsync<Message>("WHERE messageId = ?", messageId);
+            return await _mapper.SingleOrDefaultAsync<Message>("WHERE groupId = ? AND messageId = ?", groupId, messageId);
         }
 
         public async Task<ICollection<Message>> GetByGroupAsync(int groupId)
@@ -119,7 +121,7 @@ namespace Groover.ChatDB
             Validate(message);
 
             await _mapper.UpdateAsync<Message>(message);
-            return await GetAsync(message.Id);
+            return await GetAsync(message.GroupId, message.Id);
         }
 
         private void Validate(Message message)

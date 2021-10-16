@@ -6,6 +6,7 @@ using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
+using Groover.AvaloniaUI.Utils;
 using Groover.AvaloniaUI.ViewModels.Dialogs;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -31,7 +32,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         private bool _initialized;
         private bool _disposedValue;
         private bool _prioritiseHub;
-        private SourceCache<MessageViewModel, string> _messageCache;
+        private SourceCache<Message, string> _messageCache;
         private ReadOnlyObservableCollection<MessageViewModel> _sortedMessages;
         public ReadOnlyObservableCollection<MessageViewModel> SortedMessages => _sortedMessages;
 
@@ -58,14 +59,18 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             User = loggedInUser;
             UserGroup = userGroup;
 
-            _messageCache = new SourceCache<MessageViewModel, string>(msg => msg.Id);
+            _messageCache = new SourceCache<Message, string>(msg => msg.Id);
             _messageCache.Connect()
+                .TransformWithInlineUpdate(msg => GenerateMessageViewModel(msg), (prevMsg, newMsg) =>
+                {
+                    //Do update
+                })
                 .Sort(SortExpressionComparer<MessageViewModel>.Ascending(mVm => mVm.CreatedAt))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _sortedMessages)
                 .Subscribe();
 
-            _newMessageTimer = new DispatcherTimer(TimeSpan.FromMinutes(2),
+            _newMessageTimer = new DispatcherTimer(TimeSpan.FromMinutes(5),
                 DispatcherPriority.Background,
                 async (o, e) => await CheckForNewMessages());
 
@@ -94,9 +99,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         public void AddNewMessage(Message message)
         {
-            var messageViewModel = GenerateMessageViewModel(message);
-            if (messageViewModel != null)
-                _messageCache.AddOrUpdate(messageViewModel);
+            _messageCache.AddOrUpdate(message);
         }
 
         private async Task<BaseResponse> SendMessage(TextMessageRequest message)
@@ -184,17 +187,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private void AddMessages(ICollection<Message> messages)
         {
-            if (messages.Count > 0)
-            {
-                List<MessageViewModel> msgVms = new List<MessageViewModel>();
-                foreach (var msg in messages)
-                {
-                    var msgVm = GenerateMessageViewModel(msg);
-                    if (msgVm != null)
-                        msgVms.Add(msgVm);
-                }
-                _messageCache.AddOrUpdate(msgVms);
-            }
+            _messageCache.AddOrUpdate(messages);
         }
 
         private async Task<TrackResponse> LoadTrack(string trackId)
@@ -202,10 +195,10 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             return await _groupChatService.GetLoadedTrackAsync(UserGroup.Group.Id, trackId);
         }
 
-        private MessageViewModel? GenerateMessageViewModel(Message message)
+        private MessageViewModel GenerateMessageViewModel(Message message)
         {
             if (message.GroupId != UserGroup.Group.Id)
-                throw new ArgumentException("Message is not for this group.", nameof(message));
+                return null;
 
             GroupUserViewModel? sender = UserGroup.Group.SortedGroupUsers.FirstOrDefault(guVm => guVm.User.Id == message.SenderId);
             if (sender == null)
@@ -228,11 +221,9 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                     {
                         _newMessageTimer.Stop();
 
-                        var kvplist = _messageCache.KeyValues.ToList();
-                        foreach (var kvp in kvplist)
+                        foreach (var mVm in _sortedMessages)
                         {
-                            _messageCache.Remove(kvp.Value);
-                            kvp.Value.Dispose();
+                            mVm.Dispose();
                         }
                     }
                 }

@@ -31,10 +31,10 @@ namespace Groover.AvaloniaUI.Services
 
             if (File.Exists(fullFilePath))
                 File.Delete(fullFilePath);
-            
+
             using (FileStream fs = File.Create(fullFilePath))
             {
-                stream.Seek(0, SeekOrigin.Begin);
+                //stream.Seek(0, SeekOrigin.Begin);
                 await stream.CopyToAsync(fs);
             }
 
@@ -53,7 +53,11 @@ namespace Groover.AvaloniaUI.Services
 
         public string GenerateFilePath(string uniqueFilename, FileType fileType)
         {
-            return Path.Combine(_config.BaseCachePath, fileType.ToString().ToLower(), uniqueFilename);
+            string directoryPath = Path.Combine(_config.BaseCachePath, fileType.ToString().ToLower());
+
+            Directory.CreateDirectory(directoryPath);
+
+            return Path.Combine(directoryPath, uniqueFilename);
         }
     }
 }

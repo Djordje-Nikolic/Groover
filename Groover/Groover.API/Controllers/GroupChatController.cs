@@ -206,6 +206,9 @@ namespace Groover.API.Controllers
         [HttpPost("sendTextMessage")]
         public async Task<IActionResult> SendTextMessage(TextMessageRequest messageData)
         {
+            if (messageData == null)
+                throw new BadRequestException("Undefined message data.", "undefined");
+
             var userId = GetUserId();
             if (userId == null)
             {
@@ -239,6 +242,9 @@ namespace Groover.API.Controllers
         [HttpPost("sendImageMessage")]
         public async Task<IActionResult> SendImageMessage(ImageMessageRequest messageData)
         {
+            if ( messageData == null)
+                throw new BadRequestException("Undefined message data.", "undefined");
+
             var userId = GetUserId();
             if (userId == null)
             {
@@ -272,8 +278,11 @@ namespace Groover.API.Controllers
         [HttpPost("sendTrackMessage")]
         [RequestSizeLimit(MaxTrackRequestLength)]
         //[Consumes("multipart/form-data")]
-        public async Task<IActionResult> SendTrackMessage([FromForm]IFormFile trackFile, [ModelBinder(BinderType = typeof(JsonModelBinder))] TrackMessageRequest messageData)
+        public async Task<IActionResult> SendTrackMessage(IFormFile trackFile, [ModelBinder(BinderType = typeof(JsonModelBinder))] TrackMessageRequest messageData)
         {
+            if (trackFile == null || messageData == null)
+                throw new BadRequestException("Undefined form data.", "undefined");
+
             var userId = GetUserId();
             if (userId == null)
             {

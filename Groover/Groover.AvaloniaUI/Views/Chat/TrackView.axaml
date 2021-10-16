@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
              xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
              xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -13,6 +14,7 @@
              Name="Root">
   <UserControl.Resources>
     <utils:TimeSpanConverter x:Key="timeSpanConverter"></utils:TimeSpanConverter>
+    <sys:Boolean x:Key="TrueBool">True</sys:Boolean>
   </UserControl.Resources>
   <StackPanel Width="250" Margin="0,0,5,0" IsVisible="{Binding #Root.IsVisible}">
     <TextBlock Text="{Binding Name}" TextWrapping="Wrap" TextAlignment="Center"
@@ -54,10 +56,10 @@
               Width="25" Height="25" assist:ButtonAssist.CornerRadius="25">
         <icons:MaterialIcon Kind="VolumeMedium" Width="25" Height="25"></icons:MaterialIcon>
       </Button>
-      <Button DockPanel.Dock="Right" Classes="Outline" Padding="3,0,3,0" Margin="2"
-              IsVisible="{Binding !Loaded}" Command="{Binding LoadCommand}"
+      <Button DockPanel.Dock="Right" Classes="Outline" Padding="3,0,3,0" 
+              IsVisible="{Binding !Loaded}" Height="20" Margin="2"
               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-              Height="20">
+              Command="{Binding LoadOrResetCommand}" CommandParameter="{StaticResource TrueBool}">
         <TextBlock FontSize="13">Load track</TextBlock>
       </Button>
       <Slider DockPanel.Dock="Right" Width="60" ToolTip.ShowDelay="2000" ToolTip.Tip="Volume"

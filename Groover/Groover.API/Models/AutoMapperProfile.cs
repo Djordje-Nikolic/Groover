@@ -72,6 +72,7 @@ namespace Groover.API.Models
                     options.MapFrom(s => s.Image != null ? Convert.ToBase64String(s.Image) : null))
                 .ForMember(d => d.CreatedAt, options => 
                     options.MapFrom(s => s.CreatedAt.ToString(FullMessageResponse.DateTimeFormat, CultureInfo.InvariantCulture)));
+            CreateMap<TrackDTO, TrackResponse>();
 
             CreateMap(typeof(PagedDataDTO<>), typeof(PagedResponse<>));
             CreateMap<PageParamsDTO, PageParamsResponse>();

@@ -44,8 +44,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         public MediaPlayer MediaPlayer { get; private set; }
 
-        [Reactive]
-        public bool Loaded { get; private set; }
+        [ObservableAsProperty]
+        public bool Loaded { get; }
         public int CurrentVolume
         {
             get => _currentVolume;
@@ -71,7 +71,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public ReactiveCommand<Unit, Unit> StopCommand { get; }
         public ReactiveCommand<Unit, Unit> PauseCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleMuteCommand { get; }
-        public ReactiveCommand<Unit, bool> LoadCommand { get; }
+        public ReactiveCommand<bool, bool> LoadOrResetCommand { get; }
 
         private TrackViewModel(Func<string, Task<TrackResponse>> loadResponseDelegate, IVLCWrapper vlcWrapper)
         {
@@ -95,9 +95,14 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             PauseCommand = ReactiveCommand.Create(PauseTrack, isLoaded);
             ToggleMuteCommand = ReactiveCommand.Create(ToggleTrackMute, isLoaded);
 
-            var isNotLoaded = this.WhenAnyValue(tVm => tVm.Loaded, loaded => loaded == false);
-            LoadCommand = ReactiveCommand.CreateFromTask(Load, isNotLoaded);
-            LoadCommand.ToPropertyEx(this, tVm => tVm.Loaded);
+            LoadOrResetCommand = ReactiveCommand.CreateFromTask<bool,bool>(async (load) => 
+            {
+                if (load)
+                    return await Load();
+                else
+                    return Reset();
+            });
+            LoadOrResetCommand.ToPropertyEx(this, tVm => tVm.Loaded);
         }
 
         public TrackViewModel(string id, string name, short duration, Func<string, Task<TrackResponse>> loadResponseDelegate, IVLCWrapper vlcWrapper) : this(loadResponseDelegate, vlcWrapper)
@@ -266,7 +271,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             return null;
         }
 
-        private void Reset()
+        private bool Reset()
         {
             if (MediaPlayer != null)
                 MediaPlayer.Dispose();
@@ -277,7 +282,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             MediaPlayer = null;
             TrackMedia = null;
             _registeredHandlers = false;
-            Loaded = false;
+
+            return false;
         }
 
         private void SetTrackDuration(long miliseconds)
@@ -381,7 +387,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects)
-                    Reset();
+                    LoadOrResetCommand.Execute(false).Subscribe();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
