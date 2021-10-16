@@ -61,14 +61,50 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
             _messageCache = new SourceCache<Message, string>(msg => msg.Id);
             _messageCache.Connect()
-                .TransformWithInlineUpdate(msg => GenerateMessageViewModel(msg), (prevMsg, newMsg) =>
+                .TransformWithInlineUpdate(msg => GenerateMessageViewModel(msg), (prevViewModel, newMsg) =>
                 {
                     //Do update
                 })
                 .Sort(SortExpressionComparer<MessageViewModel>.Ascending(mVm => mVm.CreatedAt))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _sortedMessages)
+                .DisposeMany()
                 .Subscribe();
+
+            _sortedMessages.ToObservableChangeSet()
+                .WhereReasonsAre(ListChangeReason.Add, ListChangeReason.AddRange)
+                .DeferUntilLoaded()
+                .DisposeMany()
+                .Subscribe(chngSet =>
+                {
+                    foreach (var change in chngSet)
+                    {
+                        if (change.Type == ChangeType.Item)
+                        {
+                            var item = change.Item;
+                            var currentViewModel = item.Current;
+                            int currentIndex = item.CurrentIndex >= 0 ? item.CurrentIndex : _sortedMessages.IndexOf(currentViewModel); //FIGURE OUT HOW TO GET INDEXES TO LOAD
+                            int prevInd = currentIndex - 1;
+                            int nextInd = currentIndex + 1;
+
+                            var prevViewModel = _sortedMessages.ElementAtOrDefault(prevInd);
+                            var nextViewModel = _sortedMessages.ElementAtOrDefault(nextInd);
+                            SetGroupFlags(prevViewModel, currentViewModel, nextViewModel);
+                        }
+                        else if (change.Type == ChangeType.Range)
+                        {
+                            var items = change.Range;
+                            var currentViewModels = items.ToList();
+                            int currentIndex = items.Index >= 0 ? items.Index : _sortedMessages.IndexOf(currentViewModels[0]); //FIGURE OUT HOW TO GET INDEXES TO LOAD
+                            int prevInd = currentIndex - 1;
+                            int nextInd = currentIndex + items.Count;
+
+                            var prevViewModel = _sortedMessages.ElementAtOrDefault(prevInd);
+                            var nextViewModel = _sortedMessages.ElementAtOrDefault(nextInd);
+                            SetGroupFlags(prevViewModel, currentViewModels, nextViewModel);
+                        }
+                    }
+                });
 
             _newMessageTimer = new DispatcherTimer(TimeSpan.FromMinutes(5),
                 DispatcherPriority.Background,
@@ -209,6 +245,61 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             return messageViewModel;
         }
 
+        private void SetGroupFlags(
+                MessageViewModel? previousViewModel, 
+                MessageViewModel currentViewModel,
+                MessageViewModel? nextViewModel)
+        {
+            if (previousViewModel != null)
+            {
+                MessageViewModel.SetGroupFlags(previousViewModel, currentViewModel);
+            }
+            else
+            {
+                MessageViewModel.SetGroupFlags(currentViewModel);
+            }
+
+            if (nextViewModel != null)
+            {
+                MessageViewModel.SetGroupFlags(currentViewModel, nextViewModel);
+            }
+        }
+
+        private void SetGroupFlags(
+                MessageViewModel? previousViewModel,
+                IList<MessageViewModel> currentViewModels,
+                MessageViewModel? nextViewModel)
+        {
+            if (currentViewModels.Count == 0)
+                return;
+
+            if (currentViewModels.Count == 1)
+            {
+                SetGroupFlags(previousViewModel, currentViewModels[0], nextViewModel);
+                return;
+            }
+
+            SetGroupFlags(previousViewModel, currentViewModels[0], currentViewModels[1]);
+
+            int count = currentViewModels.Count;
+            for (int i = 1; i < count - 2; i += 2)
+            {
+                SetGroupFlags(currentViewModels[i], currentViewModels[i + 1], currentViewModels[i + 2]);
+            }
+
+            if (count % 2 == 0)
+            {
+                if (nextViewModel != null)
+                {
+                    SetGroupFlags(currentViewModels[count - 1], nextViewModel, null);
+                }
+            }
+            else
+            {
+                SetGroupFlags(currentViewModels[count - 2], currentViewModels[count - 1], nextViewModel);
+            }
+        }
+
         #region Dispose Pattern
         protected virtual void Dispose(bool disposing)
         {
@@ -248,35 +339,5 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             GC.SuppressFinalize(this);
         }
         #endregion
-
-        //internal void UpdateGroupData(GroupViewModel group)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //internal void UserLeft(GroupUserViewModel gu)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //internal void UserJoined(GroupUserViewModel gu)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //internal void UserRoleUpdated(int uId, string newRole)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //internal void UserUpdated(UserViewModel user)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //internal void UserGroupUpdated(UserGroupViewModel userGroup)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
 }
