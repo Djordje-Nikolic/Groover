@@ -14,7 +14,7 @@
                 VerticalAlignment="Stretch" MinHeight="30" Margin="0">
       <TextBox Name="textControl" DockPanel.Dock="Top"
              MaxHeight="150" MinHeight="20"  MinWidth="200"
-             AcceptsTab="True" AcceptsReturn="True" Classes="Filled"
+             AcceptsTab="True" Classes="Filled"
              TextWrapping="Wrap" Margin="6"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
              IsVisible="{Binding TrackFilePath, Converter={x:Static ObjectConverters.IsNull}}" 

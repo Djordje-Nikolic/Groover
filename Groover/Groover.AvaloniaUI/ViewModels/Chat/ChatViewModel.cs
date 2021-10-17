@@ -43,6 +43,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public InputViewModel InputViewModel { get; set; }
 
         public ReactiveCommand<Unit, Unit> InitializeCommand { get; }
+        public ReactiveCommand<Message, Unit> AddMessageCommand { get; }
 
         public ChatViewModel(UserViewModel loggedInUser,
             UserGroupViewModel userGroup,
@@ -58,6 +59,9 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             _vlcWrapper = DIContainer.GetRequiredService<IVLCWrapper>(Locator.Current);
             User = loggedInUser;
             UserGroup = userGroup;
+
+            InitializeCommand = ReactiveCommand.CreateFromTask(Initialize);
+            AddMessageCommand = ReactiveCommand.Create<Message>(AddNewMessage);
 
             _messageCache = new SourceCache<Message, string>(msg => msg.Id);
             _messageCache.Connect()
@@ -119,8 +123,6 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             InputViewModel = new InputViewModel(SendMessage, SendMessage, SendMessage, 
                 chooseImageInteraction, 
                 chooseTrackInteraction);
-
-            InitializeCommand = ReactiveCommand.CreateFromTask(Initialize);
         }
 
         private async Task Initialize()
@@ -133,7 +135,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             _initialized = true;
         }
 
-        public void AddNewMessage(Message message)
+        private void AddNewMessage(Message message)
         {
             _messageCache.AddOrUpdate(message);
         }

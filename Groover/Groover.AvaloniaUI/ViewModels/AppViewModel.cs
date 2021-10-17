@@ -164,7 +164,7 @@ namespace Groover.AvaloniaUI.ViewModels
             var cvm = ChatViewModels.FirstOrDefault(cvm => cvm.UserGroup.Group.Id == message.GroupId);
 
             if (cvm != null)
-                cvm.AddNewMessage(message);
+                cvm.AddMessageCommand.Execute(message).Subscribe();
         }
         private async Task OnGroupCreated(UserGroup userGroup)
         {

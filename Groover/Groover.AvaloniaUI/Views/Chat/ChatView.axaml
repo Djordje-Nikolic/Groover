@@ -35,7 +35,7 @@
                 <StackPanel Orientation="Vertical" Margin="0"
                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"> <!--Maybe remove this stackpanel-->
                   <TextBlock IsVisible="{Binding StartOfTimeSpanGroup}"
-                             HorizontalAlignment="Center" Text="{Binding FullCreatedAtDisplay}"
+                             HorizontalAlignment="Center" Text="{Binding CreatedAtDisplay}"
                              Foreground="{StaticResource ThemeControlLowBrush}"></TextBlock>
                   <views:MessageView DataContext="{Binding}" HorizontalAlignment="{Binding SentByLoggedInUser, Converter={StaticResource messageAlignmentConverter}}">
                   </views:MessageView>
