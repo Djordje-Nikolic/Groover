@@ -22,8 +22,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 {
     public class MessageViewModel : ViewModelBase, IDisposable
     {
-        public const string DefaultDateTimeDisplayFormat = "HH:mm";
-        public const string DefaultFullDateTimeDisplayFormat = "dddd, dd MMMM yyyy HH:mm:ss";
+        public const string TodayDateTimeDisplayFormat = "HH:mm";
+        public const string PastDateTimeDisplayFormat = "dddd, dd MMMM yyyy HH:mm:ss";
 
         public const int MinutesBetweenGroupedMessages = 15;
         private static TimeSpan _timeSpanBetweenGroupedMessages = TimeSpan.FromMinutes(MinutesBetweenGroupedMessages);
@@ -45,12 +45,12 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public bool StartOfUserGroup { get; set; }
 
         public string Id { get; private set; }
-        public DateTime CreatedAt { get; private set; }
         public bool SentByLoggedInUser { get; private set; }
 
         [Reactive]
         public GroupUserViewModel GroupUser { get; private set; }
-
+        [Reactive]
+        public DateTime CreatedAt { get; private set; }
         [Reactive]
         public MessageType Type { get; private set; }
         [ObservableAsProperty]
@@ -62,14 +62,12 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         [ObservableAsProperty]
         public string CreatedAtDisplay { get; }
-        [ObservableAsProperty]
-        public string FullCreatedAtDisplay { get; }
         [Reactive]
         public TrackViewModel? Track { get; private set; }
         [ObservableAsProperty]
-        public UserViewModel User { get; }
+        public UserViewModel User { get; set; }
         [ObservableAsProperty]
-        public GrooverGroupRole Role { get; }
+        public GrooverGroupRole Role { get; set; }
         [ObservableAsProperty]
         public Bitmap? Image { get; }
         [Reactive]
@@ -89,7 +87,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             bool sentByLoggedInUser,
             IVLCWrapper vlcWrapper,
             Func<string, Task<TrackResponse>> trackLoadDelegate,
-            string dateTimeDisplayFormat = DefaultDateTimeDisplayFormat)
+            string dateTimeDisplayFormat = TodayDateTimeDisplayFormat)
         {
             _trackLoadDelegate = trackLoadDelegate;
             _vlcWrapper = vlcWrapper;
@@ -109,19 +107,15 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 .ToPropertyEx(this, mVm => mVm.HasText, initialValue: false);
 
             this.WhenAnyValue(mVm => mVm.CreatedAt)
-                .Select(dt => dt.ToString(DefaultFullDateTimeDisplayFormat))
-                .ToPropertyEx(this, mVm => mVm.FullCreatedAtDisplay);
-
-            this.WhenAnyValue(mVm => mVm.CreatedAt)
-                .Select(dt => dt.ToString(dateTimeDisplayFormat))
+                .Select(dt => GenerateCreatedAtDisplay(dt))
                 .ToPropertyEx(this, mVm => mVm.CreatedAtDisplay);
 
             //Init user and role data
             this.WhenAnyValue(mVm => mVm.GroupUser.User)
-                .ToPropertyEx(this, mVm => mVm.User);
+                .ToPropertyEx(this, mVm => mVm.User, initialValue: groupUser.User);
 
             this.WhenAnyValue(mVm => mVm.GroupUser.GroupRole)
-                .ToPropertyEx(this, mVm => mVm.Role);
+                .ToPropertyEx(this, mVm => mVm.Role, initialValue: groupUser.GroupRole);
 
             //Init image data
             this.WhenAnyValue(mVm => mVm.ImageBytes)
@@ -195,6 +189,10 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 {
                     throw new ArgumentException("CreatedAt couldn't be parsed.", nameof(message));
                 }
+                else
+                {
+                    CreatedAt = dateTimeResult.ToLocalTime();
+                }
             }
             else
             {
@@ -205,8 +203,6 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 throw new ArgumentException("Invalid user passed as argument.");
 
             Content = message.Content;
-
-            //Idk if this will actually trigger stuff TEST, maybe manual assignment needed through OnUserRoleUpdated
             GroupUser = groupUser;
 
             ImageBytes = string.IsNullOrWhiteSpace(message.Image) ? null : Convert.FromBase64String(message.Image);
@@ -218,11 +214,11 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             //Init track data
             if (Type == MessageType.Track)
             {
-                Track = GetInitialTrackViewModel();
+                Track = GenerateTrackViewModel();
             }
         }
 
-        private TrackViewModel? GetInitialTrackViewModel()
+        private TrackViewModel? GenerateTrackViewModel()
         {
             if (Type != MessageType.Track)
                 return null;
@@ -237,6 +233,21 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             {
                 DisplayError = "Error loading the track.";
                 return null;
+            }
+        }
+
+        private string GenerateCreatedAtDisplay(DateTime dateTime)
+        {
+            DateTime currentTime = DateTime.Now;
+            TimeSpan timeDiff = currentTime - dateTime;
+
+            if (timeDiff.Days >= 1)
+            {
+                return dateTime.ToString(PastDateTimeDisplayFormat);
+            }
+            else
+            {
+                return dateTime.ToString(TodayDateTimeDisplayFormat);
             }
         }
 
