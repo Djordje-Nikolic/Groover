@@ -36,7 +36,10 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <ProgressBar Name="isRegister" Margin="0,0,0,7" Classes="Circle" Width="40" MinWidth="40" Height="40" MinHeight="40" HorizontalAlignment="Center" IsIndeterminate="True" />
+      <ProgressBar Name="isRegister" Margin="0,0,0,7" Classes="Circle" 
+                   Width="40" MinWidth="40" Height="40" MinHeight="40" 
+                   HorizontalAlignment="Center" 
+                   IsIndeterminate="{Binding #isRegister.IsVisible, Mode=OneWay}" />
       <TextBox UseFloatingWatermark="True"
          Classes="Outline Dense Body2"
          assist:TextFieldAssist.Label="Username"

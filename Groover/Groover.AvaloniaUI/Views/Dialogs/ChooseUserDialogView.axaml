@@ -47,9 +47,16 @@
               CommandParameter="{Binding CurrentUsername}"
               assist:ButtonAssist.CornerRadius="50">
         <Panel Height="50" Width="50">
-          <icons:MaterialIcon IsVisible="{Binding UsernameId, Converter={x:Static ObjectConverters.IsNull}}" Name="accountSearchIcon" Kind="AccountSearchOutline" Width="23" Height="23" Margin="2,0,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-          <icons:MaterialIcon IsVisible="{Binding !#accountSearchIcon.IsVisible}" Kind="CheckBold" Width="23" Height="23" Margin="2,0,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-          <ProgressBar Name="checkProgressBar" Margin="0,0,0,0" Classes="Circle" Width="50" MinWidth="50" Height="50" MinHeight="50" HorizontalAlignment="Center" IsIndeterminate="True" />
+          <icons:MaterialIcon IsVisible="{Binding UsernameId, Converter={x:Static ObjectConverters.IsNull}}" 
+                              Name="accountSearchIcon" Kind="AccountSearchOutline" Width="23" Height="23" 
+                              Margin="2,0,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+          <icons:MaterialIcon IsVisible="{Binding !#accountSearchIcon.IsVisible}" Kind="CheckBold" 
+                              Width="23" Height="23" Margin="2,0,0,1" 
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+          <ProgressBar Name="checkProgressBar" Margin="0,0,0,0" Classes="Circle" 
+                       Width="50" MinWidth="50" Height="50" MinHeight="50" 
+                       HorizontalAlignment="Center" 
+                       IsIndeterminate="{Binding #checkProgressBar.IsVisible, Mode=OneWay}" />
         </Panel>    
       </Button>
     </StackPanel>
