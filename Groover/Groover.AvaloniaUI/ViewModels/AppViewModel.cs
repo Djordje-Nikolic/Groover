@@ -449,8 +449,7 @@ namespace Groover.AvaloniaUI.ViewModels
 
             if (cvm != null)
             {
-                cvm.InitializeCommand.Execute()
-                    .InvokeCommand(cvm.ReadAllMessagesCommand);
+                cvm.InitializeCommand.Execute().Subscribe();
 
                 ActiveChatViewModel = cvm;
             }

@@ -44,6 +44,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public UserViewModel User { get; private set; }
         [Reactive]
         public UserGroupViewModel UserGroup { get; private set; }
+        [Reactive]
         public InputViewModel InputViewModel { get; private set; }
 
         public ReactiveCommand<Unit, Unit> InitializeCommand { get; }
@@ -71,6 +72,9 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             GetMoreMessagesCommand = ReactiveCommand.CreateFromTask(GetMoreMessages);
             ReadAllMessagesCommand = ReactiveCommand.Create(ReadMessages);
 
+            AddMessageCommand.IsExecuting.Subscribe(isExec => { if (isExec) HasNewMessages = true; });
+            InitializeCommand.InvokeCommand(ReadAllMessagesCommand);
+
             _messageCache = new SourceCache<Message, string>(msg => msg.Id);
             _messageCache.Connect()
                 .TransformWithInlineUpdate(msg => GenerateMessageViewModel(msg), (prevViewModel, newMsg) =>
@@ -87,7 +91,6 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             _sortedMessages.ToObservableChangeSet()
                 .WhereReasonsAre(ListChangeReason.Add, ListChangeReason.AddRange)
                 .DeferUntilLoaded()
-                .Do(_ => this.HasNewMessages = true)
                 .DisposeMany()
                 .Subscribe(chngSet =>
                 {
@@ -143,8 +146,6 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private async Task Initialize()
         {
-            HasNewMessages = false;
-
             if (_initialized)
                 return;
 

@@ -140,23 +140,35 @@
         </StackPanel>
       </Border>
     </Panel>
-    <Carousel Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" MinWidth="200"
-                Items="{Binding ChatViewModels}" IsVirtualized="True"
-                SelectedItem="{Binding ActiveChatViewModel, Mode=OneWay}"
-                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                IsVisible="{Binding ActiveChatViewModel, Converter={x:Static ObjectConverters.IsNotNull}}">
-      <Carousel.ItemTemplate>
+    <ItemsControl Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" MinWidth="200"
+                   Items="{Binding ChatViewModels}" Margin="0"
+                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                   IsVisible="{Binding ActiveChatViewModel, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <Panel Margin="0"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch">           
+          </Panel>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <Panel HorizontalAlignment="Stretch"
-                 VerticalAlignment="Stretch">
+          <Panel  HorizontalAlignment="Stretch" 
+                  VerticalAlignment="Stretch">
+            <Panel.IsVisible>
+              <MultiBinding Converter="{StaticResource areEqualIntegersConverter}" ConverterParameter="false">
+                <Binding Path="UserGroup.Group.Id" FallbackValue="-1" Mode="OneWay"></Binding>
+                <Binding Path="DataContext.ActiveGroup.Id" FallbackValue="-2" ElementName="Root" Mode="OneWay"></Binding>
+              </MultiBinding>
+            </Panel.IsVisible>
             <chatViews:ChatView DataContext="{Binding}"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch">
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             </chatViews:ChatView>
           </Panel>
         </DataTemplate>
-      </Carousel.ItemTemplate>  
-    </Carousel>
+      </ItemsControl.ItemTemplate>  
+    </ItemsControl>
     <StackPanel Grid.Row="0" Grid.Column="1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
