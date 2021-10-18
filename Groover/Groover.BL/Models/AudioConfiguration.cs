@@ -9,6 +9,7 @@ namespace Groover.BL.Models
     public class AudioConfiguration
     {
         public long MaxTrackSize { get; set; }
+        public string TracksDirectoryPath { get; set; }
 
         private string _allowedExtensions;
         public string AllowedExtensions 

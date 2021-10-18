@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Groover.ChatDB.Models
 {
-    [Table("tracksMetadata")]
+    [Table("tracks")]
     public class Track : BaseCassandraModel
     {
         [Column("trackId")]
@@ -37,14 +37,8 @@ namespace Groover.ChatDB.Models
         [Column("mimeType")]
         public string ContentType { get; set; }
 
-        [Column("hash")]
-        public string Hash { get; set; }
-
-        [Column("chunkCount")]
-        public int ChunkCount { get; set; }
-
-        [Ignore]
-        public byte[] TrackBytes { get; set; }
+        [Column("filepath")]
+        public string FileName { get; set; }
 
         public void SetId(string timeUuId)
         {

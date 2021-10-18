@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,10 +31,6 @@ namespace Groover.BL.Models.Chat.DTOs
         [Required(AllowEmptyStrings = false)]
         public string Extension { get; set; }
 
-        public string Hash { get; set; }
-
-        [MinLength(1)]
-        [Required]
-        public byte[] TrackBytes { get; set; }
+        public FileStream TrackStream { get; set; }
     }
 }

@@ -181,7 +181,7 @@ namespace Groover.BL.Services
 
             try
             {
-                _logger.LogInformation($"Attempting to fetch a track from a group. Track UUID: {trackUuId} Group ID: {groupId}");
+                _logger.LogInformation($"Attempting to fetch a loaded track from a group. Track UUID: {trackUuId} Group ID: {groupId}");
 
                 Track track = await _trackRepository.GetAsync(groupId, trackUuId);
                 if (track == null)
@@ -189,9 +189,13 @@ namespace Groover.BL.Services
 
                 TrackDTO trackDTO = _mapper.Map<TrackDTO>(track);
 
-                _logger.LogInformation($"Successfully fetched a track from a group. Track UUID: {trackDTO.Id} Group ID: {groupId}");
+                _logger.LogInformation($"Successfully fetched a loaded track from a group. Track UUID: {trackDTO.Id} Group ID: {groupId}");
 
                 return trackDTO;
+            }
+            catch (GrooverException)
+            {
+                throw;
             }
             catch (ArgumentException e)
             {
@@ -222,13 +226,16 @@ namespace Groover.BL.Services
                 if (track == null)
                     throw new NotFoundException("Track with that id does not exist.", "not_found");
 
-                await _trackRepository.LoadAsync(track, false);
-
                 TrackDTO trackDTO = _mapper.Map<TrackDTO>(track);
+                trackDTO.TrackStream = _trackProcessor.GetTrack(track.FileName);
 
                 _logger.LogInformation($"Successfully fetched a loaded track from a group. Track UUID: {trackDTO.Id} Group ID: {groupId}");
 
                 return trackDTO;
+            }
+            catch (GrooverException)
+            {
+                throw;
             }
             catch (ArgumentException e)
             {

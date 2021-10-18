@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Interfaces\ITrackSplitter.cs" />
+    <Compile Remove="Models\TrackChunk.cs" />
+    <Compile Remove="TrackSplitter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CassandraCSharpDriver" Version="3.16.3" />
   </ItemGroup>
 

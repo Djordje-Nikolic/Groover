@@ -38,7 +38,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         [Reactive]
         public string? TrackName { get; set; }
         [Reactive]
-        public string Error { get; set; }
+        public string? Error { get; set; }
         [ObservableAsProperty]
         public Bitmap? Image { get; }
         [ObservableAsProperty]
@@ -180,11 +180,55 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 ImageFilePath = null;
                 TrackFilePath = null;
                 TrackName = null;
+                Error = null;
             }
             else
             {
-                Error = "Couldn't successfully send the message.";
-                //Process all the different error types
+                if (response.ErrorCodes == null)
+                {
+                    Error = "There was an error while retrieving new messages.";
+                }
+                else
+                {
+                    List<string> errorCodes = new();
+
+                    foreach (var code in response.ErrorCodes.Distinct())
+                    {
+                        switch (code)
+                        {
+                            case "not_member":
+                                errorCodes.Add("User is not a member of the group.");
+                                break;
+                            case "not_found_group":
+                                errorCodes.Add("Group not found.");
+                                break;
+                            case "not_found_user":
+                                errorCodes.Add("Sender not found.");
+                                break;
+                            case "bad_message_format":
+                                errorCodes.Add("Message format is invalid.");
+                                break;
+                            case "bad_extension":
+                                errorCodes.Add("Track file extension is not supported.");
+                                break;
+                            case "bad_track_format":
+                                errorCodes.Add("Track file format is not supported.");
+                                break;
+                            case "undefined":
+                                errorCodes.Add("Bad message data or paging parameters.");
+                                break;
+                            case "bad_id":
+                                errorCodes.Add("Bad group id.");
+                                break;
+                            case "internal":
+                            default:
+                                errorCodes.Add("Unknown error occured.");
+                                break;
+                        }
+                    }
+
+                    Error = string.Join(Environment.NewLine, errorCodes);
+                }
             }
         }
 

@@ -19,6 +19,7 @@ using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
@@ -70,7 +71,7 @@ namespace Groover.API.Controllers
 
             _logger.LogInformation($"Successfully fetched track bytes: Group ID: {groupId} Track ID: {trackId}");
 
-            return File(trackDTO.TrackBytes, trackDTO.ContentType, $"{trackDTO.Name}.{trackDTO.Extension}");
+            return File(trackDTO.TrackStream, trackDTO.ContentType, $"{trackDTO.Name}.{trackDTO.Extension}");
         }
 
         //Member
@@ -159,7 +160,8 @@ namespace Groover.API.Controllers
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal,
                 out DateTime createdAfterDT))
-                throw new BadRequestException("Invalid date time value for the expected format specified.", "Invalid date time value for the expected format specified.", "bad_datetime_format", ExpectedDateTimeFormat);
+                throw new BadRequestException("Invalid date time value for the expected format specified.",
+                    "Invalid date time value for the expected format specified.", "bad_datetime_format", ExpectedDateTimeFormat);
 
             ICollection<FullMessageDTO> messages = await _groupChatService.GetMessagesAsync(groupId, createdAfterDT);
             var responseData = _mapper.Map<ICollection<FullMessageResponse>>(messages);

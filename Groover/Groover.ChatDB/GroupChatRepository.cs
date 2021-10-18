@@ -157,26 +157,5 @@ namespace Groover.ChatDB
 
             return addedMessage;
         }
-
-        public async Task<Track> GetLoadedTrackAsync(Message message, bool checkHash = false)
-        {
-            if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            if (message.Type != MessageType.Track)
-                throw new ArgumentException("Message is not a Track message.", nameof(message));
-
-            TimeUuid trackId = message.TrackId ?? throw new ArgumentException("TrackId is undefined for this message.", nameof(message));
-            Track track = await TrackRepository.GetAsync(message.GroupId, trackId);
-
-            if (track == null)
-                throw new InvalidOperationException("There is no corresponding Track for this TrackId.");
-
-            var isHashValid = await TrackRepository.LoadAsync(track, checkHash);
-            if (!isHashValid && checkHash)
-                throw new Exception("Track data is corrupted.");
-
-            return track;
-        }
     }
 }

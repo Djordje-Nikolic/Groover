@@ -15,6 +15,5 @@ namespace Groover.ChatDB.Interfaces
         Task<Message> AddImageMessageAsync(Message message);
         Task<Message> AddTextMessageAsync(Message message);
         Task<Message> AddTrackMessageAsync(Message message, Track track);
-        Task<Track> GetLoadedTrackAsync(Message message, bool checkHash = false);
     }
 }

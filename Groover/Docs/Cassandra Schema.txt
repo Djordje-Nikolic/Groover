@@ -17,7 +17,7 @@ CREATE TABLE messages (
 	PRIMARY KEY (groupId, messageId)
 ) WITH CLUSTERING ORDER BY (messageId DESC);
 
-CREATE TABLE tracksMetadata (
+CREATE TABLE tracks (
 	trackId timeuuid,
 	groupId int,
 	name text,
@@ -26,14 +26,6 @@ CREATE TABLE tracksMetadata (
 	extension text,
 	mimeType text,
 	bitrate int,
-	hash text,
-	chunkCount int,
+	filePath text,
 	PRIMARY KEY (groupId, trackId)
 ) WITH CLUSTERING ORDER BY (trackId DESC);
-
-CREATE TABLE tracksChunks (
-	trackId timeuuid,
-	chunkOrder int,
-	chunk blob,
-	PRIMARY KEY (trackId, chunkOrder)
-) WITH CLUSTERING ORDER BY (chunkOrder ASC);

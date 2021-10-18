@@ -219,8 +219,39 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 }
                 else
                 {
-                    //log 
-                    //show error
+                    if (latestMsgs.ErrorCodes == null)
+                    {
+                        DisplayError = "There was an error while retrieving new messages.";
+                    }
+                    else
+                    {
+                        List<string> errorCodes = new();
+
+                        foreach (var code in latestMsgs.ErrorCodes.Distinct())
+                        {
+                            switch (code)
+                            {
+                                case "not_member":
+                                    errorCodes.Add("User is not a member of the group.");
+                                    break;
+                                case "not_found_group":
+                                    errorCodes.Add("Group not found.");
+                                    break;
+                                case "bad_datetime_format":
+                                    errorCodes.Add("Last message time is invalid.");
+                                    break;
+                                case "bad_id":
+                                    errorCodes.Add("Bad group id.");
+                                    break;
+                                case "internal":
+                                default:
+                                    errorCodes.Add("Unknown error occured.");
+                                    break;
+                            }
+                        }
+
+                        DisplayError = string.Join(Environment.NewLine, errorCodes);
+                    }
                 }
             }
         }
@@ -247,8 +278,39 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             }
             else
             {
-                //log
-                //show error
+                if (pagedResponse.ErrorCodes == null)
+                {
+                    DisplayError = "There was an error while retrieving new messages.";
+                }
+                else
+                {
+                    List<string> errorCodes = new();
+
+                    foreach (var code in pagedResponse.ErrorCodes.Distinct())
+                    {
+                        switch (code)
+                        {
+                            case "not_member":
+                                errorCodes.Add("User is not a member of the group.");
+                                break;
+                            case "not_found_group":
+                                errorCodes.Add("Group not found.");
+                                break;
+                            case "undefined":
+                                errorCodes.Add("Bad paging parameters.");
+                                break;
+                            case "bad_id":
+                                errorCodes.Add("Bad group id.");
+                                break;
+                            case "internal":
+                            default:
+                                errorCodes.Add("Unknown error occured.");
+                                break;
+                        }
+                    }
+
+                    DisplayError = string.Join(Environment.NewLine, errorCodes);
+                }
             }
         }
 
