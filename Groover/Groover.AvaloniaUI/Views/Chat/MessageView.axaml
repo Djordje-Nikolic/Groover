@@ -16,18 +16,18 @@
     <utils:ForegroundByRoleConverter x:Key="foregroundByRoleConverter" />
   </UserControl.Resources>
   <Grid Margin="3" ColumnDefinitions="Auto" RowDefinitions="Auto,Auto,Auto">
-    <TextBlock Grid.Row="0" Grid.Column="0" Margin="1,0,0,0"
+    <TextBlock Grid.Row="0" Grid.Column="0" Margin="1,0,0,2"
                HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
                IsVisible="{Binding StartOfUserGroup}"
                Foreground="{Binding Role, Converter={StaticResource foregroundByRoleConverter}, 
                FallbackValue={DynamicResource ThemeControlHighlightLowBrush}}"
-               Text="{Binding User.Username}"
-               ToolTip.Tip="{Binding FullCreatedAtDisplay}"
-               ToolTip.ShowDelay="1000"
-               ToolTip.Placement="Pointer">UserName</TextBlock>
+               Text="{Binding User.Username}">UserName</TextBlock>
     <styles:Card Grid.Row="1" Grid.Column="0" Padding="4,2,4,2" 
                  HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
-                 Background="{DynamicResource ThemeControlLowBrush}">
+                 Background="{DynamicResource ThemeControlLowBrush}"
+                 ToolTip.Tip="{Binding CreatedAtDisplay}"
+                 ToolTip.ShowDelay="1500"
+                 ToolTip.Placement="Pointer">
       <StackPanel MaxWidth="250">
         <TextBlock
           IsVisible="{Binding HasText}"

@@ -27,9 +27,9 @@ namespace Groover.AvaloniaUI.Views.Chat
             {
                 this.WhenAnyObservable(view => view.ViewModel.AddMessageCommand)
                     .Delay(TimeSpan.FromMilliseconds(100))
-                    .Subscribe(_ =>
+                    .Subscribe(async (_) =>
                     {
-                        Dispatcher.UIThread.InvokeAsync(ScrollMessagesToEnd);
+                        await Dispatcher.UIThread.InvokeAsync(ScrollMessagesToEnd);
                     })
                     .DisposeWith(disposables);
 
@@ -37,14 +37,24 @@ namespace Groover.AvaloniaUI.Views.Chat
                 this.WhenAnyObservable(view => view.ViewModel.InitializeCommand)
                     .Delay(TimeSpan.FromMilliseconds(100))
                     .FirstAsync()
-                    .Subscribe(_ =>
+                    .Subscribe(async (_) =>
                     {
-                        Dispatcher.UIThread.InvokeAsync(ScrollMessagesToEnd);
+                        await Dispatcher.UIThread.InvokeAsync(ScrollMessagesToEnd);
                     })
                     .DisposeWith(disposables);
 
                 //The goal of the following is to scroll to the bottom when groups are switched
                 _messageScrollViewer.AttachedToVisualTree += async (s,e) => await Dispatcher.UIThread.InvokeAsync(ScrollMessagesToEnd);
+
+                //The goal of this is to implement infinite scroll
+                _messageScrollViewer.GetObservable(ScrollViewer.OffsetProperty)
+                    .Skip(1) //Skip first value (since it is before the wheel is scrolled to the end)
+                    .Throttle(TimeSpan.FromMilliseconds(100))
+                    .SubscribeOn(RxApp.MainThreadScheduler)
+                    .Where(offset => offset.Y <= double.Epsilon)
+                    .Select(offset => { return Unit.Default; })
+                    .InvokeCommand(ViewModel.GetMoreMessagesCommand)
+                    .DisposeWith(disposables);
 
             });
         }

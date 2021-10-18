@@ -28,14 +28,11 @@
                  StrokeThickness="2" Stroke="Red"
                  IsVisible="{Binding ActiveGroup, Converter={x:Static ObjectConverters.IsNull}}">
         </Ellipse>
-        <Button Width="50" Height="50"
-              ToolTip.Tip="Home"
-              Command="{Binding ElementName=Root, Path=DataContext.SwitchToHomeCommand}"
-              assist:ButtonAssist.CornerRadius="50">
-          <TextBlock Text="Home"
-                     HorizontalAlignment="Center"
-                     TextAlignment="Center"
-                     TextWrapping="Wrap"/>
+        <Button Width="50" Height="50" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            ToolTip.Tip="Home" Padding="0"
+            Command="{Binding ElementName=Root, Path=DataContext.SwitchToHomeCommand}"
+            assist:ButtonAssist.CornerRadius="50">
+          <icons:MaterialIcon Kind="House" Width="40" Height="40"></icons:MaterialIcon>
         </Button>
       </Panel>
       <ScrollViewer VerticalScrollBarVisibility="Auto"
