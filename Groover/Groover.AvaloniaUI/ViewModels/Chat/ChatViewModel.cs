@@ -37,13 +37,18 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public ReadOnlyObservableCollection<MessageViewModel> SortedMessages => _sortedMessages;
 
         [Reactive]
-        public UserViewModel User { get; set; }
+        public bool HasNewMessages { get; private set; }
         [Reactive]
-        public UserGroupViewModel UserGroup { get; set; }
-        public InputViewModel InputViewModel { get; set; }
+        public string? DisplayError { get; private set; } //Simple error display
+        [Reactive]
+        public UserViewModel User { get; private set; }
+        [Reactive]
+        public UserGroupViewModel UserGroup { get; private set; }
+        public InputViewModel InputViewModel { get; private set; }
 
         public ReactiveCommand<Unit, Unit> InitializeCommand { get; }
         public ReactiveCommand<Message, Unit> AddMessageCommand { get; }
+        public ReactiveCommand<Unit, Unit> GetMoreMessagesCommand { get; }
 
         public ChatViewModel(UserViewModel loggedInUser,
             UserGroupViewModel userGroup,
@@ -62,6 +67,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
             InitializeCommand = ReactiveCommand.CreateFromTask(Initialize);
             AddMessageCommand = ReactiveCommand.Create<Message>(AddNewMessage);
+            GetMoreMessagesCommand = ReactiveCommand.CreateFromTask(GetMoreMessages);
 
             _messageCache = new SourceCache<Message, string>(msg => msg.Id);
             _messageCache.Connect()
@@ -75,9 +81,11 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 .DisposeMany()
                 .Subscribe();
 
+            //This processes new messages and sets group flags depending on their position in the list
             _sortedMessages.ToObservableChangeSet()
                 .WhereReasonsAre(ListChangeReason.Add, ListChangeReason.AddRange)
                 .DeferUntilLoaded()
+                .Do(_ => this.HasNewMessages = true)
                 .DisposeMany()
                 .Subscribe(chngSet =>
                 {
@@ -125,8 +133,16 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 chooseTrackInteraction);
         }
 
+        public void ReadMessages()
+        {
+            if (HasNewMessages)
+                HasNewMessages = false;
+        }
+
         private async Task Initialize()
         {
+            HasNewMessages = false;
+
             if (_initialized)
                 return;
 
@@ -195,6 +211,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
                 if (latestMsgs.IsSuccessful)
                 {
+                    DisplayError = null;
                     AddMessages(latestMsgs.Items);
                 }
                 else
@@ -203,6 +220,14 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                     //show error
                 }
             }
+        }
+
+        private async Task GetMoreMessages()
+        {
+            if (!_initialized)
+                return;
+
+            await LoadMessages();
         }
 
         private async Task LoadMessages()
@@ -214,6 +239,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 _pageParams = pagedResponse.PageParams;
                 _pageParams.PagingState = _pageParams.NextPagingState;
 
+                DisplayError = null;
                 AddMessages(pagedResponse.Data);
             }
             else
