@@ -354,7 +354,10 @@ namespace Groover.AvaloniaUI.ViewModels
                     if (user != null)
                     {
                         user.IsOnline = true;
-                        await _chatHubService.NotifyConnection(gId, uId);
+
+                        //No need to notify itself
+                        if (user.Id != LoggedInUser.Id)
+                            await _chatHubService.NotifyConnection(gId, uId);
                     }
                 }
             }
