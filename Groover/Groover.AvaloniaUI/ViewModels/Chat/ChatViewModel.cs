@@ -49,6 +49,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public ReactiveCommand<Unit, Unit> InitializeCommand { get; }
         public ReactiveCommand<Message, Unit> AddMessageCommand { get; }
         public ReactiveCommand<Unit, Unit> GetMoreMessagesCommand { get; }
+        public ReactiveCommand<Unit, Unit> ReadAllMessagesCommand { get; }
 
         public ChatViewModel(UserViewModel loggedInUser,
             UserGroupViewModel userGroup,
@@ -68,6 +69,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             InitializeCommand = ReactiveCommand.CreateFromTask(Initialize);
             AddMessageCommand = ReactiveCommand.Create<Message>(AddNewMessage);
             GetMoreMessagesCommand = ReactiveCommand.CreateFromTask(GetMoreMessages);
+            ReadAllMessagesCommand = ReactiveCommand.Create(ReadMessages);
 
             _messageCache = new SourceCache<Message, string>(msg => msg.Id);
             _messageCache.Connect()

@@ -164,7 +164,17 @@ namespace Groover.AvaloniaUI.ViewModels
             var cvm = ChatViewModels.FirstOrDefault(cvm => cvm.UserGroup.Group.Id == message.GroupId);
 
             if (cvm != null)
-                cvm.AddMessageCommand.Execute(message).Subscribe();
+            {
+                if (cvm == ActiveChatViewModel)
+                {
+                    cvm.AddMessageCommand.Execute(message)
+                        .InvokeCommand(cvm.ReadAllMessagesCommand);
+                }
+                else
+                {
+                    cvm.AddMessageCommand.Execute(message).Subscribe();
+                }
+            }
         }
         private async Task OnGroupCreated(UserGroup userGroup)
         {
@@ -398,6 +408,9 @@ namespace Groover.AvaloniaUI.ViewModels
 
         public void Initialize()
         {
+            if (LoggedInUser == null)
+                return;
+
             LoggedInUser.UserGroupsCache.Connect()
                 .TransformWithInlineUpdate(ug => GenerateChatViewModel(ug), (previousViewModel, updatedUserGroup) =>
                 {
@@ -432,14 +445,15 @@ namespace Groover.AvaloniaUI.ViewModels
             if (selectedUg == null)
                 return;
 
-            //selectedUg.Group.GroupUsers.SortByRole();
-
             var cvm = this.ChatViewModels.FirstOrDefault(vm => vm.UserGroup.Group == selectedUg.Group);
 
             if (cvm != null)
-                cvm.InitializeCommand.Execute().Subscribe();
+            {
+                cvm.InitializeCommand.Execute()
+                    .InvokeCommand(cvm.ReadAllMessagesCommand);
 
-            ActiveChatViewModel = cvm;
+                ActiveChatViewModel = cvm;
+            }
         }
 
         public async Task SwitchToHome()
