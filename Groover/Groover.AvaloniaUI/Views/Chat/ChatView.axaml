@@ -15,47 +15,49 @@
     <utils:MessageHorizontalAlignmentConverter x:Key="messageAlignmentConverter" />
     <utils:AreEqualIntegersConverter x:Key="areEqualIntegersConverter" />
   </UserControl.Resources>
-  <Border BorderThickness="0" BorderBrush="Aqua">
-    <Grid ColumnDefinitions="*" RowDefinitions="Auto, *, Auto">
-      <TextBlock Grid.Column="0" Grid.Row="0"
-                 TextWrapping="Wrap" TextAlignment="Center"
-                 HorizontalAlignment="Center" Foreground="Red"
-                 Text="{Binding DisplayError}"></TextBlock>
-      <styles:Card Grid.Row="1" CornerRadius="5" Grid.Column="0" Margin="6,7,6,3" Padding="3,0,3,0">
-        <ScrollViewer Name="messageScrollViewer"
-           HorizontalContentAlignment="Stretch"
-           VerticalContentAlignment="Stretch"
-           VerticalScrollBarVisibility="Auto"
-           HorizontalScrollBarVisibility="Disabled">
-          <ItemsControl Items="{Binding SortedMessages}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <StackPanel Orientation="Vertical" VerticalAlignment="Bottom"
-                            Margin="0,8,20,0">
-                </StackPanel>
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <StackPanel Orientation="Vertical" Margin="0"
-                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch"> <!--Maybe remove this stackpanel-->
-                  <TextBlock IsVisible="{Binding StartOfTimeSpanGroup}"
-                             HorizontalAlignment="Center" Text="{Binding CreatedAtDisplay}"
-                             Foreground="{StaticResource ThemeControlLowBrush}"></TextBlock>
-                  <views:MessageView DataContext="{Binding}" HorizontalAlignment="{Binding SentByLoggedInUser, Converter={StaticResource messageAlignmentConverter}}">
-                  </views:MessageView>
-                </StackPanel>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </ScrollViewer>
-      </styles:Card>
-      <StackPanel Grid.Row="2" Grid.Column="0">
-        <Separator Margin="0,5,0,0"></Separator>
-        <views:InputView 
-           DataContext="{Binding InputViewModel}">
-        </views:InputView>
-      </StackPanel>
-    </Grid>
-  </Border>
+  <Grid ColumnDefinitions="*" RowDefinitions="Auto, *, Auto"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+    <TextBlock Grid.Column="0" Grid.Row="0"
+                TextWrapping="Wrap" TextAlignment="Center"
+                HorizontalAlignment="Center" Foreground="Red"
+                Text="{Binding DisplayError}"></TextBlock>
+    <styles:Card Grid.Row="1" Grid.Column="0" 
+                 Margin="6,7,6,3" Padding="3,0,3,0"
+                 CornerRadius="5" >
+      <ScrollViewer Name="messageScrollViewer"
+          HorizontalContentAlignment="Stretch"
+          VerticalContentAlignment="Stretch"
+          VerticalScrollBarVisibility="Auto"
+          HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl Items="{Binding SortedMessages}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" VerticalAlignment="Bottom"
+                          Margin="0,8,20,0">
+              </StackPanel>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Vertical" Margin="0"
+                          VerticalAlignment="Stretch" HorizontalAlignment="Stretch"> <!--Maybe remove this stackpanel-->
+                <TextBlock IsVisible="{Binding StartOfTimeSpanGroup}"
+                            HorizontalAlignment="Center" Text="{Binding CreatedAtDisplay}"
+                            Foreground="{StaticResource ThemeControlLowBrush}"></TextBlock>
+                <views:MessageView DataContext="{Binding}" HorizontalAlignment="{Binding SentByLoggedInUser, Converter={StaticResource messageAlignmentConverter}}">
+                </views:MessageView>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </styles:Card>
+    <StackPanel Grid.Row="2" Grid.Column="0">
+      <Separator Margin="0,5,0,0"></Separator>
+      <views:InputView 
+          DataContext="{Binding InputViewModel}">
+      </views:InputView>
+    </StackPanel>
+  </Grid>
 </UserControl>
