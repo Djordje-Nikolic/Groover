@@ -28,7 +28,7 @@
                  ToolTip.Tip="{Binding CreatedAtDisplay}"
                  ToolTip.ShowDelay="1500"
                  ToolTip.Placement="Pointer">
-      <StackPanel MaxWidth="250">
+      <StackPanel MaxWidth="265">
         <TextBlock
           IsVisible="{Binding HasText}"
           TextWrapping="Wrap"
