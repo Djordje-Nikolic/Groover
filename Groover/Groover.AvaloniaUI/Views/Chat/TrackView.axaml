@@ -11,28 +11,31 @@
              xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels.Chat"
              mc:Ignorable="d"
              x:Class="Groover.AvaloniaUI.Views.Chat.TrackView"
-             Name="Root">
+             Name="Root"
+             Margin="1">
   <UserControl.Resources>
     <utils:TimeSpanConverter x:Key="timeSpanConverter"></utils:TimeSpanConverter>
     <sys:Boolean x:Key="TrueBool">True</sys:Boolean>
     <sys:Boolean x:Key="FalseBool">False</sys:Boolean>
   </UserControl.Resources>
-  <StackPanel Width="250" Margin="0,0,5,0" IsVisible="{Binding #Root.IsVisible}">
+  <StackPanel Width="260" Margin="0,0,5,0" IsVisible="{Binding #Root.IsVisible}">
     <TextBlock Text="{Binding Name}" TextWrapping="Wrap" TextAlignment="Center"
                ToolTip.Tip="{Binding Name}" Margin="9,3,15,5"
                ToolTip.ShowDelay="1000">Name of the track goes here</TextBlock>
     <TextBlock Foreground="Red" Margin="0,-5,0,0" HorizontalAlignment="Center" 
                TextWrapping="Wrap" TextAlignment="Center" Text="{Binding AllErrors}"></TextBlock>
-    <StackPanel Orientation="Horizontal">
-      <Slider Margin="12,-3,15,0" Width="150"
+    <DockPanel HorizontalAlignment="Stretch" LastChildFill="True">
+      <Slider Margin="12,-3,15,0" Width="150" DockPanel.Dock="Left"
         Classes="Modern" Foreground="{StaticResource ThemeForegroundBrush}"
         Minimum="0" Maximum="{Binding TotalDurationMs, Mode=OneWay}"
         Value="{Binding ElapsedMiliseconds, Mode=TwoWay}"> 
       </Slider>
-      <TextBlock Text="{Binding ElapsedTime, Converter={StaticResource timeSpanConverter}}">0:00</TextBlock>
-      <TextBlock Text=" / "></TextBlock>
-      <TextBlock Text="{Binding TotalDuration, Converter={StaticResource timeSpanConverter}}">5:00</TextBlock>
-    </StackPanel>
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Center">
+        <TextBlock Text="{Binding ElapsedTime, Converter={StaticResource timeSpanConverter}}">0:00</TextBlock>
+        <TextBlock Text=" / "></TextBlock>
+        <TextBlock Text="{Binding TotalDuration, Converter={StaticResource timeSpanConverter}}">5:00</TextBlock>
+      </StackPanel>
+    </DockPanel>
     <DockPanel Width="250" LastChildFill="False" Margin="0,3,0,3">
       <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" Command="{Binding PlayCommand}"
               Width="25" Height="25" assist:ButtonAssist.CornerRadius="25" Foreground="{StaticResource ThemeForegroundBrush}">

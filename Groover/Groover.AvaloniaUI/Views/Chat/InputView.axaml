@@ -12,6 +12,11 @@
   <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*, 40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <DockPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" LastChildFill="True"
                 VerticalAlignment="Stretch" MinHeight="30" Margin="0">
+      <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" 
+                 TextWrapping="Wrap" TextAlignment="Center"
+                 Foreground="Red" Margin="0,5,0,0" 
+                 IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
+                 Text="{Binding Error}"></TextBlock>
       <TextBox Name="textControl" DockPanel.Dock="Top"
              MaxHeight="150" MinHeight="20"  MinWidth="200"
              AcceptsTab="True" Classes="Filled"
