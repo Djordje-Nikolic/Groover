@@ -20,6 +20,5 @@ namespace Groover.ChatDB.Interfaces
         Task<ICollection<Track>> GetByGroupAsync(int groupId, PageParams pageParams);
         Task<ICollection<Track>> GetAfterAsync(int groupId, DateTime afterDateTime);
         Task<ICollection<Track>> GetAfterAsync(int groupId, DateTime afterDateTime, PageParams pageParams);
-        Task<bool> LoadAsync(Track track, bool checkHash = false);
     }
 }

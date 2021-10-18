@@ -51,7 +51,7 @@ namespace Groover.BL.Helpers
                     trackMetadata.Format = track.AudioFormat.ShortName;
                     trackMetadata.Extension = extension;
                     trackMetadata.Bitrate = track.Bitrate;
-                    trackMetadata.TrackBytes = ms.ToArray();
+                    trackMetadata.FileName = await SaveTrackAsync(ms);
                     trackMetadata.ContentType = mimeType;
 
                     return trackMetadata;
@@ -65,6 +65,57 @@ namespace Groover.BL.Helpers
             {
                 throw new BadRequestException("Error while working with the track file.", "bad_track_format", e);
             }
+        }
+
+        public async Task<string> SaveTrackAsync(MemoryStream stream)
+        {
+            if (stream == null || stream.Length == 0)
+                throw new ArgumentNullException();
+
+            stream.Seek(0, SeekOrigin.Begin);
+            var filename = GenerateUniqueFileName();
+            var path = GenerateFullPath(filename);
+            
+            using (FileStream fs = File.Create(path))
+            {
+                await stream.CopyToAsync(fs);
+                await fs.FlushAsync();
+            }
+
+            return filename;
+        }
+
+        public FileStream GetTrack(string filename)
+        {
+            var fullPath = GenerateFullPath(filename);
+            return File.OpenRead(fullPath);
+        }
+
+        public void DeleteImage(string path)
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+
+        private string GenerateUniqueFileName()
+        {
+            Directory.CreateDirectory(_config.TracksDirectoryPath);
+
+            string randomFileName;
+            string path;
+            do
+            {
+                randomFileName = Path.GetRandomFileName();
+                path = Path.Combine(_config.TracksDirectoryPath, randomFileName);
+            }
+            while (File.Exists(path));
+
+            return randomFileName;
+        }
+
+        private string GenerateFullPath(string fileName)
+        {
+            return Path.Combine(_config.TracksDirectoryPath, fileName);
         }
     }
 }

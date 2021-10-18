@@ -21,8 +21,6 @@ namespace Groover.API.Models.Responses
 
         public string Extension { get; set; }
 
-        public string Hash { get; set; }
-
         public Link TrackFileLink { get; set; }
     }
 }
