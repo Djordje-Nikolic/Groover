@@ -28,7 +28,10 @@
                  Classes="Headline6" Margin="0,0,0,20"
                  Text="{Binding TitleText}" TextWrapping="Wrap"
                  TextAlignment="Center">Placeholder title</TextBlock>
-      <ProgressBar Name="isUpdating" Margin="0,0,0,7" Classes="Circle" Width="40" MinWidth="40" Height="40" MinHeight="40" HorizontalAlignment="Center" IsIndeterminate="True" />
+      <ProgressBar Name="isUpdating" Margin="0,0,0,7" Classes="Circle" 
+                   Width="40" MinWidth="40" Height="40" MinHeight="40" 
+                   HorizontalAlignment="Center"
+                   IsIndeterminate="{Binding #isUpdating.IsVisible, Mode=OneWay}"/>
       <ListBox Items="{Binding Errors}"
                IsVisible="{Binding Errors, Converter={x:Static ObjectConverters.IsNotNull}}"
                Margin="0,0,0,7"
