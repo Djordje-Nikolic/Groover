@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System;
 using System.Reactive.Disposables;
 using System.Reactive;
+using System.Reactive.Linq;
 
 namespace Groover.AvaloniaUI.Views
 {
@@ -42,7 +43,7 @@ namespace Groover.AvaloniaUI.Views
             this.WhenActivated(disposables =>
             {
                 this.WhenAnyValue(x => x.ViewModel)
-                    .WhereNotNull()
+                    .Where(vm => vm != null && vm.LoggedInUser != null)
                     .Subscribe(async (x) => await x.InitializeChatConnections())
                     .DisposeWith(disposables);
             });
