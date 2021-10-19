@@ -49,6 +49,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public ReactiveCommand<Unit, Unit> ClearTrackCommand { get; }
         public ReactiveCommand<Unit, Unit> ChooseImageCommand { get; }
         public ReactiveCommand<Unit, Unit> ChooseTrackCommand { get; }
+        public ReactiveCommand<int, int> NewLineCommand { get; }
 
         public InputViewModel(Func<TextMessageRequest, Task<BaseResponse>> txtMsgDelegate,
             Func<ImageMessageRequest, Task<BaseResponse>> imgMsgDelegate,
@@ -82,6 +83,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
             var canChooseTrack = this.WhenAnyValue(iVm => iVm.TrackFilePath, filepath => string.IsNullOrWhiteSpace(filepath));
             ChooseTrackCommand = ReactiveCommand.CreateFromTask(ChooseTrack, canChooseTrack);
+
+            NewLineCommand = ReactiveCommand.Create<int, int>(AddNewLineToTextContent);
 
             this.WhenAnyValue(iVm => iVm.ImageFilePath)
                 .Do(_ => { if (this.Image != null) this.Image.Dispose(); })
@@ -145,6 +148,19 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             ImageFilePath = null;
         }
 
+        private int AddNewLineToTextContent(int index)
+        {
+            if (!string.IsNullOrWhiteSpace(TextContent))
+            {
+                TextContent = TextContent.Insert(index, Environment.NewLine);
+                return index + 1;
+            }
+            else
+            {
+                return index;
+            }
+        }
+
         private async Task SendMessage()
         {
             BaseResponse? response = null;
@@ -152,7 +168,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             switch (determineCurrentType)
             {
                 case MessageType.Text:
-                    TextMessageRequest textMessageRequest = new TextMessageRequest(TextContent);
+                    var trimmedContent = TextContent?.Trim();
+                    TextMessageRequest textMessageRequest = new TextMessageRequest(trimmedContent);
                     response = await _sendTxtMsgDelegate.Invoke(textMessageRequest);
                     break;
                 case MessageType.Image:
@@ -160,7 +177,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                     response = await _sendImgMsgDelegate.Invoke(imageMessageRequest);
                     break;
                 case MessageType.Track:
-                    TrackMessageRequest trackMessageRequest = new TrackMessageRequest(TrackName);
+                    var trimmedName = TrackName?.Trim();
+                    TrackMessageRequest trackMessageRequest = new TrackMessageRequest(trimmedName);
                     response = await _sendTrackMsgDelegate.Invoke(trackMessageRequest, TrackFilePath);
                     break;
                 default:

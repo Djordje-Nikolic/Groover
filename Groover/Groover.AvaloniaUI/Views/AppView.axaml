@@ -14,15 +14,64 @@
              x:Class="Groover.AvaloniaUI.Views.AppView"
              Name="Root">
   <UserControl.Resources>
+    <SolidColorBrush x:Key="ThemeDarkerElementBrush" Color="#1b1b1b" Opacity="0.8"></SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeDarkerMedElementBrush" Color="#1b1b1b" Opacity="0.5"></SolidColorBrush>
     <StackLayout x:Key="VerticalStackLayout"
                         Orientation="Vertical"/>
     <utils:IsAdminConverter x:Key="isAdminConverter"/>
     <utils:AreEqualIntegersConverter x:Key="areEqualIntegersConverter" />
   </UserControl.Resources>
-  <Grid ColumnDefinitions="64, *, 164" RowDefinitions="55, *, Auto" ShowGridLines="true" HorizontalAlignment="Stretch">
-    <StackPanel Orientation="Vertical" Grid.Column="0" Grid.RowSpan="3"
+  <Grid ColumnDefinitions="64, *, 164" RowDefinitions="55, *" HorizontalAlignment="Stretch">
+    <!--Decorations-->
+    <Canvas Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+            Background="{DynamicResource ThemeDarkerElementBrush}"></Canvas>
+    <Separator Grid.Row="0" Grid.Column="1"
+            VerticalAlignment="Bottom" Margin="0,0,0,-2"></Separator>
+    <Canvas Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
+            Background="{DynamicResource ThemeDarkerElementBrush}"></Canvas>
+    <Canvas Grid.Row="0" Grid.Column="1"
+            Background="{DynamicResource ThemeDarkerMedElementBrush}"></Canvas>
+    <!--Decorations End-->
+    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ActiveGroup.Name, FallbackValue=Home}"
+               FontWeight="Bold" FontStyle="Oblique" Classes="Headline5"
+               HorizontalAlignment="Center" VerticalAlignment="Center">Home</TextBlock>
+    <ToggleButton Name="notificationButton"
+                  Grid.Row="0" Grid.Column="1"
+                  Classes="" assist:ButtonAssist.CornerRadius="35"
+                  Height="35" Width="35" Margin="0,0,15,0"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Center"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  Padding="0,0,0,0">
+      <Panel HorizontalAlignment="Right"
+             VerticalAlignment="Center">
+        <icons:MaterialIcon Kind="BellOutline"
+                  Height="20" Width="20"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+        </icons:MaterialIcon>
+        <icons:MaterialIcon Name="alertIcon" Kind="BellRingOutline"
+                  Height="20" Width="20"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding NotificationsViewModel.HasUnread}">
+        </icons:MaterialIcon>
+      </Panel>
+    </ToggleButton>
+    <Popup Name="myPopup"
+           IsOpen="{Binding #notificationButton.IsChecked, Mode=TwoWay}"
+           StaysOpen="False"
+           PlacementMode="Left"
+           PlacementTarget="{Binding ElementName=notificationButton}"
+           PlacementAnchor="BottomRight">
+      <views:NotificationsView DataContext="{Binding NotificationsViewModel}">
+      </views:NotificationsView>
+    </Popup>
+    <StackPanel Orientation="Vertical" Grid.Column="0" Grid.RowSpan="2"
                 MinWidth="64" Margin="0,6,0,12"
-                HorizontalAlignment="Center">
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch">
       <Panel HorizontalAlignment="Stretch" Width="52" Height="52" Margin="7,6,7,6" VerticalAlignment="Center">
         <Ellipse Width="52" Height="52"
                  StrokeThickness="2" Stroke="Red"
@@ -127,7 +176,7 @@
            HorizontalAlignment="Stretch"
            VerticalAlignment="Stretch"
            IsVisible="{Binding ActiveChatViewModel, Converter={x:Static ObjectConverters.IsNull}}">
-      <Border Padding="15,10,15,10" BorderThickness="3" BorderBrush="Aqua">
+      <Border Padding="15,10,15,10">
         <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
           <Label Margin="0,5,0,5">Group Controls</Label>
           <styles:Card HorizontalAlignment="Stretch" Padding="20">
@@ -169,97 +218,66 @@
         </DataTemplate>
       </ItemsControl.ItemTemplate>  
     </ItemsControl>
-    <StackPanel Grid.Row="0" Grid.Column="1"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Orientation="Horizontal"
-                Margin="0,0,15,0">
-      <ToggleButton Name="notificationButton"
-              Classes="" assist:ButtonAssist.CornerRadius="35"
-              Height="35" Width="35"
-              HorizontalContentAlignment="Center"
-              VerticalContentAlignment="Center"
-              Padding="0,0,0,0">
-        <Panel HorizontalAlignment="Right"
-               VerticalAlignment="Center">
-          <icons:MaterialIcon Kind="BellOutline"
-                    Height="20" Width="20"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-          </icons:MaterialIcon>
-          <icons:MaterialIcon Name="alertIcon" Kind="BellRingOutline"
-                    Height="20" Width="20"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsVisible="{Binding NotificationsViewModel.HasUnread}">
-          </icons:MaterialIcon>
-        </Panel>
-      </ToggleButton>
-      <Popup Name="myPopup" 
-             IsOpen="{Binding #notificationButton.IsChecked, Mode=TwoWay}"
-             StaysOpen="False"
-             PlacementMode="Left"
-             PlacementTarget="{Binding ElementName=notificationButton}"
-             PlacementAnchor="BottomRight">
-        <views:NotificationsView DataContext="{Binding NotificationsViewModel}">
-        </views:NotificationsView>
-      </Popup>
-    </StackPanel> 
-    <Border Grid.Row="0" DataContext="{Binding LoggedInUser}" Grid.Column="2" MinWidth="164">
-      <Button Classes="Flat" HorizontalContentAlignment="Left">
-        <Grid Margin="4,0,0,4"
-              ColumnDefinitions="40,*"
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch">
-          <Ellipse Grid.Column="0"
-                   Height="35" Width="35"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center">
-            <Ellipse.Fill>
-              <ImageBrush Stretch="UniformToFill" Source="{Binding AvatarImage, FallbackValue=null}"></ImageBrush>
-            </Ellipse.Fill>
-          </Ellipse>
-          <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding Username}"
-               VerticalAlignment="Center"
-               HorizontalAlignment="Left"
-               TextWrapping="NoWrap">
-          </TextBlock>
-        </Grid>
-        <Button.ContextMenu>
-          <ContextMenu>
-            <ContextMenu.Template>
-              <ControlTemplate TargetType="ContextMenu">
-                <styles:Card Padding="2" Margin="0">
-                  <StackPanel>
-                    <StackPanel.Styles>
-                      <Style Selector="Button">
-                        <Setter Property="Padding" Value="2,2,2,2"></Setter>
-                        <Setter Property="Margin" Value="0,2,0,2"></Setter>
-                        <Setter Property="assist:ButtonAssist.CornerRadius" Value="2"></Setter>
-                      </Style>
-                      <Style Selector="Button > TextBlock">
-                        <Setter Property="FontSize" Value="13"></Setter>
-                        <Setter Property="FontWeight" Value="Normal"></Setter>
-                        <Setter Property="Foreground" Value="{StaticResource ThemeBackgroundBrush}"></Setter>
-                      </Style>
-                    </StackPanel.Styles>
-                    <Button   Classes="Flat"
-                              Command="{Binding DataContext.EditUserCommand, ElementName=Root}"
-                              CommandParameter="{Binding}">
-                      <TextBlock>Edit user</TextBlock>
-                    </Button>
-                    <Button   Classes="Flat"
-                              Command="{Binding DataContext.LogoutCommand, ElementName=Root}">
-                      <TextBlock>Logout</TextBlock>
-                    </Button>
-                  </StackPanel>
-                </styles:Card>
-              </ControlTemplate>
-            </ContextMenu.Template>
-          </ContextMenu>
-        </Button.ContextMenu>
+    <Grid Margin="15,8,0,8"
+          Grid.Row="0" Grid.Column="1"
+          DataContext="{Binding LoggedInUser}"
+          ColumnDefinitions="40,*"
+          HorizontalAlignment="Left"
+          VerticalAlignment="Stretch"
+          ToolTip.Tip="Account"
+          ToolTip.Placement="Pointer"
+          ToolTip.ShowDelay="500">
+      <Button Grid.Column="0" Padding="0"
+              Height="35" Width="35" Classes="Flat"
+              Margin="0" assist:ButtonAssist.CornerRadius="35">
+        <Ellipse
+        Height="35" Width="35"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center">
+          <Ellipse.Fill>
+            <ImageBrush Stretch="UniformToFill" Source="{Binding AvatarImage, FallbackValue=null}"></ImageBrush>
+          </Ellipse.Fill>
+        </Ellipse>
       </Button>
-    </Border>
+      <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding Username}"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left"
+            TextWrapping="NoWrap">
+      </TextBlock>
+      <Grid.ContextMenu>
+        <ContextMenu>
+          <ContextMenu.Template>
+            <ControlTemplate TargetType="ContextMenu">
+              <styles:Card Padding="2" Margin="0">
+                <StackPanel>
+                  <StackPanel.Styles>
+                    <Style Selector="Button">
+                      <Setter Property="Padding" Value="2,2,2,2"></Setter>
+                      <Setter Property="Margin" Value="0,2,0,2"></Setter>
+                      <Setter Property="assist:ButtonAssist.CornerRadius" Value="2"></Setter>
+                    </Style>
+                    <Style Selector="Button > TextBlock">
+                      <Setter Property="FontSize" Value="13"></Setter>
+                      <Setter Property="FontWeight" Value="Normal"></Setter>
+                      <Setter Property="Foreground" Value="{StaticResource ThemeBackgroundBrush}"></Setter>
+                    </Style>
+                  </StackPanel.Styles>
+                  <Button   Classes="Flat"
+                            Command="{Binding DataContext.EditUserCommand, ElementName=Root}"
+                            CommandParameter="{Binding}">
+                    <TextBlock>Edit user</TextBlock>
+                  </Button>
+                  <Button   Classes="Flat"
+                            Command="{Binding DataContext.LogoutCommand, ElementName=Root}">
+                    <TextBlock>Logout</TextBlock>
+                  </Button>
+                </StackPanel>
+              </styles:Card>
+            </ControlTemplate>
+          </ContextMenu.Template>
+        </ContextMenu>
+      </Grid.ContextMenu>
+    </Grid>     
     <ScrollViewer Grid.Column="2" Grid.Row="1" Grid.RowSpan="2"
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Disabled">
@@ -271,12 +289,11 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Button Classes="Flat" HorizontalContentAlignment="Left" 
-                    ToolTip.Tip="{Binding GroupRole}">
+                    ToolTip.Tip="{Binding GroupRole}" Focusable="False">
               <Grid Margin="4,0,0,4"
                     ColumnDefinitions="40, *"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    ShowGridLines="True">
+                    VerticalAlignment="Stretch">
                 <Panel Grid.Column="0"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
