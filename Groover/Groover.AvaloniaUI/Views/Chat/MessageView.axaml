@@ -24,10 +24,7 @@
                Text="{Binding User.Username}">UserName</TextBlock>
     <styles:Card Grid.Row="1" Grid.Column="0" Padding="4,2,4,2" 
                  HorizontalAlignment="{Binding #Root.HorizontalAlignment, Mode=OneWay}"
-                 Background="{DynamicResource ThemeControlLowBrush}"
-                 ToolTip.Tip="{Binding CreatedAtDisplay}"
-                 ToolTip.ShowDelay="1500"
-                 ToolTip.Placement="Pointer">
+                 Background="{DynamicResource ThemeControlLowBrush}">
       <StackPanel MaxWidth="265">
         <TextBlock
           IsVisible="{Binding HasText}"

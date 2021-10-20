@@ -40,9 +40,14 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         public string TrackFilePath { get; private set; }
 
-        public Media TrackMedia { get; private set; }
-
-        public MediaPlayer MediaPlayer { get; private set; }
+        [ObservableAsProperty]
+        public EqualizerViewModel Equalizer { get; }
+        [Reactive]
+        public Media? TrackMedia { get; private set; }
+        [Reactive]
+        public MediaPlayer? MediaPlayer { get; private set; }
+        [Reactive]
+        public bool IsEqPopup { get; set; }
 
         [ObservableAsProperty]
         public bool Loaded { get; }
@@ -72,8 +77,10 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         public ReactiveCommand<Unit, Unit> PauseCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleMuteCommand { get; }
         public ReactiveCommand<bool, bool> LoadOrResetCommand { get; }
+        public ReactiveCommand<Unit, Unit> ToggleEqCommand { get; }
 
-        private TrackViewModel(Func<string, Task<TrackResponse>> loadResponseDelegate, IVLCWrapper vlcWrapper)
+        private TrackViewModel(Func<string, Task<TrackResponse>> loadResponseDelegate, 
+            IVLCWrapper vlcWrapper)
         {
             _vlcWrapper = vlcWrapper;
             _loadTrackResponseDelegate = loadResponseDelegate;
@@ -88,6 +95,24 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 .Select(value => TimeSpan.FromMilliseconds(value))
                 .ToPropertyEx(this, tVm => tVm.ElapsedTime);
 
+            this.WhenAnyValue(tVm => tVm.TrackMedia)
+                .WhereNotNull()
+                .Subscribe(media =>
+                {
+                    if (MediaPlayer != null)
+                        MediaPlayer.Media = media;
+                });
+
+            this.WhenAnyValue(tVm => tVm.MediaPlayer)
+                .Select(player =>
+                {
+                    if (player == null)
+                        return null;
+
+                    return new EqualizerViewModel(player, _vlcWrapper);
+                })
+                .ToPropertyEx(this, tVm => tVm.Equalizer);
+
             Loaded = false;
             CurrentVolume = 100;
             var isLoaded = this.WhenAnyValue(tVm => tVm.Loaded, loaded => loaded == true);
@@ -95,6 +120,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             StopCommand = ReactiveCommand.Create(StopTrack, isLoaded);
             PauseCommand = ReactiveCommand.Create(PauseTrack, isLoaded);
             ToggleMuteCommand = ReactiveCommand.Create(ToggleTrackMute, isLoaded);
+            ToggleEqCommand = ReactiveCommand.Create(ToggleEq, isLoaded);
 
             LoadOrResetCommand = ReactiveCommand.CreateFromTask<bool,bool>(async (load) => 
             {
@@ -110,7 +136,9 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 .Subscribe(_ => RegisterEventHandlers());
         }
 
-        public TrackViewModel(string id, string name, short duration, Func<string, Task<TrackResponse>> loadResponseDelegate, IVLCWrapper vlcWrapper) : this(loadResponseDelegate, vlcWrapper)
+        public TrackViewModel(string id, string name, short duration, 
+            Func<string, Task<TrackResponse>> loadResponseDelegate, 
+            IVLCWrapper vlcWrapper) : this(loadResponseDelegate, vlcWrapper)
         {
             if (string.IsNullOrWhiteSpace(id))
                 _errorList.Add("Invalid track id.");
@@ -173,9 +201,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                         return false;
                     }
 
-                    TrackMedia = media;
-                    SetTrackDuration(media.Duration);
-                    MediaPlayer = _vlcWrapper.GetPlayer(TrackMedia, MediaPlayerRole.Music);
+                    Reset();
+                    InitMedia(media);
 
                     return true;
                 }
@@ -284,6 +311,11 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             return null;
         }
 
+        private void ToggleEq()
+        {
+            IsEqPopup = !IsEqPopup;
+        }
+
         private bool Reset()
         {
             if (MediaPlayer != null)
@@ -297,6 +329,13 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
             _registeredHandlers = false;
 
             return false;
+        }
+
+        private void InitMedia(Media media)
+        {
+            MediaPlayer = _vlcWrapper.GetPlayer(MediaPlayerRole.Music);
+            TrackMedia = media;
+            SetTrackDuration(media.Duration);
         }
 
         private void SetTrackDuration(long miliseconds)
@@ -331,6 +370,9 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
         private void RegisterEventHandlers()
         {
             if (_registeredHandlers)
+                return;
+
+            if (MediaPlayer == null)
                 return;
 
             MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
@@ -373,23 +415,23 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         private void PlayTrack()
         {
-            MediaPlayer.Play();
+            MediaPlayer?.Play();
         }
 
         private void PauseTrack()
         {
-            MediaPlayer.Pause();
+            MediaPlayer?.Pause();
         }
 
         private void StopTrack()
         {
-            MediaPlayer.Stop();
+            MediaPlayer?.Stop();
             ElapsedMiliseconds = 0;
         }
 
         private void ToggleTrackMute()
         {
-            MediaPlayer.ToggleMute();
+            MediaPlayer?.ToggleMute();
         }
         #endregion
 
