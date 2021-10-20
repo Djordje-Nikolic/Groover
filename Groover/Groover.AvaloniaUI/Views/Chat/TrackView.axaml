@@ -60,6 +60,10 @@
               Width="25" Height="25" assist:ButtonAssist.CornerRadius="25" Foreground="{StaticResource ThemeForegroundBrush}">
         <icons:MaterialIcon Kind="VolumeMedium" Width="25" Height="25"></icons:MaterialIcon>
       </Button>
+      <Button DockPanel.Dock="Left" Classes="Flat" Padding="0" ToolTip.Tip="Open Equalizer"
+              Width="25" Height="25"  Command="{Binding ToggleEqCommand}" Name="equalizerButton">
+        <icons:MaterialIcon Kind="Equalizer" Width="25" Height="25" Foreground="{StaticResource ThemeForegroundBrush}"></icons:MaterialIcon>
+      </Button>
       <Button DockPanel.Dock="Right" Classes="Outline Accent" Padding="3,0,3,0" 
               IsVisible="{Binding !Loaded}" Height="20" Margin="2"
               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
@@ -72,6 +76,18 @@
               Value="{Binding CurrentVolume, Mode=TwoWay}">
       </Slider>
     </DockPanel>
+    <Popup Name="myPopup"
+        IsOpen="{Binding IsEqPopup, Mode=TwoWay}"
+        StaysOpen="True"
+        PlacementMode="Bottom"
+        PlacementTarget="{Binding ElementName=equalizerButton}"
+        PlacementAnchor="Bottom">
+      <styles:Card Padding="5" CornerRadius="5" Background="{DynamicResource ThemeControlLowBrush}"
+                   Foreground="{DynamicResource ThemeForegroundBrush}">
+        <views:EqualizerView DataContext="{Binding Equalizer}">
+        </views:EqualizerView>
+      </styles:Card>
+    </Popup>
   </StackPanel>
   <UserControl.ContextMenu>
     <ContextMenu>

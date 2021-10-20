@@ -25,15 +25,17 @@ namespace Groover.AvaloniaUI.Services
             _libVLC = new Lazy<LibVLC>(() => new LibVLC(), true);
         }
 
-        public MediaPlayer GetPlayer(Media media, MediaPlayerRole role)
+        public MediaPlayer GetPlayer(MediaPlayerRole role)
         {
-            var mediaPlayer = new MediaPlayer(LibVLC)
-            {
-                Media = media
-            };
+            var mediaPlayer = new MediaPlayer(LibVLC);
             mediaPlayer.SetRole(role);
 
             return mediaPlayer;
+        }
+
+        public Equalizer GetEqualizer()
+        {
+            return new Equalizer();
         }
 
         public Media? GetMedia(string filepath)

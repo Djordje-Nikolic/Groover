@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             xmlns:views="using:Groover.AvaloniaUI.Views.Chat"
+             xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels.Chat"
+             mc:Ignorable="d" 
+             x:Class="Groover.AvaloniaUI.Views.Chat.EqualizerView">
+  <Grid ColumnDefinitions="Auto" RowDefinitions="Auto, Auto" IsVisible="{Binding #equalizerButton.IsChecked}">
+      <ToggleSwitch Grid.Row="0" Grid.Column="0" IsChecked="{Binding IsOn, Mode=TwoWay}" IsThreeState="False"
+                    HorizontalAlignment="Left" Margin="5,5,0,5" OnContent="On" OffContent="Off"
+                    VerticalAlignment="Center" Name="isOn" Foreground="{DynamicResource ThemeForegroundBrush}">
+      </ToggleSwitch>
+      <Button Grid.Row="0" Grid.Column="0" Margin="0,5,15,5"
+              HorizontalAlignment="Right" Padding="3,2,3,2" Command="{Binding ResetEqCommand}"
+              VerticalAlignment="Center" Classes="Outline Accent">Reset</Button>
+    <Grid Grid.Row="1" Grid.Column="0" Margin="0,5,0,5"
+          RowDefinitions="Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <views:PreampView Grid.Row="0" Grid.Column="0" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Preamp}"></views:PreampView>
+      <TextBlock Grid.Row="0" Grid.Column="1" FontSize="11" Text="{Binding Maximum, StringFormat=+\{0:F0\} dB}"
+                 VerticalAlignment="Top" Margin="4,5,4,0" HorizontalAlignment="Center">Max</TextBlock>
+      <TextBlock Grid.Row="0" Grid.Column="1" FontSize="11" HorizontalAlignment="Center"
+           VerticalAlignment="Center" Margin="4,0,4,28">0 dB</TextBlock>
+      <TextBlock Grid.Row="0" Grid.Column="1" FontSize="11" Text="{Binding Minimum, StringFormat=-\{0:F0\} dB}"
+           VerticalAlignment="Bottom" Margin="4,0,4,30" HorizontalAlignment="Center">Min</TextBlock>
+      <views:EqBandView Grid.Row="0" Grid.Column="2" IsEnabled="{Binding #isOn.IsChecked}" 
+                        DataContext="{Binding Band32}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="3" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band64}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="4" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band125}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="5" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band250}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="6" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band500}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="7" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band1K}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="8" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band2K}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="9" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band4K}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="10" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band8K}"></views:EqBandView>
+      <views:EqBandView Grid.Row="0" Grid.Column="11" IsEnabled="{Binding #isOn.IsChecked}"
+                        DataContext="{Binding Band16K}"></views:EqBandView>
+    </Grid>
+  </Grid>
+</UserControl>
