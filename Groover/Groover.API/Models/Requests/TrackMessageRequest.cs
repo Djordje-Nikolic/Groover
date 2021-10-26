@@ -12,6 +12,7 @@ namespace Groover.API.Models.Requests
         public int GroupId { get; set; }
 
         [Required(AllowEmptyStrings = false)]
+        [MaxLength(100)]
         public string TrackName { get; set; }
     }
 }
