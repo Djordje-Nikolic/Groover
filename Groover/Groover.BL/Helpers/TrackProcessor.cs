@@ -91,7 +91,7 @@ namespace Groover.BL.Helpers
             return File.OpenRead(fullPath);
         }
 
-        public void DeleteImage(string path)
+        public void DeleteTrack(string path)
         {
             if (File.Exists(path))
                 File.Delete(path);
