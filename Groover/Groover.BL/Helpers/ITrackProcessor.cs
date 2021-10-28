@@ -11,7 +11,7 @@ namespace Groover.BL.Helpers
 {
     public interface ITrackProcessor
     {
-        void DeleteImage(string path);
+        void DeleteTrack(string path);
         FileStream GetTrack(string path);
         Task<Track> ProcessTrackAsync(IFormFile trackFile);
         Task<string> SaveTrackAsync(MemoryStream stream);
