@@ -160,10 +160,12 @@ namespace Groover.BL.Services
             }
             catch (ArgumentException e)
             {
+                _trackProcessor.DeleteTrack(track.FileName);
                 throw new BadRequestException($"Track message is invalid: {e.Message}", "bad_message_format", e);
             }
             catch (Exception e)
             {
+                _trackProcessor.DeleteTrack(track.FileName);
                 throw new GrooverException($"Couldn't add the track message: {e.Message}.", "internal", e);
             }
         }
