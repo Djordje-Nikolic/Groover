@@ -23,18 +23,15 @@ namespace Groover.API.Hubs
     {
         private readonly IGroupChatService _groupChatService;
         private readonly IMapper _mapper;
-        private readonly INotificationService _notificationService;
         private readonly ILogger<GroupChatHub> _logger;
 
 
         //Add logging
         public GroupChatHub(IGroupChatService groupChatService,
-                            INotificationService notificationService,
                             IMapper mapper,
                             ILogger<GroupChatHub> logger) : base()
         {
             _groupChatService = groupChatService;
-            _notificationService = notificationService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -107,7 +104,7 @@ namespace Groover.API.Hubs
 
                 //call notification service
                 var notificationData = _mapper.Map<FullMessageResponse>(addedMessageDTO);
-                await _notificationService.GroupMessageAddedAsync(notificationData);
+                await OnGroupMessageAddedAsync(notificationData);
             }
             catch (BadRequestException e)
             {
@@ -147,7 +144,7 @@ namespace Groover.API.Hubs
 
                 //call notification service
                 var notificationData = _mapper.Map<FullMessageResponse>(addedMessageDTO);
-                await _notificationService.GroupMessageAddedAsync(notificationData);
+                await OnGroupMessageAddedAsync(notificationData);
             }
             catch (BadRequestException e)
             {
@@ -182,7 +179,13 @@ namespace Groover.API.Hubs
             return userId;
         }
 
-        public static string GenerateUserGroupName(string userId)
+        private async Task OnGroupMessageAddedAsync(FullMessageResponse message)
+        {
+            string groupId = message.GroupId.ToString();
+
+            await Clients.Group(groupId).SendAsync("GroupMessageAdded", message);
+        }
+        internal static string GenerateUserGroupName(string userId)
         {
             return $"user_{userId}";
         }
