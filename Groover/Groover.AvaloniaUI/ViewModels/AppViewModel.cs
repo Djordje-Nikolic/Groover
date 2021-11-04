@@ -347,7 +347,7 @@ namespace Groover.AvaloniaUI.ViewModels
             if (int.TryParse(groupId, out int gId) &&
                 int.TryParse(userId, out int uId))
             {
-                var ug = LoggedInUser.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                var ug = LoggedInUser?.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
                 if (ug != null)
                 {
                     var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
