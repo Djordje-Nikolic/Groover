@@ -37,7 +37,7 @@ namespace Groover.AvaloniaUI.Services
             var queryParams = new Dictionary<string, string>();
             queryParams.Add("groupId", groupId.ToString());
             queryParams.Add("userId", userId.ToString());
-            return await this.SendRequestAsync<BaseResponse>(queryParams, HttpMethod.Patch, _controller, "inviteUser");
+            return await this.SendRequestAsync<BaseResponse>(queryParams, HttpMethod.Post, _controller, "inviteUser");
         }
 
         public async Task<BaseResponse> AcceptInviteAsync(string token, int groupId, int userId)
