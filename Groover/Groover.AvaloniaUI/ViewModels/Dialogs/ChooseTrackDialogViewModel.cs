@@ -76,7 +76,7 @@ namespace Groover.AvaloniaUI.ViewModels.Dialogs
 
             this.WhenAnyValue(vm => vm.ChosenFileInfo)
                 .WhereNotNull()
-                .Select(val => string.Format("{0:N2} Mb", val))
+                .Select(val => string.Format("{0:N2} Mb", ((double) val.Length) / (1024 * 1024)))
                 .ToPropertyEx(this, vm => vm.FileSizeInMb);
 
             InitializeValidations();
