@@ -199,7 +199,7 @@ namespace Groover.API.Controllers
 
 
         //Admin
-        [HttpPatch("inviteUser")]
+        [HttpPost("inviteUser")]
         public async Task<IActionResult> InviteUser(int groupId, int userId)
         {
             _logger.LogInformation($"Attempting to invite user {userId} to group {groupId}.");
