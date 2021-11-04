@@ -32,6 +32,14 @@
     <Canvas Grid.Row="0" Grid.Column="1"
             Background="{DynamicResource ThemeDarkerMedElementBrush}"></Canvas>
     <!--Decorations End-->
+    <Panel Grid.Row="0" Grid.Column="2"
+       IsVisible="{Binding ActiveChatViewModel, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <TextBlock Grid.Row="0" Grid.Column="1"
+               FontWeight="Light" FontStyle="Normal" Classes="Headline6"
+               HorizontalAlignment="Center" VerticalAlignment="Center">Members</TextBlock>
+      <Separator  Width="150" Margin="0,0,0,-2"
+           VerticalAlignment="Bottom" ></Separator>
+    </Panel>
     <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ActiveGroup.Name, FallbackValue=Home}"
                FontWeight="Bold" FontStyle="Oblique" Classes="Headline5"
                HorizontalAlignment="Center" VerticalAlignment="Center">Home</TextBlock>
