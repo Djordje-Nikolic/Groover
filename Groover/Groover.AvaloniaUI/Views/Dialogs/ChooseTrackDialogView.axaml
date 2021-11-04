@@ -32,11 +32,20 @@
         <Border BorderThickness="1" Margin="5,5,5,0">
           <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
             <TextBlock Grid.Column="0" Grid.Row="0" Classes="Body1" Margin="0,0,8,0">File path:</TextBlock>
-            <TextBlock Grid.Column="1" Grid.Row="0" Classes="Body1" TextWrapping="Wrap" TextAlignment="Left" Text="{Binding ChosenFilePath}" Foreground="{StaticResource ThemeBorderLowBrush}"></TextBlock>
+            <TextBlock Grid.Column="1" Grid.Row="0" Classes="Body1" 
+                       TextWrapping="Wrap" TextAlignment="Left" Text="{Binding ChosenFilePath}" 
+                       Foreground="{StaticResource ThemeBorderLowBrush}"
+                       VerticalAlignment="Bottom"></TextBlock>
             <TextBlock Grid.Column="0" Grid.Row="1" Classes="Body1" Margin="0,8,8,0">Extension:</TextBlock>
-            <TextBlock Grid.Column="1" Grid.Row="1" Classes="Body1" Text="{Binding ChosenFileInfo.Extension}" Foreground="{StaticResource ThemeBorderLowBrush}"></TextBlock>
+            <TextBlock Grid.Column="1" Grid.Row="1" Classes="Body1" 
+                       Text="{Binding ChosenFileInfo.Extension}" 
+                       Foreground="{StaticResource ThemeBorderLowBrush}"
+                       VerticalAlignment="Bottom"></TextBlock>
             <TextBlock Grid.Column="0" Grid.Row="2" Classes="Body1" Margin="0,8,8,0">File size:</TextBlock>
-            <TextBlock Grid.Column="1" Grid.Row="2" Classes="Body1" Text="{Binding FileSizeInMb}" Foreground="{StaticResource ThemeBorderLowBrush}"></TextBlock>
+            <TextBlock Grid.Column="1" Grid.Row="2" Classes="Body1" 
+                       Text="{Binding FileSizeInMb}" 
+                       Foreground="{StaticResource ThemeBorderLowBrush}"
+                       VerticalAlignment="Bottom"></TextBlock>
           </Grid>
         </Border>
         <TextBlock Name="trackError" Foreground="Red" Classes="Body2" Margin="0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
