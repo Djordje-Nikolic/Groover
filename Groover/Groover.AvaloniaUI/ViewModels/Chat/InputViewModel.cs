@@ -174,6 +174,7 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                     break;
                 case MessageType.Image:
                     ImageMessageRequest imageMessageRequest = new ImageMessageRequest(ImageFilePath);
+                    imageMessageRequest.Content = TextContent?.Trim();
                     response = await _sendImgMsgDelegate.Invoke(imageMessageRequest);
                     break;
                 case MessageType.Track:
