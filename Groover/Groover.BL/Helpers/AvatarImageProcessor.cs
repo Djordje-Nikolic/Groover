@@ -18,6 +18,8 @@ namespace Groover.BL.Helpers
         public AvatarImageProcessor(AvatarImageConfiguration config)
         {
             _config = config;
+
+            Directory.CreateDirectory(config.ImagesDirectoryPath);
         }
 
         public async Task<byte[]> ProcessAsync(IFormFile imageFile, bool failOnNull = false)

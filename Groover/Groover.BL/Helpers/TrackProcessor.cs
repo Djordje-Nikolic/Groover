@@ -19,6 +19,8 @@ namespace Groover.BL.Helpers
         public TrackProcessor(AudioConfiguration audioConfig)
         {
             _config = audioConfig;
+
+            Directory.CreateDirectory(_config.TracksDirectoryPath);
         }
 
         public async Task<ChatDB.Models.Track> ProcessTrackAsync(IFormFile trackFile)
