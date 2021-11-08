@@ -66,8 +66,8 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
 
         public EqualizerViewModel(MediaPlayer mediaPlayer, IVLCWrapper vlcWrapper)
         {
-            Maximum = 12;
-            Minimum = -12;
+            Maximum = 20;
+            Minimum = -20;
 
             IsOn = false;
             ErrorDisplay = null;
