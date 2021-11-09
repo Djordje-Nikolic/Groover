@@ -201,8 +201,6 @@ namespace Groover.AvaloniaUI.Services
         {
             if (Connection != null)
             {
-                HandlersWrapper.CleanUpHandlers();
-
                 if (Connection.State == HubConnectionState.Connected)
                 {
                     foreach (var groupId in ConnectedGroups)
@@ -212,6 +210,8 @@ namespace Groover.AvaloniaUI.Services
 
                     await Connection.StopAsync();
                 }
+
+                HandlersWrapper.CleanUpHandlers();
 
                 await Connection.DisposeAsync();
             }

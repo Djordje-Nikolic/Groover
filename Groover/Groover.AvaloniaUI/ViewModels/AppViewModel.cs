@@ -138,6 +138,7 @@ namespace Groover.AvaloniaUI.ViewModels
             handlersWrapper.UserUpdated(OnUserUpdated);
             handlersWrapper.ConnectedToGroup(OnConnectedToGroup);
             handlersWrapper.DisconnectedFromGroup(OnDisconnectedFromGroup);
+            handlersWrapper.AlreadyConnectedToGroup(OnAlreadyConnectedToGroup);
             handlersWrapper.UserInvited(OnUserInvited);
             handlersWrapper.GroupMessageAdded(OnGroupMessageAdded);
 
@@ -374,6 +375,18 @@ namespace Groover.AvaloniaUI.ViewModels
                     if (user != null)
                     {
                         user.IsOnline = false;
+        private void OnAlreadyConnectedToGroup(string groupId, string userId)
+        {
+            if (int.TryParse(groupId, out int gId) &&
+                int.TryParse(userId, out int uId))
+            {
+                var ug = LoggedInUser?.UserGroups.FirstOrDefault(ug => ug.Group.Id == gId);
+                if (ug != null)
+                {
+                    var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
+                    if (user != null)
+                    {
+                        user.IsOnline = _onlineStatusManager.LoggedOn(uId, gId);
                     }
                 }
             }
