@@ -31,7 +31,7 @@ namespace Groover.AvaloniaUI.ViewModels
         private IGroupChatService _groupChatService;
         private IChatHubService _chatHubService;
         private IMapper _mapper;
-        private IVLCWrapper _vlcWrapper;
+        private IOnlineStatusManager _onlineStatusManager;
         private readonly UserConstants _userParams;
 
         public Interaction<YesNoDialogViewModel, bool> ShowYesNoDialog { get; set; }
@@ -79,7 +79,7 @@ namespace Groover.AvaloniaUI.ViewModels
                             IChatHubService chatHubService,
                             IGroupChatService groupChatService,
                             IMapper mapper,
-                            IVLCWrapper vlcWrapper,
+                            IOnlineStatusManager onlineStatusManager,
                             UserConstants userParameters)
         {
 
@@ -100,7 +100,7 @@ namespace Groover.AvaloniaUI.ViewModels
             _chatHubService = chatHubService;
             _groupChatService = groupChatService;
             _mapper = mapper;
-            _vlcWrapper = vlcWrapper;
+            _onlineStatusManager = onlineStatusManager;
             _userParams = userParameters;
 
             NotificationsViewModel = new NotificationsViewModel();
@@ -153,9 +153,13 @@ namespace Groover.AvaloniaUI.ViewModels
         public async Task Cleanup()
         {
             await _chatHubService.Reset();
-            foreach (var cVm in ChatViewModels)
+            _onlineStatusManager.Reset();
+            if (ChatViewModels != null)
             {
-                cVm.Dispose();
+                foreach (var cVm in ChatViewModels)
+                {
+                    cVm.Dispose();
+                }
             }
         }
 
@@ -354,7 +358,7 @@ namespace Groover.AvaloniaUI.ViewModels
                     var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
                     if (user != null)
                     {
-                        user.IsOnline = true;
+                        user.IsOnline = _onlineStatusManager.LoggedOn(uId, gId);
 
                         //No need to notify itself
                         if (user.Id != LoggedInUser.Id)
@@ -374,7 +378,11 @@ namespace Groover.AvaloniaUI.ViewModels
                     var user = ug.Group.SortedGroupUsers.FirstOrDefault(gu => gu.User.Id == uId)?.User;
                     if (user != null)
                     {
-                        user.IsOnline = false;
+                        user.IsOnline = _onlineStatusManager.Disconnected(uId, gId);
+                    }
+                }
+            }
+        }
         private void OnAlreadyConnectedToGroup(string groupId, string userId)
         {
             if (int.TryParse(groupId, out int gId) &&
