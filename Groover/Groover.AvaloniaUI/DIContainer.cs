@@ -49,6 +49,8 @@ namespace Groover.AvaloniaUI
 
             services.RegisterLazySingleton<IVLCWrapper>(() => new VLCWrapper());
 
+            services.RegisterLazySingleton<IOnlineStatusManager>(() => new OnlineStatusManager());
+
             //Make into singleton?
             services.Register<IGroupService>(() => new GroupService(
                 resolver.GetRequiredService<IApiService>(),
