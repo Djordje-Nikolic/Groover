@@ -77,7 +77,7 @@ namespace Groover.API.Hubs
 
             //Notify new user that I AM connected
             var userGroupName = GenerateUserGroupName(userToNotifyId);
-            await Clients.Group(userGroupName).SendAsync("ConnectedToGroup", groupId, senderId);
+            await Clients.Group(userGroupName).SendAsync("AlreadyConnectedToGroup", groupId, senderId);
         }
 
         public async Task SendTextMessage(TextMessageRequest messageData)

@@ -58,6 +58,8 @@ namespace Groover.AvaloniaUI.Utils
         public void LoggedInUserUpdated(Func<User, Task> handler) => _connection.On<User>("LoggedInUserUpdated", handler);
         public void ConnectedToGroup(Action<string, string> handler) => _connection.On<string, string>("ConnectedToGroup", handler);
         public void ConnectedToGroup(Func<string, string, Task> handler) => _connection.On<string, string>("ConnectedToGroup", handler);
+        public void AlreadyConnectedToGroup(Action<string, string> handler) => _connection.On<string, string>("AlreadyConnectedToGroup", handler);
+        public void AlreadyConnectedToGroup(Func<string, string, Task> handler) => _connection.On<string, string>("AlreadyConnectedToGroup", handler);
         public void DisconnectedFromGroup(Action<string, string> handler) => _connection.On<string, string>("DisconnectedFromGroup", handler);
         public void DisconnectedFromGroup(Func<string, string, Task> handler) => _connection.On<string, string>("DisconnectedFromGroup", handler);
     }
