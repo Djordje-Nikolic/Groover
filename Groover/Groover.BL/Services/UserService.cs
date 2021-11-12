@@ -188,7 +188,15 @@ namespace Groover.BL.Services
                 }
             }
 
-            await _userManager.UpdateAsync(user);
+            try
+            {
+                await _userManager.UpdateAsync(user);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error updating User with id {user.Id}: {e.Message}");
+                throw new BadRequestException("Couldn't update user.", "update_error");
+            }
 
             var userDTO = _mapper.Map<UserDTO>(user);
             return userDTO;
@@ -288,7 +296,16 @@ namespace Groover.BL.Services
             }
 
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error updating User avatar. User with id {userId}: {e.Message}");
+                throw new BadRequestException("Couldn't update user avatar.", "update_error");
+            }
 
             var userDto = this._mapper.Map<UserDTO>(user);
             return userDto;
@@ -490,7 +507,16 @@ namespace Groover.BL.Services
         {
             var content = GenerateConfirmationEmailContent(confirmationUrl, user.Username, user.Email);
             var message = new EmailMessage(new string[] { user.Email }, "Groover Registration Confirmation Link", content, null);
-            await _emailSender.SendEmailAsync(message);
+
+            try
+            {
+                await _emailSender.SendEmailAsync(message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error sending a registration confirmation email for user with id {user.Id}: {e.Message}");
+                throw new BadRequestException("Error sending a registration confirmation email.", "email_error");
+            }
         }
 
         public async Task ConfirmEmailAsync(ConfirmEmailDTO model)
