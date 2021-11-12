@@ -54,6 +54,30 @@ namespace Groover.BL.Services
             this._imageProcessor = imageProcessor;
         }
 
+        public async Task RemoveUserAsync(int userId)
+        {
+            if (userId <= 0)
+                throw new BadRequestException("Invalid user id. Cannot be 0 or lower.", "bad_id");
+
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null)
+                throw new NotFoundException($"User with id {userId} not found.", "not_found");
+
+            _context.Users.Remove(user);
+            _logger.LogInformation($"Successfully removed user with id {userId}.");
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error removing User with id {userId}: {e.Message}");
+                throw new BadRequestException("Couldn't remove user.", "update_error");
+            }
+        }
+
         public async Task<ICollection<UserDTO>> GetUsersAsync()
         {
             var users = await _context.Users.ToListAsync();
