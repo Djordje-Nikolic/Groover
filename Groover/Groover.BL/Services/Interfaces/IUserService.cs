@@ -8,6 +8,7 @@ namespace Groover.BL.Services.Interfaces
 {
     public interface IUserService
     {
+        Task RemoveUserAsync(int userId);
         Task<UserDTO> GetUserAsync(int userId);
         Task<UserDTO> GetUserAsync(string username);
         Task<ICollection<UserDTO>> GetUsersAsync();
