@@ -14,7 +14,9 @@ Id 	ErrorCode   					Explanation									ErrorValue
 10	failed_confirmation 			Couldnt confirm email
 11 	internal						Unknown error
 12  email_not_confirmed				Email hasnt been confirmed for this user.
-13  failed_password_update
+13  email_error						Error sending a confirmation email.
+14  failed_password_update
+15  update_error					Generic error while changing a User record in the database.
 
 IdentityErrors:
 
@@ -60,6 +62,7 @@ Groover Group Service Error List:
 9 not_admin
 10 not_member
 11 duplicate_name
+12 update_error 					Error updating a Group record in the database.
 
 Groover GroupChat Service Error List:
 
