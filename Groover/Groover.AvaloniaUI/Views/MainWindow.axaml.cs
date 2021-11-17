@@ -105,7 +105,7 @@ namespace Groover.AvaloniaUI.Views
                          vm.Initialize();
                      }
                  })
-                .BindTo(this, x => x._mainView.DataContext)
+                .BindTo(this, x => x._mainView.ViewModel)
                 .DisposeWith(disposables);
 
                 this.WhenAnyValue(v => v.ViewModel.WelcomeDialogResult)
