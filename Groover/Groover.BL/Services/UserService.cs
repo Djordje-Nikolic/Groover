@@ -603,7 +603,7 @@ namespace Groover.BL.Services
 
         private string GenerateConfirmationEmailContent(string confirmationUrl, string username, string email)
         {//upgrade this to something better looking
-            return string.Format("<h2 style='color:red;'>{0}</h2>", confirmationUrl);
+            return string.Format("<a href='{0}' style='color:red;'>Click here to confirm your registration</a>", confirmationUrl);
         }
 
         private void Preprocess(RegisterDTO model)
