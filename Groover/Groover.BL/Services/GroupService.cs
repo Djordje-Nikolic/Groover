@@ -494,7 +494,7 @@ namespace Groover.BL.Services
 
         private string GenerateInviteContent(string acceptUrl, GroupDTO group, UserDTO receiver, User sender)
         {//upgrade this to something better looking
-            return string.Format("<h2 style='color:red;'>{0}</h2>", acceptUrl);
+            return string.Format("<a href='{0}' style='color:red;'>Click here to accept an invitation to the group '{1}'</a>", acceptUrl, group.Name);
         }
     }
 }
