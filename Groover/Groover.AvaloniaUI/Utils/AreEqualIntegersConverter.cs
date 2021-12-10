@@ -21,10 +21,15 @@ namespace Groover.AvaloniaUI.Utils
                 int count = values.Count();
                 if (count >= 2)
                 {
-                    int firstVal = int.Parse(values[0].ToString());
+                    if (!int.TryParse(values[0].ToString(), out int firstVal))
+                        return false;
+
                     for (int i = 1; i < count; i++)
                     {
-                        if (firstVal != int.Parse(values[i].ToString()))
+                        if (!int.TryParse(values[i].ToString(), out int secondVal))
+                            return false;
+
+                        if (firstVal != secondVal)
                             return false ^ invert;
                     }
                     return true ^ invert;
