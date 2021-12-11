@@ -111,16 +111,18 @@ namespace Groover.AvaloniaUI.ViewModels.Chat
                 listOfBands.Add((freq, bandIndex));
             }
 
-            Band32 = GetBand(32, 2, listOfBands);
-            Band64 = GetBand(64, 2, listOfBands);
-            Band125 = GetBand(125, 2, listOfBands);
-            Band250 = GetBand(250, 2, listOfBands);
-            Band500 = GetBand(500, 2, listOfBands);
-            Band1K = GetBand(1000, 2, listOfBands, "1K");
-            Band2K = GetBand(2000, 2, listOfBands, "2K");
-            Band4K = GetBand(4000, 2, listOfBands, "4K");
-            Band8K = GetBand(8000, 2, listOfBands, "8K");
-            Band16K = GetBand(16000, 2, listOfBands, "16K");
+            float maxFreqError = 2;
+
+            Band32 = GetBand(32, maxFreqError, listOfBands);
+            Band64 = GetBand(64, maxFreqError, listOfBands);
+            Band125 = GetBand(125, maxFreqError, listOfBands);
+            Band250 = GetBand(250, maxFreqError, listOfBands);
+            Band500 = GetBand(500, maxFreqError, listOfBands);
+            Band1K = GetBand(1000, maxFreqError, listOfBands, "1K");
+            Band2K = GetBand(2000, maxFreqError, listOfBands, "2K");
+            Band4K = GetBand(4000, maxFreqError, listOfBands, "4K");
+            Band8K = GetBand(8000, maxFreqError, listOfBands, "8K");
+            Band16K = GetBand(16000, maxFreqError, listOfBands, "16K");
             Preamp = GetPreamp();
         }
 
