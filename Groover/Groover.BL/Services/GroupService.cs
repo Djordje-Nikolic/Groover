@@ -94,7 +94,16 @@ namespace Groover.BL.Services
 
             _context.Groups.Add(group);
             _context.GroupUsers.Add(groupUser);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error creating a group in the database: {e.Message}");
+                throw new BadRequestException("Error creating a group.", "update_error");
+            }
 
             group = await _context.Groups.Where(g => g.Id == group.Id)
                 .Include(g => g.GroupUsers)
@@ -143,7 +152,16 @@ namespace Groover.BL.Services
             }
 
             _context.Groups.Update(group);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error updating a Group image in the database. Group id {group.Id}: {e.Message}");
+                throw new BadRequestException("Error updating a Group image.", "update_error");
+            }
 
             var groupDto = this._mapper.Map<GroupDTO>(group);
             return groupDto;
@@ -167,7 +185,16 @@ namespace Groover.BL.Services
             var groupUsers = await _context.GroupUsers.Where(gu => gu.GroupId == id).ToListAsync();
             _context.GroupUsers.RemoveRange(groupUsers);
             _context.Groups.Remove(group);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error deleting a Group from the database. Group id {group.Id}: {e.Message}");
+                throw new BadRequestException("Error deletin a Group.", "update_error");
+            }
         }
 
         public async Task<GroupDTO> GetGroupAsync(int groupId)
@@ -317,7 +344,16 @@ namespace Groover.BL.Services
             }
 
             _context.GroupUsers.Remove(userToBeRemoved);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error removing a User from the group in the database. Group id {group.Id} User id {userToBeRemoved.User.Id}: {e.Message}");
+                throw new BadRequestException("Error removing a User from a group.", "update_error");
+            }
 
             //Return whether the user was last in group
             groupUsers.Remove(userToBeRemoved);
@@ -367,7 +403,16 @@ namespace Groover.BL.Services
             }
 
             _context.Groups.Update(group);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error updating a group in the database. Group id {group.Id}: {e.Message}");
+                throw new BadRequestException("Error updating a group.", "update_error");
+            }
 
             group = await _context.Groups.Where(g => g.Id == group.Id)
                 .Include(g => g.GroupUsers)
@@ -416,7 +461,16 @@ namespace Groover.BL.Services
 
             groupUser.GroupRole = groupRoleNew;
             _context.GroupUsers.Update(groupUser);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error updating the role of a Group User in the database. Group id {group.Id} User id {groupUser.User.Id}: {e.Message}");
+                throw new BadRequestException("Error updating the role of a group user.", "update_error");
+            }
 
             return groupRoleNew.ToString();
         }
@@ -440,7 +494,7 @@ namespace Groover.BL.Services
 
         private string GenerateInviteContent(string acceptUrl, GroupDTO group, UserDTO receiver, User sender)
         {//upgrade this to something better looking
-            return string.Format("<h2 style='color:red;'>{0}</h2>", acceptUrl);
+            return string.Format("<a href='{0}' style='color:red;'>Click here to accept an invitation to the group '{1}'</a>", acceptUrl, group.Name);
         }
     }
 }

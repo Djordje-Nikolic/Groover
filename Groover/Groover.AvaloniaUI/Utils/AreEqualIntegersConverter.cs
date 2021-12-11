@@ -16,19 +16,31 @@ namespace Groover.AvaloniaUI.Utils
             bool invert = false;
             bool.TryParse(parameter?.ToString(), out invert);
 
-            int count = values.Count();
-            if (count >= 2)
+            try
             {
-                int firstVal = int.Parse(values[0].ToString());
-                for (int i = 1; i < count; i++)
+                int count = values.Count();
+                if (count >= 2)
                 {
-                    if (firstVal != int.Parse(values[i].ToString()))
-                        return false ^ invert;
+                    if (!int.TryParse(values[0].ToString(), out int firstVal))
+                        return false;
+
+                    for (int i = 1; i < count; i++)
+                    {
+                        if (!int.TryParse(values[i].ToString(), out int secondVal))
+                            return false;
+
+                        if (firstVal != secondVal)
+                            return false ^ invert;
+                    }
+                    return true ^ invert;
                 }
-                return true ^ invert;
+                else
+                    return true ^ invert;
             }
-            else
-                return true ^ invert;
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

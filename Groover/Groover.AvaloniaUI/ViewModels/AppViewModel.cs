@@ -814,6 +814,7 @@ namespace Groover.AvaloniaUI.ViewModels
             if (logoutAccepted)
             {
                 ActiveChatViewModel = null;
+                LoggedInUser.UserGroupsCache.Clear();
                 LoggedInUser = null;
                 _userService.Logout();
                 await Cleanup();
