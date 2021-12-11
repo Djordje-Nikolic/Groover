@@ -489,8 +489,6 @@ namespace Groover.AvaloniaUI.ViewModels
             var viewModel = new ChatViewModel(LoggedInUser, userGroup, _groupChatService, _chatHubService,
                 ShowChooseImageDialog, ShowChooseTrackDialog);
 
-            //Set callbacks
-
             return viewModel;
         }
 

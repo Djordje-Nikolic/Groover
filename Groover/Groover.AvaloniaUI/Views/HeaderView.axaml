@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assist="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:utils="using:Groover.AvaloniaUI.Utils"
+             xmlns:views="using:Groover.AvaloniaUI.Views"
+             xmlns:chatViews="using:Groover.AvaloniaUI.Views.Chat"
+             xmlns:viewModels="using:Groover.AvaloniaUI.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Groover.AvaloniaUI.Views.HeaderView"
+             Name="Root">
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="ThemeDarkerElementBrush" Color="#1b1b1b" Opacity="0.8"></SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeDarkerMedElementBrush" Color="#1b1b1b" Opacity="0.5"></SolidColorBrush>
+    <StackLayout x:Key="VerticalStackLayout"
+                        Orientation="Vertical"/>
+    <utils:IsAdminConverter x:Key="isAdminConverter"/>
+    <utils:AreEqualIntegersConverter x:Key="areEqualIntegersConverter" />
+  </UserControl.Resources>
+  <Grid>
+    <TextBlock Text="{Binding ActiveGroup.Name, FallbackValue=Home}"
+             FontWeight="Bold" FontStyle="Oblique" Classes="Headline5"
+             HorizontalAlignment="Center" VerticalAlignment="Center">Home</TextBlock>
+    <ToggleButton Name="notificationButton"
+                  Classes="" assist:ButtonAssist.CornerRadius="35"
+                  Height="35" Width="35" Margin="0,0,15,0"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Center"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  Padding="0,0,0,0">
+      <Panel HorizontalAlignment="Right"
+             VerticalAlignment="Center">
+        <icons:MaterialIcon Kind="BellOutline"
+                  Height="20" Width="20"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+        </icons:MaterialIcon>
+        <icons:MaterialIcon Name="alertIcon" Kind="BellRingOutline"
+                  Height="20" Width="20"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding NotificationsViewModel.HasUnread}">
+        </icons:MaterialIcon>
+      </Panel>
+    </ToggleButton>
+    <Popup Name="myPopup"
+           IsOpen="{Binding #notificationButton.IsChecked, Mode=TwoWay}"
+           StaysOpen="False"
+           PlacementMode="Left"
+           PlacementTarget="{Binding ElementName=notificationButton}"
+           PlacementAnchor="BottomRight">
+      <views:NotificationsView DataContext="{Binding NotificationsViewModel}">
+      </views:NotificationsView>
+    </Popup>
+    <Grid Margin="15,8,0,8"
+          DataContext="{Binding LoggedInUser}"
+          ColumnDefinitions="40,*"
+          HorizontalAlignment="Left"
+          VerticalAlignment="Stretch"
+          ToolTip.Tip="Account"
+          ToolTip.Placement="Pointer"
+          ToolTip.ShowDelay="500">
+      <Button Grid.Column="0" Padding="0"
+              Height="35" Width="35" Classes="Flat"
+              Margin="0" assist:ButtonAssist.CornerRadius="35">
+        <Ellipse
+        Height="35" Width="35"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center">
+          <Ellipse.Fill>
+            <ImageBrush Stretch="UniformToFill" Source="{Binding AvatarImage, FallbackValue=null}"></ImageBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+      </Button>
+      <TextBlock Padding="5,0,0,0" Grid.Column="1" Text="{Binding Username}"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left"
+            TextWrapping="NoWrap">
+      </TextBlock>
+      <Grid.ContextMenu>
+        <ContextMenu>
+          <ContextMenu.Template>
+            <ControlTemplate TargetType="ContextMenu">
+              <styles:Card Padding="2" Margin="0">
+                <StackPanel>
+                  <StackPanel.Styles>
+                    <Style Selector="Button">
+                      <Setter Property="Padding" Value="2,2,2,2"></Setter>
+                      <Setter Property="Margin" Value="0,2,0,2"></Setter>
+                      <Setter Property="assist:ButtonAssist.CornerRadius" Value="2"></Setter>
+                    </Style>
+                    <Style Selector="Button > TextBlock">
+                      <Setter Property="FontSize" Value="13"></Setter>
+                      <Setter Property="FontWeight" Value="Normal"></Setter>
+                      <Setter Property="Foreground" Value="{StaticResource ThemeBackgroundBrush}"></Setter>
+                    </Style>
+                  </StackPanel.Styles>
+                  <Button   Classes="Flat"
+                            Command="{Binding DataContext.EditUserCommand, ElementName=Root}"
+                            CommandParameter="{Binding}">
+                    <TextBlock>Edit user</TextBlock>
+                  </Button>
+                  <Button   Classes="Flat"
+                            Command="{Binding DataContext.LogoutCommand, ElementName=Root}">
+                    <TextBlock>Logout</TextBlock>
+                  </Button>
+                </StackPanel>
+              </styles:Card>
+            </ControlTemplate>
+          </ContextMenu.Template>
+        </ContextMenu>
+      </Grid.ContextMenu>
+    </Grid>
+  </Grid>
+</UserControl>
