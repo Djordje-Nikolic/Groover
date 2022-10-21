@@ -22,6 +22,7 @@ namespace Groover.AvaloniaUI.Utils
         /// <param name="transformFactory">The transform factory.</param>
         /// <param name="updateAction">Apply changes to the original. Example (previousTransformedItem, newOriginalItem) => previousTransformedItem.Value = newOriginalItem </param>
         /// <returns></returns>
+        [Obsolete("This extension is now part of DynamicData itself.")]
         public static IObservable<IChangeSet<TDestination, TKey>> TransformWithInlineUpdate<TObject, TKey, TDestination>(this IObservable<IChangeSet<TObject, TKey>> source,
             Func<TObject, TDestination> transformFactory,
             Action<TDestination, TObject> updateAction = null)

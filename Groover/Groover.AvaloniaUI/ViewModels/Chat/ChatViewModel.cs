@@ -6,7 +6,6 @@ using Groover.AvaloniaUI.Models.DTOs;
 using Groover.AvaloniaUI.Models.Requests;
 using Groover.AvaloniaUI.Models.Responses;
 using Groover.AvaloniaUI.Services.Interfaces;
-using Groover.AvaloniaUI.Utils;
 using Groover.AvaloniaUI.ViewModels.Dialogs;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
